@@ -1,0 +1,2385 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:HeroController.Awake">
+            <summary>
+                Unity Awake method that initializes the HeroController singleton. Sets up the
+                instance reference, registers network event handlers for player drops and
+                disconnections, and initializes hero tracking collections. Also sets the initial
+                spawn point if one exists in the scene.
+            </summary>
+        </member>
+        <member name="M:HeroController.OnDestroy">
+            <summary>
+                Unity OnDestroy cleanup method. Unregisters network event handlers, clears the
+                singleton instance reference, and disposes of all tracking collections to prevent
+                memory leaks and ensure clean shutdown.
+            </summary>
+        </member>
+        <member name="M:HeroController.Start">
+            <summary>
+                Unity Start method that initializes the HeroController. Sets up game state, loads
+                input settings from PlayerPrefs, finds the spawn point, initializes perks system,
+                spawns joined players, and begins the game sequence. Core initialization point for
+                multiplayer hero management.
+            </summary>
+        </member>
+        <member name="M:HeroController.Update">
+            <summary>
+                Main update loop for HeroController. Handles debug inputs, processes player drops,
+                manages join messages, runs hero respawn logic, checks level completion, monitors
+                player drop-ins, and updates time boost effects each frame.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Properties -->
+        <member name="P:HeroController.Instance">
+            <summary>
+                Gets the singleton instance of HeroController, creating it if necessary. Provides
+                global access to the hero controller for managing player spawning and game state.
+                Uses lazy initialization with FindObjectOfType if the instance is null.
+            </summary>
+            <returns>The singleton HeroController instance.</returns>
+        </member>
+        <member name="P:HeroController.InstanceExists">
+            <summary>
+                Gets whether a HeroController instance currently exists in the scene. Used to check
+                availability before accessing the singleton instance to avoid unnecessary creation.
+            </summary>
+            <returns>True if an instance exists; otherwise, false.</returns>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:HeroController.inst">
+            <summary>
+                Private static instance reference for the singleton pattern. Stores the single
+                HeroController instance to ensure only one exists. Accessed through the public
+                Instance property with lazy initialization.
+            </summary>
+        </member>
+        <member name="F:HeroController.playerPrefabReference">
+            <summary>
+                Reference to the Player prefab GameObject used for instantiating new players.
+                Contains the template for creating networked player instances when players join the
+                game session.
+            </summary>
+        </member>
+        <member name="F:HeroController.players">
+            <summary>
+                Static array holding all four possible Player instances. Central storage for player
+                data, character references, and game state. Indexed by player number (0-3) for
+                direct access to player information.
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:HeroController.AllBrosUseSteroids">
+            <summary>
+                Activates steroid power-up for all living players simultaneously. Applies different
+                time boost behavior based on game mode (competitive vs cooperative). Includes global
+                time slow and color shift effects for dramatic impact.
+            </summary>
+        </member>
+        <member name="M:HeroController.GetCorpseExplosionChance">
+            <summary>
+                Gets the chance for corpses to explode from any playing player's upgrades. Returns
+                the exploding corpse chance value from the first playing player found. Used for
+                applying consistent corpse explosion mechanics across all players.
+            </summary>
+            <returns>The corpse explosion chance (0.0-1.0) or -1 if no players playing.</returns>
+        </member>
+        <member name="M:HeroController.GetPrimaryFireLevel(System.Int32)">
+            <summary>
+                Gets the primary fire upgrade level for a specific player. Retrieves the modified
+                value from the player's inventory value orchestrator. Returns 0 for invalid player
+                numbers or if no upgrades are active.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>The primary fire level (0 or higher).</returns>
+        </member>
+        <member name="M:HeroController.GetSecondaryFireLevel(System.Int32)">
+            <summary>
+                Gets the secondary fire (special ability) upgrade level for a specific player.
+                Retrieves the modified value from the player's inventory value orchestrator. Returns
+                0 for invalid player numbers or if no upgrades are active.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>The secondary fire level (0 or higher).</returns>
+        </member>
+        <member name="M:HeroController.OneBroUseSteroids(System.Int32)">
+            <summary>
+                Activates steroid power-up for a single player with default settings. Applies
+                networked steroid effect, Time Bro boost for 0.5 seconds, global time slow, and
+                color shift visual effect. Standard quick steroid activation.
+            </summary>
+            <param name="playerNum">The player number to apply steroids to.</param>
+        </member>
+        <member
+            name="M:HeroController.OneBroUseSteroids(System.Int32,System.Single,System.Boolean,System.Boolean,System.Single)">
+            <summary>
+                Activates steroid power-up for a single player with customizable parameters. Allows
+                control over duration, visual effects, and whether to use high-five or standard time
+                slow mechanics. Advanced steroid activation method.
+            </summary>
+            <param name="playerNum">The player number to apply steroids to.</param>
+            <param name="duration">Duration of the steroid effect in seconds.</param>
+            <param name="timeSlowColors">Whether to apply time slow color shift effect.</param>
+            <param name="highFiveSlowDown">Use high-five time slow instead of standard.</param>
+            <param name="timeSlowDuration">Duration of the time slow effect.</param>
+        </member>
+        <member name="M:HeroController.SetHeroInvulnerable(System.Int32,System.Single)">
+            <summary>
+                Sets a specific hero to invulnerable state for the specified duration. Validates the
+                player number and checks that the player has a character instance before applying
+                the invulnerability effect without showing halo or other visual indicators.
+            </summary>
+            <param name="playerNum">The player number to set invulnerable.</param>
+            <param name="duration">Duration in seconds for the invulnerability effect.</param>
+        </member>
+        <member
+            name="M:HeroController.SetHeroesWillComebackToLife(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Sets heroes within range to resurrect after death for the specified duration. This
+                effect allows heroes to automatically respawn at their death location after being
+                killed, useful for special game modes or power-ups.
+            </summary>
+            <param name="x">X coordinate of the center position.</param>
+            <param name="y">Y coordinate of the center position.</param>
+            <param name="range">Radius of the effect area.</param>
+            <param name="duration">Duration in seconds for the resurrection effect.</param>
+        </member>
+        <member
+            name="M:HeroController.SetHerosInvulnerable(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Sets all heroes within a specified range of a position to invulnerable state. Checks
+                each player's distance from the center point and applies invulnerability if they are
+                within the circular range. Optionally shows a visual halo effect.
+            </summary>
+            <param name="x">X coordinate of the center position.</param>
+            <param name="y">Y coordinate of the center position.</param>
+            <param name="range">Radius of the effect area.</param>
+            <param name="duration">Duration in seconds for the invulnerability effect.</param>
+            <param name="showHalo">Whether to display a visual halo effect on affected heroes.</param>
+        </member>
+        <member name="M:HeroController.SetOffscreenHeroesInvulnerable(System.Single)">
+            <summary>
+                Sets all offscreen heroes to invulnerable state for the specified duration. Loops
+                through all players and applies invulnerability to characters that are not visible
+                on screen. Also resets their teleport counter to -2 to prevent immediate
+                teleportation.
+            </summary>
+            <param name="duration">Duration in seconds for the invulnerability effect.</param>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:HeroController.timeBoostTime">
+            <summary>
+                Remaining duration of time manipulation effects. Tracks how long time dilation from
+                Time Bro abilities or power-ups should continue. Decrements each frame and restores
+                normal time when it reaches zero.
+            </summary>
+        </member>
+        <member name="F:HeroController.ultraHealthyHeroes">
+            <summary>
+                Flag indicating if heroes have enhanced health. When true, heroes may have
+                additional hit points or damage resistance. Used for special game modes or
+                difficulty modifiers.
+            </summary>
+        </member>
+        <!-- Input & Control Methods -->
+        <member name="M:HeroController.SetAllControllerRumble(System.Single)">
+            <summary>
+                Sets controller vibration/rumble for all connected players simultaneously. Used for
+                major events that should provide feedback to everyone, such as large explosions or
+                environmental effects.
+            </summary>
+            <param name="amount">The intensity of the rumble effect (0-1 range) for all controllers.</param>
+        </member>
+        <member name="M:HeroController.SetControllerRumble(System.Int32,System.Single)">
+            <summary>
+                Sets controller vibration/rumble for a specific player. Provides haptic feedback
+                through the controller to enhance game feel for explosions, impacts, or other
+                significant events.
+            </summary>
+            <param name="playerNum">The player number whose controller should rumble.</param>
+            <param name="amount">The intensity of the rumble effect (0-1 range).</param>
+        </member>
+        <!-- Player Management Methods -->
+        <member name="M:HeroController.AddHeroToAlreadyChosenHeroes(HeroType)">
+            <summary>
+                Adds a hero type to the list of already chosen heroes. Prevents duplicate entries
+                and maintains the history of selected heroes for game modes that cycle through
+                available characters.
+            </summary>
+            <param name="currentType">The hero type to add to the chosen list.</param>
+        </member>
+        <member name="M:HeroController.AddLife(System.Int32)">
+            <summary>
+                Adds one life to a specific player. Validates that the player exists and is actively
+                playing before calling the player's AddLife method. Used for life pickups, rewards,
+                or game mechanics that grant extra lives.
+            </summary>
+            <param name="playerNum">The player number to add a life to.</param>
+        </member>
+        <member name="M:HeroController.AddLocalPlayer(System.Int32,System.Int32)">
+            <summary>
+                Adds a new local player to the game session. Validates the controller isn't already
+                in use, gets the player's username from the platform, and sends a join request to
+                the server. Marks countdown as finished upon joining.
+            </summary>
+            <param name="playernum">The player slot to add to (-1 for next available).</param>
+            <param name="controllerID">The controller ID for the new player.</param>
+        </member>
+        <member name="M:HeroController.AddPlayer(System.Int32,System.Int32,PID)">
+            <summary>
+                RPC method that adds a new player to the game. For local players, instantiates the
+                player prefab with network buffering. For remote players, resets ping sampling. Also
+                ensures enough bros are unlocked for all joined players.
+            </summary>
+            <param name="playerNum">The slot number for the new player.</param>
+            <param name="controllerNum">The controller ID for the new player.</param>
+            <param name="playerPID">The network player ID.</param>
+        </member>
+        <member name="M:HeroController.AssignPlayerCharacter(System.Int32,TestVanDammeAnim)">
+            <summary>
+                Assigns a character instance to a player who is not currently alive. Used during
+                respawn operations to link the new character to the player's data structure. Only
+                works if the player isn't already alive.
+            </summary>
+            <param name="playerNum">The player number to assign the character to.</param>
+            <param name="character">The TestVanDammeAnim character instance to assign.</param>
+        </member>
+        <member
+            name="M:HeroController.AttachHeroToHelicopter(UnityEngine.Vector3,System.Single,TestVanDammeAnim,Helicopter,System.Boolean)">
+            <summary>
+                Attaches a hero to a helicopter for extraction or transport. Disables the hero's
+                normal functionality, parents them to the helicopter transform, and positions them
+                appropriately. Handles special cases for different hero types.
+            </summary>
+            <param name="localPosition">Local position relative to helicopter for attachment.</param>
+            <param name="direction">Direction the hero should face (-1 or 1).</param>
+            <param name="hero">The hero character to attach to the helicopter.</param>
+            <param name="heli">The helicopter to attach the hero to.</param>
+            <param name="startExplosions">Whether to trigger explosion effects on attachment.</param>
+        </member>
+        <member name="M:HeroController.AutoJoinLocalHost">
+            <summary>
+                Automatically joins the primary user as the host player. Gets the primary controller
+                from the platform, uses the player name from options, and directly calls the join
+                game request for immediate hosting.
+            </summary>
+        </member>
+        <member name="M:HeroController.ChangeBro(System.Int32,HeroType)">
+            <summary>
+                Changes a player's hero type mid-game. Creates a new hero of the specified type at
+                the current position, transfers ownership, and destroys the old hero. Handles
+                special cases for vehicles and maintains game state consistency.
+            </summary>
+            <param name="playerNum">The player number to change heroes for.</param>
+            <param name="newHeroType">The new hero type to switch to.</param>
+        </member>
+        <member name="M:HeroController.DecreaseAmmo">
+            <summary>
+                Resets ammunition tracking for all players to -1. Called during game state
+                transitions to clear previous ammo counts before respawning or starting new rounds.
+            </summary>
+        </member>
+        <member name="M:HeroController.DeregisterPlayer(PID)">
+            <summary>
+                Removes a player from the game by their PID. Searches through all player slots to
+                find the matching PID and calls DropoutRPC to remove them.
+            </summary>
+            <param name="pid">The PID of the player to deregister.</param>
+        </member>
+        <member name="M:HeroController.DetachHeroFromHelicopter(TestVanDammeAnim)">
+            <summary>
+                Detaches a hero from a helicopter and restores normal functionality. Re-enables
+                physics, unparents from helicopter, and allows the hero to resume normal gameplay.
+                Updates the player's helicopter status accordingly.
+            </summary>
+            <param name="hero">The hero character to detach from the helicopter.</param>
+        </member>
+        <member name="M:HeroController.Dropout(System.Int32,System.Boolean)">
+            <summary>
+                Main dropout logic for removing a player from the game. Handles pause menu cleanup
+                if the player was pausing, and optionally sends an RPC to notify all other players
+                of the dropout.
+            </summary>
+            <param name="playerNum">The player number to drop out.</param>
+            <param name="sendRPC">Whether to send network notification of the dropout.</param>
+        </member>
+        <member name="M:HeroController.DropoutRPC(System.Int32)">
+            <summary>
+                RPC method that performs the actual player removal. Destroys the player's
+                GameObject, resets controller colors for local players, clears all player data,
+                removes from death order, and marks local players as dropped out.
+            </summary>
+            <param name="playerNum">The player number to remove from the game.</param>
+        </member>
+        <member name="M:HeroController.FindAndFlashNextSpawnDoor(System.Int32)">
+            <summary>
+                Finds and highlights the next spawn door for a player in Suicide Horde mode.
+                Randomly selects from available mook doors that are visible and not destroyed,
+                ensuring no duplicate assignments. Flashes the door with the player's color.
+            </summary>
+            <param name="playerNum">The player number to find a spawn door for.</param>
+        </member>
+        <member name="M:HeroController.FlagPlayerToDrop(System.Int32)">
+            <summary>
+                Flags a player for removal during the next update cycle. Adds the player number to a
+                pending drop list, preventing duplicate entries. Used for deferred player removal to
+                avoid mid-frame state issues.
+            </summary>
+            <param name="playerNum">The player number to flag for dropping.</param>
+        </member>
+        <member name="M:HeroController.FlashSpecialAmmo(System.Int32)">
+            <summary>
+                Triggers a visual flash effect on the special ammunition display in the player's
+                HUD. Used to draw attention to ammo changes or special events.
+            </summary>
+            <param name="playerNum">The player number whose ammo display should flash.</param>
+        </member>
+        <member name="M:HeroController.GetCurrentHeroType(System.Int32)">
+            <summary>
+                Gets the current hero type for a specific player. Returns None if the player doesn't
+                exist or has no hero type assigned.
+            </summary>
+            <param name="playerNum">The player number to get hero type for.</param>
+            <returns>The current HeroType or HeroType.None if not found.</returns>
+        </member>
+        <member name="M:HeroController.GetDefaultPlayerName(System.Int32)">
+            <summary>
+                Generates a default player name based on the player ID. Returns names in the format
+                "P1", "P2", etc. for players who haven't set custom names.
+            </summary>
+            <param name="playerID">The zero-based index of the player.</param>
+            <returns>A default name string like "P1" for player 0.</returns>
+        </member>
+        <member name="M:HeroController.GetFireKeyDown(System.Int32@)">
+            <summary>
+                Detects if any controller is pressing the join game button (fire key). Excludes
+                input from the DaisyWheel controller to prevent menu conflicts. Updates the
+                controllerNum reference with the pressing controller's ID.
+            </summary>
+            <param name="controllerNum">Output parameter that receives the controller number
+                pressing fire.</param>
+            <returns>True if a valid controller pressed the join button; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.GetHeroColor(System.Int32)">
+            <summary>
+                Gets the color associated with a specific player number. Returns predefined colors
+                for players 0-3 with additional colors available. Uses a switch with offset to
+                provide unique colors for each player slot. Colors: Blue, Red, Orange, Purple.
+            </summary>
+            <param name="playerNum">The player number to get color for (0-3).</param>
+            <returns>The Color associated with the player number.</returns>
+        </member>
+        <member name="M:HeroController.GetHeroColorName(System.String)">
+            <summary>
+                Gets the localized color name for a specific player number. Returns translated
+                strings for "Blue", "Red", "Orange", and "Purple" based on player index. Falls back
+                to "WHITE" for invalid player numbers.
+            </summary>
+            <param name="playerNum">The player number to get color name for.</param>
+            <returns>The localized color name string.</returns>
+        </member>
+        <member name="M:HeroController.GetHeroName(HeroType)">
+            <summary>
+                Converts a HeroType enum value to its display name string. Provides proper
+                formatting and spacing for hero names like "B.A. Broracus", "Bro Hard", etc. Falls
+                back to the enum's ToString() for unhandled types.
+            </summary>
+            <param name="type">The HeroType to get the display name for.</param>
+            <returns>The formatted display name of the hero.</returns>
+        </member>
+        <member name="M:HeroController.GetHeroPrefab(HeroType)">
+            <summary>
+                Retrieves the prefab for a specific hero type from the theme's hero collection.
+                Returns the TestVanDammeAnim prefab that can be instantiated to create the hero
+                character.
+            </summary>
+            <param name="heroType">The hero type to get the prefab for.</param>
+            <returns>The hero prefab or null if not found.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetHeroType(System.Int32,System.Collections.Generic.List{HeroType},System.Collections.Generic.List{HeroType},System.Boolean)">
+            <summary>
+                Determines the next hero type for a player based on game mode and availability.
+                Handles forced hero mode, random selection, elimination mode cycling, and
+                yet-to-be-seen hero prioritization. Complex logic for fair hero distribution.
+            </summary>
+            <param name="playerNum">The player requesting a hero.</param>
+            <param name="unlockedBros">List of all unlocked hero types.</param>
+            <param name="yetToBeSeenUnlockedHereos">Heroes unlocked but not yet played.</param>
+            <param name="ignoreYetToBeSeenHeroes">Whether to skip unseen hero prioritization.</param>
+            <returns>The selected HeroType for the player.</returns>
+        </member>
+        <member name="M:HeroController.GetLastSpecialAmmo(System.Int32)">
+            <summary>
+                Gets the last recorded special ammunition count for a player. Returns the stored
+                value or 0 if no ammo count was previously recorded.
+            </summary>
+            <param name="playerNum">The player number to get ammo for.</param>
+            <returns>The last special ammo count or 0 if none recorded.</returns>
+        </member>
+        <member name="M:HeroController.GetMostRightHero">
+            <summary>
+                Finds and returns the hero character that is positioned furthest to the right. Only
+                considers alive heroes and compares their X positions to find the rightmost one.
+            </summary>
+            <returns>The TestVanDammeAnim hero furthest right, or null if none alive.</returns>
+        </member>
+        <member name="M:HeroController.GetNextUnusedPlayerNumber">
+            <summary>
+                Finds the first available player slot that is not currently in use. Scans through
+                all four slots and returns the index of the first one where playersPlaying is false.
+                Used when adding new players to find where to place them.
+            </summary>
+            <returns>The first available player slot (0-3) or -1 if all slots are full.</returns>
+        </member>
+        <member name="M:HeroController.GetNthAvailableSlot(System.Int32)">
+            <summary>
+                Finds the Nth available player slot that is not currently occupied. Scans through
+                all four player slots and counts empty slots until reaching the requested index.
+                Used for assigning new players to available positions.
+            </summary>
+            <param name="n">The zero-based index of the available slot to find.</param>
+            <returns>Player slot number (0-3) or -1 if not enough slots available.</returns>
+        </member>
+        <member name="M:HeroController.GetNthLocalPlayerPlaying(System.Int32)">
+            <summary>
+                Gets the player number of the Nth local player who is actively playing. Counts only
+                local players (IsMine) who have joined the game. Used for split-screen and local
+                co-op player management.
+            </summary>
+            <param name="n">The zero-based index of the local player to find.</param>
+            <returns>Player number (0-3) of the Nth local player or -1 if not found.</returns>
+        </member>
+        <member name="M:HeroController.GetPidFromControl(System.Int32)">
+            <summary>
+                Maps a controller ID to its corresponding network Player ID (PID). Used to identify
+                which network player corresponds to a given local controller input for proper
+                multiplayer synchronization.
+            </summary>
+            <param name="controlID">The local controller ID to map.</param>
+            <returns>The PID enum value for the controller, or PID.NoID if not found.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerName(System.Int32)">
+            <summary>
+                Retrieves the name of a specific player. Returns either the custom name set via
+                SetPlayerName or the default name if none was set.
+            </summary>
+            <param name="index">The player index to get the name for.</param>
+            <returns>The player's name string.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerNumForControllerID(System.Int32)">
+            <summary>
+                Gets the player number associated with a specific controller ID. Only checks local
+                players (IsMine) and returns -1 if the controller is not assigned to any player.
+                Used for mapping controller input to the correct player.
+            </summary>
+            <param name="controllerID">The controller ID to look up.</param>
+            <returns>Player number (0-3) or -1 if not found.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerUsingController(System.Int32)">
+            <summary>
+                Finds the Player instance that is using a specific controller ID. Only returns local
+                players (IsMine) that match the controller number. Used for mapping controller input
+                to the correct player object.
+            </summary>
+            <param name="controllerID">The controller ID to search for.</param>
+            <returns>The Player using the controller or null if not found.</returns>
+        </member>
+        <member name="M:HeroController.GetSpecialAmmo(System.Int32,System.Int32)">
+            <summary>
+                Gets the appropriate special ammunition count for a player, choosing between the
+                current count and the last recorded count based on which is higher. Used to maintain
+                ammo across respawns.
+            </summary>
+            <param name="playerNum">The player number to get ammo for.</param>
+            <param name="currentSpecialAmmo">The current special ammo count.</param>
+            <returns>The maximum of current and last recorded ammo counts.</returns>
+        </member>
+        <member name="M:HeroController.GiveAllLifelessPlayersALife">
+            <summary>
+                Gives one life to all players who are currently at zero lives. Loops through all
+                playing players and grants a life to those who have no lives remaining, preventing
+                complete elimination from the game.
+            </summary>
+        </member>
+        <member name="M:HeroController.HaveAllHerosBeenInstantiated">
+            <summary>
+                Checks whether all active players have had their hero characters instantiated. Used
+                as a readiness check before starting gameplay to ensure all players have spawned
+                characters in the scene.
+            </summary>
+            <returns>True if all playing players have character instances; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsControIdRegisteredToPID(System.Int32,PID)">
+            <summary>
+                Checks if a controller ID is already registered to a specific network player ID.
+                Prevents the same controller-PID combination from joining multiple times, ensuring
+                each network player has only one slot.
+            </summary>
+            <param name="controlId">The controller ID to check.</param>
+            <param name="pid">The player network ID to check against.</param>
+            <returns>True if this controller-PID combination is already registered; otherwise,
+                false.</returns>
+        </member>
+        <member name="M:HeroController.IsControllerIDUsed(System.Int32)">
+            <summary>
+                Checks if a controller ID is already assigned to an active player. Used internally
+                to prevent duplicate controller assignments when players join the game.
+            </summary>
+            <param name="controllerID">The controller ID to check.</param>
+            <returns>True if the controller is already in use; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsPlayerActiveForControllerID(System.Int32)">
+            <summary>
+                Checks if the player using a specific controller is active and alive with lives
+                remaining. More comprehensive than just checking if the controller is in use, this
+                ensures the player can actually participate in gameplay.
+            </summary>
+            <param name="controllerID">The controller ID to check.</param>
+            <returns>True if the player is active, alive, and has lives; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsPlayerPlaying(System.Int32)">
+            <summary>
+                Checks whether a specific player is currently active in the game. Used to determine
+                which player slots are occupied for spawning and input handling.
+            </summary>
+            <param name="index">The player index to check.</param>
+            <returns>True if the player at the given index is playing; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsTypeInUse(HeroType)">
+            <summary>
+                Checks if a specific hero type is currently being used by any player. Iterates
+                through all playing players to see if any have the specified hero type assigned.
+                Used to prevent duplicate hero selection.
+            </summary>
+            <param name="typeTocheck">The HeroType to check for usage.</param>
+            <returns>True if the hero type is in use; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.KickPlayersIfHeHasNotJoined(PID)">
+            <summary>
+                Initiates a timeout check for a player who is expected to join. Starts a coroutine
+                that will kick the player if they haven't joined within the timeout period (2
+                seconds).
+            </summary>
+            <param name="playerPid">The PID of the player to monitor for joining.</param>
+        </member>
+        <member name="M:HeroController.KickPlayersIfHeHasNotJoinedRoutine(PID)">
+            <summary>
+                Coroutine that waits 2 seconds then checks if a player has joined. If the player's
+                PID is not found in the active players list, sends a kick command to remove them
+                from the session.
+            </summary>
+            <param name="playerPid">The PID of the player to check and potentially kick.</param>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:HeroController.MonitorPlayerDropin(System.Int32)">
+            <summary>
+                Monitors a potential player slot for controller input to join the game. Checks for
+                fire button press from a logged-in controller and initiates the join process if
+                valid input is detected.
+            </summary>
+            <param name="playernum">The player slot number to monitor for drop-in.</param>
+        </member>
+        <member name="M:HeroController.PlayerExists(System.Int32)">
+            <summary>
+                Checks if a player exists and has valid data at the specified player number.
+                Verifies both that the player object is not null and that it reports existing
+                through its Exists() method.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player exists with valid data; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.RecieveHeroTypeFromMaster(HeroType,System.Int32,HeroType[],Ack)">
+            <summary>
+                Client-side RPC that receives the hero type assignment from the master. Updates the
+                local hero type, synchronizes the already-chosen heroes list, and triggers the spawn
+                process for the assigned hero.
+            </summary>
+            <param name="nextHeroTypeRecieved">The hero type assigned by the master.</param>
+            <param name="playerNum">The player number receiving the assignment.</param>
+            <param name="updatedHeroAlreadyChosenTypes">Updated list of heroes already chosen.</param>
+            <param name="ackResponse">Network acknowledgment response.</param>
+        </member>
+        <member name="M:HeroController.RegisterHeroToPlayer(TestVanDammeAnim,System.Int32,HeroType)">
+            <summary>
+                Registers a spawned hero character to a specific player slot. Links the hero
+                instance to the player data, activates the HUD, sets the hero type, and handles
+                rescue bro visibility. Core method for establishing the player-hero connection.
+            </summary>
+            <param name="hero">The TestVanDammeAnim hero instance to register.</param>
+            <param name="playerNum">The player number to register the hero to.</param>
+            <param name="heroTypeEnum">The type of hero being registered.</param>
+        </member>
+        <member name="M:HeroController.RequestAllPlayerData(PID,System.Boolean)">
+            <summary>
+                RPC method that sends complete player data to a specific network target. Broadcasts
+                all player slots' information including playing status, lives (optionally), and
+                special ammo counts. Used when players join to synchronize game state.
+            </summary>
+            <param name="targetId">The network PID to send the data to.</param>
+            <param name="requestLives">Whether to include life counts in the synchronization.</param>
+        </member>
+        <member name="M:HeroController.RequestHeroTypeFromMaster(System.Int32,System.Boolean)">
+            <summary>
+                Client-side method to request a hero type assignment from the master/host. Sends
+                available hero types and preferences to the master who will assign an appropriate
+                hero based on game rules and availability.
+            </summary>
+            <param name="PlayerNum">The player number requesting a hero.</param>
+            <param name="ignoreYetToBeSeenHeroes">Whether to ignore heroes the player hasn't
+                unlocked yet.</param>
+        </member>
+        <member
+            name="M:HeroController.RequestHeroTypeFromMasterRPC(PID,System.Int32,HeroType[],HeroType,HeroType[],Ack,System.Boolean)">
+            <summary>
+                Server-side RPC that processes hero type requests from clients. Determines the
+                appropriate hero based on game mode, availability, and player preferences, then
+                sends the assignment back to the requesting client.
+            </summary>
+            <param name="Requestee">The PID of the requesting player.</param>
+            <param name="PlayerNum">The player slot number.</param>
+            <param name="unlockedTypes">Array of heroes the player has unlocked.</param>
+            <param name="preferedNextHero">The player's preferred hero choice.</param>
+            <param name="yetToBeSeenUnlockedHereos">Heroes unlocked but not yet seen by player.</param>
+            <param name="ackRequest">Network acknowledgment request.</param>
+            <param name="ignoreYetToBeSeenHeroes">Whether to skip unseen heroes.</param>
+        </member>
+        <member name="M:HeroController.RequestJoinGame(System.Int32,PID,System.String)">
+            <summary>
+                Processes a request to join the game from a client. Host-only method that validates
+                the request, assigns an available player slot, broadcasts the addition to all
+                players, and requests player data synchronization. Prevents duplicate joins and
+                handles full games.
+            </summary>
+            <param name="controllerNum">The controller number of the joining player.</param>
+            <param name="requesteeID">The network PID of the requesting player.</param>
+            <param name="playerName">The display name of the joining player.</param>
+        </member>
+        <member name="M:HeroController.RestartAllHeroesBubbles">
+            <summary>
+                Shows the start bubble animation for all living heroes. Creates visual feedback at
+                level start or after checkpoints to indicate player positions and readiness.
+            </summary>
+        </member>
+        <member name="M:HeroController.SetAllHeroesImmuneToOutOfBounds">
+            <summary>
+                Makes all living heroes immune to out-of-bounds death. Prevents heroes from dying
+                when they go outside level boundaries, used during transitions or special sequences.
+            </summary>
+        </member>
+        <member name="M:HeroController.SetAllHeroesInvulnerable(System.Single)">
+            <summary>
+                Sets all living heroes to invulnerable state for the specified duration. Loops
+                through all player slots and applies invulnerability to each active character. Used
+                for level transitions or special events.
+            </summary>
+            <param name="duration">Duration in seconds for the invulnerability effect.</param>
+        </member>
+        <member name="M:HeroController.SetIsPlaying(System.Int32,System.Boolean)">
+            <summary>
+                Updates a player's playing status. Synchronizes with the platform controller,
+                updates network room information, and manages player state. Handles both joining and
+                leaving players with proper platform integration.
+            </summary>
+            <param name="index">The player index to update.</param>
+            <param name="isPlaying">True if the player is joining; false if leaving.</param>
+        </member>
+        <member name="M:HeroController.SetLives(System.Int32,System.Int32)">
+            <summary>
+                Sets the number of lives for one or all players. Can target a specific player or set
+                lives for all players when playerNum is -1. Updates both the lives count and any
+                powerups that track lives.
+            </summary>
+            <param name="playerNum">The player to set lives for, or -1 for all players.</param>
+            <param name="livesCount">The number of lives to set.</param>
+        </member>
+        <member name="M:HeroController.SetOriginalSpecialAmmoCount(System.Int32,System.Int32)">
+            <summary>
+                Sets the original special ammunition count displayed in the HUD. Updates the player
+                HUD's tracking of the base ammo count for display purposes, separate from the actual
+                current ammo.
+            </summary>
+            <param name="playerNum">The player number to update HUD for.</param>
+            <param name="count">The original ammo count to display.</param>
+        </member>
+        <member name="M:HeroController.SetPlayerCharacter(System.Int32,TestVanDammeAnim)">
+            <summary>
+                Assigns a character instance to a specific player slot. Links the spawned
+                TestVanDammeAnim character to the player's data for tracking and control.
+            </summary>
+            <param name="index">The player index to assign the character to.</param>
+            <param name="character">The TestVanDammeAnim character instance to assign.</param>
+        </member>
+        <member name="M:HeroController.SetPlayerName(System.Int32,System.String)">
+            <summary>
+                Sets a custom name for a specific player. Overwrites the default "P1" style names
+                with player-chosen or platform-provided names.
+            </summary>
+            <param name="index">The player index to set the name for.</param>
+            <param name="pName">The custom name to assign to the player.</param>
+        </member>
+        <member name="M:HeroController.SetSpecialAmmo(System.Int32,System.Int32)">
+            <summary>
+                Sets the special ammunition count for a specific player. Updates the ammo tracking
+                array if the count is non-negative, used for restoring ammo counts after respawn or
+                power-ups.
+            </summary>
+            <param name="playerNum">The player number to set ammo for.</param>
+            <param name="specialAmmo">The special ammo count to set.</param>
+        </member>
+        <member name="M:HeroController.SpawnJoinedPlayers">
+            <summary>
+                Spawns hero characters for all joined players who haven't been spawned yet. Handles
+                different game modes (BroDown, SuicideHorde, etc.) with appropriate spawn behavior.
+                Uses RPC calls to synchronize player addition across the network.
+            </summary>
+        </member>
+        <member name="M:HeroController.SpawnSuicideBro(System.Int32)">
+            <summary>
+                Spawns a player in Suicide Horde mode. Calls the player's RespawnBro method without
+                checkpoint and clears any associated spawn door reference. Used specifically for the
+                Suicide Horde game mode's unique spawning system.
+            </summary>
+            <param name="playerNum">The player number to spawn as suicide bro.</param>
+        </member>
+        <member
+            name="M:HeroController.UpdatePlayerData(System.Int32,System.Boolean,PID,System.String,System.Int32)">
+            <summary>
+                RPC method that updates all player data for a specific slot. Synchronizes player
+                information across the network including playing status, network ID, name, and
+                controller assignment. Core method for keeping player data consistent.
+            </summary>
+            <param name="index">The player slot index to update.</param>
+            <param name="isPlaying">Whether the player is actively playing.</param>
+            <param name="pid">The network player ID.</param>
+            <param name="playerName">The player's display name.</param>
+            <param name="controller">The controller ID assigned to this player.</param>
+        </member>
+        <member
+            name="M:HeroController.UpdatePlayerUserData(System.Int32,System.Int32,System.String)">
+            <summary>
+                Updates a player's controller and name information and broadcasts the change to
+                other players. Also updates the primary user ID for single-player scenarios. Used
+                when players change controllers or update their names mid-game.
+            </summary>
+            <param name="playerNum">The player number to update.</param>
+            <param name="controllerNum">The new controller ID.</param>
+            <param name="playerName">The new player name.</param>
+        </member>
+        <!-- Player Management Fields -->
+        <member name="F:HeroController.BotBrainLeader">
+            <summary>
+                Specifies which player number the bot brain should follow. When using AI control,
+                bots will follow and assist the specified player. Initialized to -1 (no leader) for
+                each slot.
+            </summary>
+        </member>
+        <member name="F:HeroController.PIDS">
+            <summary>
+                Network Player IDs for each player slot. Maps local player indices to network
+                identities for multiplayer synchronization. Initialized to NoID and updated when
+                players join. Critical for network communication.
+            </summary>
+        </member>
+        <member name="F:HeroController.UseBotBrain">
+            <summary>
+                Tracks whether each player slot is using AI bot brain control. When true, the player
+                is controlled by AI instead of human input. Used for bot players in single player or
+                when players disconnect.
+            </summary>
+        </member>
+        <member name="F:HeroController.ammoCounts">
+            <summary>
+                Tracks current special ammunition counts for each player. Initialized to -1 to
+                indicate no ammo data. Used for maintaining ammo state across respawns and for HUD
+                display. Array indexed by player number.
+            </summary>
+        </member>
+        <member name="F:HeroController.lastAmmoCounts">
+            <summary>
+                Stores the last known special ammunition count for each player. Used to restore ammo
+                after respawn or to track ammo changes. Helps maintain ammo persistence across
+                death/respawn cycles.
+            </summary>
+        </member>
+        <member name="F:HeroController.playerControllerIDs">
+            <summary>
+                Maps player slots to physical controller IDs. Tracks which gamepad or input device
+                controls each player. Initialized to -1 (no controller) and updated when players
+                join with their controller ID.
+            </summary>
+        </member>
+        <member name="F:HeroController.playerNames">
+            <summary>
+                Stores display names for each player slot. Can be custom names from platform
+                profiles or default names like "P1". Initialized as empty strings and updated when
+                players join or change names.
+            </summary>
+        </member>
+        <member name="F:HeroController.playersPlaying">
+            <summary>
+                Private array tracking which player slots are actively in the game. True indicates
+                the slot is occupied by a joined player, false means empty. Core state for player
+                management.
+            </summary>
+        </member>
+        <!-- Player Status Methods -->
+        <member name="M:HeroController.AreAllHerosDead">
+            <summary>
+                Checks if all player heroes are currently dead. Used to determine game over
+                conditions or trigger respawn sequences when no players remain alive.
+            </summary>
+            <returns>True if no players are alive; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.AreAllOtherHerosDead(System.Int32)">
+            <summary>
+                Checks if all heroes except the specified player are dead. Note: Current
+                implementation has a bug and always returns false due to misplaced return statement.
+                Intended to check if only one player remains alive.
+            </summary>
+            <param name="playerNum">The player number to exclude from the death check.</param>
+            <returns>Always returns false due to implementation bug.</returns>
+        </member>
+        <member name="M:HeroController.AtLeastOnePlayerStillHasALife">
+            <summary>
+                Checks if any playing player has at least one life remaining. Used to determine if
+                the game should continue or trigger game over. Returns true as long as any player
+                can still respawn.
+            </summary>
+            <returns>True if at least one player has lives remaining; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.GetFirstHeroAlive">
+            <summary>
+                Finds the first player who has a living hero character. Scans through all player
+                slots in order and returns the index of the first one with an alive character.
+                Defaults to 0 if no living heroes found.
+            </summary>
+            <returns>The player number of the first living hero, or 0 if none alive.</returns>
+        </member>
+        <member name="M:HeroController.GetFirstPlayerPosition(System.Int32)">
+            <summary>
+                Gets the position of the first living player other than the specified one. Used for
+                finding ally positions for AI or camera logic. Falls back to checkpoint position if
+                no other living players exist.
+            </summary>
+            <param name="ignorePlayerNum">The player number to exclude from the search.</param>
+            <returns>Vector2 position of the first other living player or checkpoint position.</returns>
+        </member>
+        <member name="M:HeroController.GetLocalPlayerCount">
+            <summary>
+                Gets the count of local players (non-network players) in the game. Checks the IsMine
+                property of each player's PID to identify local vs remote players. Used for
+                split-screen and local co-op scenarios.
+            </summary>
+            <returns>The number of local players (0-4).</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerLives(System.Int32)">
+            <summary>
+                Gets the number of lives remaining for a specific player. Returns 0 if the player
+                doesn't exist or isn't playing.
+            </summary>
+            <param name="playerNum">The player number to get lives for.</param>
+            <returns>The number of lives remaining for the player.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayersAliveCount">
+            <summary>
+                Counts the number of players who are currently alive. Checks each playing player to
+                see if they have a character instance that is alive. Used for gameplay logic that
+                depends on active player count.
+            </summary>
+            <returns>The number of players with living characters.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayersOnHelicopterAmount">
+            <summary>
+                Counts players who are both alive and currently on the extraction helicopter. Used
+                for level completion checks to ensure all players have reached the extraction point
+                before ending the level.
+            </summary>
+            <returns>The number of living players on the helicopter.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayersPlayingCount">
+            <summary>
+                Gets the total number of players currently marked as playing. Counts all players
+                with isPlaying flag set to true, regardless of whether they are alive or have
+                spawned characters.
+            </summary>
+            <returns>The count of players currently in the game.</returns>
+        </member>
+        <member name="M:HeroController.GetTotalLives">
+            <summary>
+                Calculates the total remaining lives across all playing players. Sums up the Lives
+                count for each active player to determine overall lives pool for game over
+                conditions.
+            </summary>
+            <returns>The total number of lives remaining for all players.</returns>
+        </member>
+        <member name="M:HeroController.HasJustStarted">
+            <summary>
+                Checks if the game has just started by testing if input is still delayed. Returns
+                true during the initial game startup period before player input is enabled, used to
+                prevent premature actions.
+            </summary>
+            <returns>True if the game just started and input is delayed; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.HaveAllPlayersHaveSpawned">
+            <summary>
+                Checks if all players have completed spawning and are no longer in first deployment
+                state. Game mode aware, checking only the expected number of players for BroDown or
+                SuicideHorde modes.
+            </summary>
+            <returns>True if all expected players have spawned; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.HaveAllPlayersJoined">
+            <summary>
+                Checks if all players who are supposed to be playing have joined the game. Considers
+                different game modes (BroDown, SuicideHorde) to determine expected player count.
+                Sets AllPlayersHaveJoined field when all expected players join.
+            </summary>
+            <returns>True if all expected players have joined; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsAnyHeroDead">
+            <summary>
+                Checks if any playing hero is currently dead. Only considers players who are
+                actively playing, ignoring empty slots. Used for respawn timing logic.
+            </summary>
+            <returns>True if any playing player is dead; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsAnyPlayerDead">
+            <summary>
+                Checks if any active player is currently dead. Only considers players who are marked
+                as playing, ignoring empty slots. Used for game logic that triggers when at least
+                one player needs respawning.
+            </summary>
+            <returns>True if any playing player is dead; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsDead(System.Int32)">
+            <summary>
+                Protected method that checks if a specific player is dead. Returns true if the
+                player exists but has no living character instance, indicating they are awaiting
+                respawn.
+            </summary>
+            <param name="playerNum">The player number to check death status for.</param>
+            <returns>True if the player is dead; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsPlaying(System.Int32)">
+            <summary>
+                Checks if a specific player slot is active and playing. Simple accessor for the
+                player's isPlaying flag without additional validation.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player is marked as playing; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.NumberOfPlayers">
+            <summary>
+                Counts the total number of players currently in the game. Includes both local and
+                remote players who have joined but may not necessarily be alive. Used for game logic
+                that depends on participant count.
+            </summary>
+            <returns>The total number of players marked as playing (0-4).</returns>
+        </member>
+        <member name="M:HeroController.NumberOfPlayersOnThisPC">
+            <summary>
+                Counts only local players on this machine. Checks each player's PID to determine if
+                they belong to the local client. Used for split-screen management and local input
+                handling.
+            </summary>
+            <returns>The number of local players (0-4).</returns>
+        </member>
+        <member name="M:HeroController.PlayerHasALife(System.Int32)">
+            <summary>
+                Checks if a specific player has any lives remaining. Used to determine if a player
+                can still respawn after death.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player has at least one life; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.PlayerHasDied(System.Int32)">
+            <summary>
+                Public entry point for handling player death. Manages the complete death process
+                including life deduction, death order tracking, game over checks, avatar updates,
+                and network synchronization through RPC calls.
+            </summary>
+            <param name="playerNum">The player number who died.</param>
+        </member>
+        <member name="M:HeroController.PlayerHasDiedRPC(System.Int32)">
+            <summary>
+                RPC method that notifies all clients when a player dies. Updates death tracking,
+                manages lives, handles game over conditions, and coordinates the death state across
+                the network. Only processes on non-host clients.
+            </summary>
+            <param name="playerNum">The player number who died.</param>
+        </member>
+        <member name="M:HeroController.PlayerIsAlive(System.Int32)">
+            <summary>
+                Simple check to determine if a player is currently alive. Verifies the player is
+                playing and has a living character instance in the game world.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player has a living character; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.PlayerIsBeingRescuedOrRespawned(System.Int32)">
+            <summary>
+                Checks if a player is currently in the process of being rescued or respawned. Used
+                to prevent interference with ongoing rescue operations and to track player state
+                during transitions.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player is being rescued or respawned; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.PlayerIsInvulnerable(System.Int32)">
+            <summary>
+                Checks if a specific player is currently invulnerable. Returns true only if the
+                player is alive and their character's invulnerable property is set.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player is alive and invulnerable; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.PlayerIsNotInStealth(System.Int32)">
+            <summary>
+                Checks if a player exists and is not currently in stealth mode. Used by AI and
+                detection systems to determine if a player should be visible to enemies.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player exists and is not stealthed; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.PlayerIsOnHelicopter(System.Int32)">
+            <summary>
+                Checks if a specific player is currently on the extraction helicopter. Used for
+                level completion checks to ensure all players have reached extraction.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <returns>True if the player is alive and on the helicopter; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.ResetPlayersPlaying">
+            <summary>
+                Resets all player states to not playing. Clears the isPlaying flag for all four
+                player slots, used when returning to menus or resetting the game session.
+            </summary>
+        </member>
+        <member name="M:HeroController.UpdateDeathOrder(System.Int32[])">
+            <summary>
+                Updates the local death order array to match the authoritative version from the
+                host. Ensures all clients maintain consistent death ordering for respawn priority
+                and other death-related mechanics.
+            </summary>
+            <param name="latestDeathOrder">The authoritative death order array from the host.</param>
+        </member>
+        <!-- Player Detection Methods -->
+        <member
+            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
+            <summary>
+                Performs a line of sight check for players in a specific direction. Uses raycasting
+                to ensure no obstacles block the view. Checks both players and their owned units
+                (like SnakeBroskin's grenade hologram).
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="xRange">Maximum horizontal distance for line of sight.</param>
+            <param name="yRange">Maximum vertical distance for line of sight.</param>
+            <param name="seenPlayerNum">Output parameter for the player number if seen.</param>
+            <returns>True if a player is visible in the specified direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Int32@)">
+            <summary>
+                Line of sight check with both X and Y direction constraints. Most restrictive
+                visibility check that requires the target to be in the correct quadrant and have an
+                unobstructed line of sight.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Horizontal direction (-1 for left, 1 for right).</param>
+            <param name="yDirection">Vertical direction (-1 for down, 1 for up).</param>
+            <param name="xRange">Maximum horizontal distance for line of sight.</param>
+            <param name="yRange">Maximum vertical distance for line of sight.</param>
+            <param name="seenPlayerNum">Output parameter for the player number if seen.</param>
+            <returns>True if a player is visible in the specified quadrant; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.CanSeePlayer(System.Int32,System.Single,System.Single)">
+            <summary>
+                Checks if a specific player is visible from a given position. Uses raycasting to
+                verify line of sight is not blocked by terrain or obstacles. Considers stealth mode
+                - returns false if the player is in stealth.
+            </summary>
+            <param name="lookForPlayerNum">The specific player number to look for.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <returns>True if the specified player is visible and not in stealth; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
+            <summary>
+                Omnidirectional line of sight check for any player within range. Checks all living
+                players and their units for visibility without direction constraints. Respects
+                stealth mode and uses raycasting for obstacle detection.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xRange">Maximum horizontal distance for line of sight.</param>
+            <param name="yRange">Maximum vertical distance for line of sight.</param>
+            <param name="seenPlayerNum">Output parameter for the nearest visible player number.</param>
+            <returns>True if any player is visible within range; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetActualNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Finds the truly nearest player using combined X and Y distance. More accurate than
+                GetNearestPlayer for finding the closest player as it uses actual distance rather
+                than treating X and Y separately.
+            </summary>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <param name="xRange">Maximum horizontal distance to search.</param>
+            <param name="yRange">Maximum vertical distance to search.</param>
+            <returns>Player index (0-3) of nearest player or -1 if none in range.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Finds the nearest player within a specified rectangular range. Returns the player
+                index of the closest player within the range or -1 if no players are found. Uses
+                Manhattan distance for range checking.
+            </summary>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <param name="xRange">Maximum horizontal distance to search.</param>
+            <param name="yRange">Maximum vertical distance to search.</param>
+            <returns>Player index (0-3) of nearest player or -1 if none in range.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
+            <summary>
+                Finds the nearest player within range and updates the current nearest reference.
+                Returns true if a closer player was found than the current nearest. Used for
+                iterative searches to find the closest among multiple candidates.
+            </summary>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <param name="xRange">Maximum horizontal distance to search.</param>
+            <param name="yRange">Maximum vertical distance to search.</param>
+            <param name="currentNearest">Reference to current nearest player, updated if closer
+                found.</param>
+            <returns>True if a closer player was found; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.GetNearestPlayerPos(System.Single,System.Single)">
+            <summary>
+                Finds the position of the nearest living player to the specified coordinates.
+                Returns the player's position as a Vector3 or a far-away position (1000, 1000, 0) if
+                no players are alive.
+            </summary>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <returns>Vector3 position of the nearest player or (1000, 1000, 0) if none found.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetNearestPlayerPos(System.Single,System.Single,System.Int32@)">
+            <summary>
+                Finds the position of the nearest living player and returns their player number.
+                Uses squared distance for efficiency and updates the playerNum reference with the
+                nearest player's index.
+            </summary>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <param name="playerNum">Output parameter for the nearest player's number.</param>
+            <returns>Vector3 position of the nearest player or (1000, 1000, 0) if none found.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerPos(System.Int32,System.Single@,System.Single@)">
+            <summary>
+                Gets the position of a specific player through reference parameters. If the player
+                doesn't exist or isn't alive, returns (-1000, -1000) as an invalid position marker.
+            </summary>
+            <param name="playerNum">The player number to get position for.</param>
+            <param name="xPos">Output parameter that receives the player's X position.</param>
+            <param name="yPos">Output parameter that receives the player's Y position.</param>
+        </member>
+        <member name="M:HeroController.GetPlayerPos(System.Int32)">
+            <summary>
+                Gets the position of a specific player as a Vector3. Returns the player's current
+                position or (-1000, -1000, 0) if the player doesn't exist or isn't alive.
+            </summary>
+            <param name="playerNum">The player number to get position for.</param>
+            <returns>Vector3 position of the player or (-1000, -1000, 0) if invalid.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerPosition(System.Int32)">
+            <summary>
+                Gets the position of a specific player as a Vector3. Returns the player's current
+                world position or Vector3.zero if the player doesn't exist or has no character
+                instance.
+            </summary>
+            <param name="playerNum">The player number to get position for.</param>
+            <returns>Vector3 position of the player or Vector3.zero if invalid.</returns>
+        </member>
+        <member name="M:HeroController.GetPlayerTransform(System.Int32)">
+            <summary>
+                Gets the Transform component of a specific player's character. Returns null if the
+                player doesn't exist, isn't playing, or has no character instance.
+            </summary>
+            <param name="playerNum">The player number to get the transform for.</param>
+            <returns>The player's character Transform or null if unavailable.</returns>
+        </member>
+        <member name="M:HeroController.GetRandomPlayerPlaying">
+            <summary>
+                Gets the player number of a random living player. Useful for AI that needs to target
+                a random player rather than the nearest one. Returns -1 if no players are alive.
+            </summary>
+            <returns>Player number (0-3) of a random living player or -1 if none.</returns>
+        </member>
+        <member
+            name="M:HeroController.GetRandomPlayerPos(System.Single@,System.Single@,System.Int32@)">
+            <summary>
+                Gets the position of a random living player through reference parameters. Randomly
+                selects from all alive players and returns their position and player number. Returns
+                false if no players are alive.
+            </summary>
+            <param name="xPos">Output parameter for the selected player's X position.</param>
+            <param name="yPos">Output parameter for the selected player's Y position.</param>
+            <param name="playerNum">Output parameter for the selected player's number.</param>
+            <returns>True if a living player was found; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.GetRandomPlayerPos">
+            <summary>
+                Gets the position of a random living player as a Vector3. Returns a far-away
+                position (1000, 1000, 0) if no players are alive. Used for AI targeting when any
+                player target is acceptable.
+            </summary>
+            <returns>Vector3 position of a random living player or (1000, 1000, 0) if none.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsAnotherPlayerNearby(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Checks if any player other than the specified player is within range. Used for co-op
+                mechanics, friendly fire detection, and ensuring players don't interact with their
+                own detection zones.
+            </summary>
+            <param name="currentPlayerNum">Player number to exclude from the search.</param>
+            <param name="x">X coordinate to search from.</param>
+            <param name="y">Y coordinate to search from.</param>
+            <param name="xRange">Maximum horizontal distance to search.</param>
+            <param name="yRange">Maximum vertical distance to search.</param>
+            <returns>True if another player is found within range; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
+            <summary>
+                Checks if any player is within the specified range and returns their position.
+                Updates reference parameters with the nearest player's coordinates and player
+                number. Used for AI targeting and interaction systems.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xRange">Horizontal detection range.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="playerX">Output parameter for found player's X position.</param>
+            <param name="playerY">Output parameter for found player's Y position.</param>
+            <param name="seenPlayer">Output parameter for found player's number.</param>
+            <returns>True if a player is found within range; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
+            <summary>
+                Directional player detection that checks for players in a specific direction. Only
+                detects players in the direction specified by xDirection parameter and returns their
+                position and player number through reference parameters.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="xRange">Horizontal detection range in the specified direction.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="playerX">Output parameter for found player's X position.</param>
+            <param name="playerY">Output parameter for found player's Y position.</param>
+            <param name="seenPlayerNum">Output parameter for found player's number.</param>
+            <returns>True if a player is found in the specified direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Basic proximity check to determine if any player is within the specified rectangular
+                range. Simple boolean check without returning player information.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xRange">Horizontal detection range.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <returns>True if any player is within range; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single)">
+            <summary>
+                Directional proximity check that only detects players in the specified direction.
+                Used for directional attacks, line of sight checks, and facing-dependent
+                interactions.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="xRange">Horizontal detection range in the specified direction.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <returns>True if a player is found in the specified direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
+            <summary>
+                Directional player detection that finds players in a specific direction and returns
+                their player number. Only detects players whose position relative to the check point
+                matches the specified direction.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="xRange">Horizontal detection range in the specified direction.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="seenPlayerNum">Output parameter for found player's number.</param>
+            <returns>True if a player is found in the specified direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
+            <summary>
+                Checks if a specific player is nearby in a given direction and returns their
+                position. Updates the xRange parameter and target position references if the player
+                is found within the directional constraints.
+            </summary>
+            <param name="playerNum">The specific player number to check for.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="xRange">Reference to horizontal range, updated based on player distance.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="targetX">Output parameter for the player's X position if found.</param>
+            <param name="targetY">Output parameter for the player's Y position if found.</param>
+            <returns>True if the specified player is found in range and direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
+            <summary>
+                Checks if a specific player is nearby with both X and Y direction constraints. Most
+                restrictive proximity check that requires the player to be in the correct quadrant
+                relative to the check position.
+            </summary>
+            <param name="playerNum">The specific player number to check for.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Horizontal direction (-1 for left, 1 for right).</param>
+            <param name="yDirection">Vertical direction (-1 for down, 1 for up).</param>
+            <param name="xRange">Reference to horizontal range, updated based on player distance.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="targetX">Output parameter for the player's X position if found.</param>
+            <param name="targetY">Output parameter for the player's Y position if found.</param>
+            <returns>True if the player is found in the specified quadrant; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Single@,System.Single,System.Single@,System.Single@)">
+            <summary>
+                Checks if a specific player is within range without direction constraints. Updates
+                the xRange parameter and returns the player's position through reference parameters
+                if found.
+            </summary>
+            <param name="playerNum">The specific player number to check for.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xRange">Reference to horizontal range, updated based on player distance.</param>
+            <param name="yRange">Vertical detection range.</param>
+            <param name="targetX">Output parameter for the player's X position if found.</param>
+            <param name="targetY">Output parameter for the player's Y position if found.</param>
+            <returns>True if the specified player is within range; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerThisWay(System.Int32,System.Single,System.Single,System.Int32)">
+            <summary>
+                Checks if a specific player is positioned in the given direction from a point. Used
+                for directional AI decisions and determining relative player positions.
+            </summary>
+            <param name="playerNum">The player number to check.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <returns>True if the player is in the specified direction; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.IsPlayerThisWay(System.Single,System.Single,System.Int32)">
+            <summary>
+                Checks if any player is positioned in the given direction from a point. Searches all
+                playing players to find if any are in the specified direction. Used for AI
+                directional awareness without caring which specific player.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <returns>True if any player is in the specified direction; otherwise, false.</returns>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerThisWay(System.Single,System.Single,System.Int32,System.Int32@)">
+            <summary>
+                Checks if any player is in the given direction and returns the nearest one. Finds
+                the closest player in the specified direction based on absolute X distance and
+                updates the seenPlayerNum reference with their index.
+            </summary>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
+            <param name="seenPlayerNum">Output parameter for the nearest player's number in that
+                direction.</param>
+            <returns>True if a player is found in the direction; otherwise, false.</returns>
+        </member>
+        <!-- Player Detection Fields -->
+        <member name="F:HeroController.fragileLayer">
+            <summary>
+                Layer mask for fragile/destructible terrain detection. Used to identify breakable
+                surfaces that might affect spawn positions or require special handling during
+                physics checks.
+            </summary>
+        </member>
+        <member name="F:HeroController.groundLayer">
+            <summary>
+                Layer mask for ground collision detection. Used in raycasting operations to detect
+                solid ground for spawn position validation, line of sight checks, and movement
+                calculations.
+            </summary>
+        </member>
+        <member name="F:HeroController.rayCastHit">
+            <summary>
+                Shared RaycastHit structure for physics queries. Reused across multiple raycast
+                operations to avoid allocation overhead. Stores hit information from the most recent
+                raycast operation.
+            </summary>
+        </member>
+        <!-- Rescue System Methods -->
+        <member
+            name="M:HeroController.CheckRescueBros(System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+                Checks for rescue bros within range of the specified position and initiates rescue
+                if found. Handles the rescue animation, network RPC calls, and returns whether any
+                rescue was initiated. Only the host processes the actual rescue logic.
+            </summary>
+            <param name="playerNum">The player number checking for rescues.</param>
+            <param name="x">X coordinate to check from.</param>
+            <param name="y">Y coordinate to check from.</param>
+            <param name="range">Range to check for rescue bros.</param>
+            <returns>True if a rescue was initiated; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.DestroyRescueBroRPC(RescueBro)">
+            <summary>
+                RPC method to destroy a rescue bro across all clients. Handles null checks and
+                ensures proper cleanup of the rescue bro game object to prevent orphaned references
+                in multiplayer games.
+            </summary>
+            <param name="rescueBro">The RescueBro instance to destroy.</param>
+        </member>
+        <member name="M:HeroController.MayIRescueThisBro(System.Int32,RescueBro,Ack)">
+            <summary>
+                Server-side validation method for rescue attempts. Coordinates rescue operations
+                across the network to ensure only one player can rescue a bro. Handles both
+                character swapping and respawning scenarios based on game state.
+            </summary>
+            <param name="playerNum">The player number attempting the rescue.</param>
+            <param name="rescueBro">The RescueBro object being rescued.</param>
+            <param name="ackRequest">Network acknowledgment for the rescue request.</param>
+        </member>
+        <member name="M:HeroController.RespawnBro(System.Int32,RescueBro,System.Int32[],Ack)">
+            <summary>
+                RPC method that respawns a dead player when their bro is rescued. Updates the death
+                order to maintain consistency across the network and calls the player's RespawnBro
+                method to create their new character at the rescue location.
+            </summary>
+            <param name="rescuedPlayer">The player number being respawned.</param>
+            <param name="rescueBro">The RescueBro that triggered the respawn.</param>
+            <param name="latestDeathOrder">Array tracking the order of player deaths.</param>
+            <param name="ackResponse">Network acknowledgment for the operation.</param>
+        </member>
+        <member name="M:HeroController.SwapBro(System.Int32,RescueBro,System.Int32[],Ack)">
+            <summary>
+                RPC method that performs character swapping when rescuing a bro while alive. Swaps
+                the current character with the rescued bro type, maintaining the player's position
+                and state. Updates death order tracking for consistency.
+            </summary>
+            <param name="playerNum">The player number performing the swap.</param>
+            <param name="rescueBro">The RescueBro being swapped to.</param>
+            <param name="latestDeathOrder">Array tracking the order of player deaths.</param>
+            <param name="ackResponse">Network acknowledgment for the operation.</param>
+        </member>
+        <!-- Rescue System Fields -->
+        <member name="F:HeroController.nextSpawnDoor">
+            <summary>
+                Array tracking the assigned spawn door for each player in Suicide Horde mode. Each
+                player gets a specific mook door to spawn from, preventing spawn conflicts and
+                providing visual indicators of where players will appear.
+            </summary>
+        </member>
+        <!-- Game State Management Methods -->
+        <member name="M:HeroController.DoCountDown">
+            <summary>
+                Coroutine that manages the pre-game countdown sequence. Handles different countdown
+                behaviors for various game modes, displays countdown numbers and announcements,
+                manages encouragement messages for struggling players, and triggers game start when
+                countdown completes. Special handling for edit mode, test runs, and DeathMatch.
+            </summary>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:HeroController.GetCheckPointOffset(System.Int32)">
+            <summary>
+                Calculates the spawn offset for a player at a checkpoint based on their player
+                number. Players 0-1 spawn 8 units apart, players 2-3 spawn 12 units apart, creating
+                a staggered formation to prevent spawn overlapping.
+            </summary>
+            <param name="playerNum">The player number to get offset for.</param>
+            <returns>Vector2 offset to apply to the checkpoint position.</returns>
+        </member>
+        <member name="M:HeroController.GetCheckPointPosition(System.Int32,System.Boolean)">
+            <summary>
+                Calculates the final spawn position for a player at the current checkpoint. For
+                airdrop spawns, positions the player high above the screen. For ground spawns,
+                applies the player-specific offset to prevent overlapping.
+            </summary>
+            <param name="playerNum">The player number to get spawn position for.</param>
+            <param name="spawnViaAirDrop">Whether the player should spawn via airdrop from above.</param>
+            <returns>Vector3 world position where the player should spawn.</returns>
+        </member>
+        <member name="M:HeroController.GetCurrentCheckPointID">
+            <summary>
+                Gets the ID of the current checkpoint. Used to track progression through the level
+                and determine respawn locations. Returns -1 if no checkpoint has been activated.
+            </summary>
+            <returns>The current checkpoint ID or -1 if none set.</returns>
+        </member>
+        <member name="M:HeroController.NotifyBrosReleased">
+            <summary>
+                RPC method that sets the BrosReleased flag to true. Used to synchronize the game
+                start state across all players, indicating that players can begin moving and
+                playing.
+            </summary>
+        </member>
+        <member name="M:HeroController.NumberOfConnectedMachines">
+            <summary>
+                Counts the number of remote machines connected to the game session. Iterates through
+                all PIDs checking for non-local connections. Used for network game management and
+                connection tracking.
+            </summary>
+            <returns>The count of connected remote machines.</returns>
+        </member>
+        <member name="M:HeroController.PlayerDelay(System.Int32)">
+            <summary>
+                Sets a delay timer for a specific player, preventing immediate actions after certain
+                events. Uses the configured playerDelayTime from the HeroController instance to set
+                the delay duration.
+            </summary>
+            <param name="playerNum">The player number to apply the delay to.</param>
+        </member>
+        <member name="M:HeroController.RegisterHiddenExplosives(HiddenExplosives)">
+            <summary>
+                Registers a hidden explosive object for tracking. Creates the hiddenExplosives list
+                if it doesn't exist and adds the explosive to it. Used to manage triggered
+                explosives that are revealed during gameplay.
+            </summary>
+            <param name="hiddenExplosive">The HiddenExplosives instance to register.</param>
+        </member>
+        <member name="M:HeroController.RemoveHiddenExplosives(HiddenExplosives)">
+            <summary>
+                Removes a hidden explosive from the tracking list. Called when an explosive is
+                triggered or destroyed to clean up references.
+            </summary>
+            <param name="hiddenExplosive">The HiddenExplosives instance to remove.</param>
+        </member>
+        <member name="M:HeroController.RequestCheckpointSet(UnityEngine.Vector2,System.Int32)">
+            <summary>
+                Server-side RPC handler for checkpoint requests. Broadcasts the checkpoint update to
+                all connected players to ensure everyone has the same checkpoint data. Only
+                processed by the host/server.
+            </summary>
+            <param name="checkPointPos">The world position of the checkpoint.</param>
+            <param name="checkPointID">The unique ID of the checkpoint.</param>
+        </member>
+        <member name="M:HeroController.ResetLossCounter">
+            <summary>
+                Resets the game over countdown timer if all players are dead. Checks each player's
+                death state and if all are dead with remaining time, resets the loss timer and stops
+                any active fade effects. Prevents premature game over transitions.
+            </summary>
+        </member>
+        <member name="M:HeroController.SetCheckPoint(UnityEngine.Vector2,System.Int32)">
+            <summary>
+                Sets a new checkpoint position and ID. Updates the local checkpoint data and sends
+                an RPC to the server to synchronize the checkpoint across all players. Primary
+                public interface for checkpoint management.
+            </summary>
+            <param name="checkPointPos">The world position of the new checkpoint.</param>
+            <param name="checkPointID">The unique ID of the checkpoint.</param>
+        </member>
+        <member name="M:HeroController.SetCheckPointInternal(UnityEngine.Vector2,System.Int32)">
+            <summary>
+                Internal method that actually updates the checkpoint data. Sets the checkpoint start
+                position, ID, and resets the checkPointSet flag. Called via RPC to ensure all
+                clients have synchronized checkpoint data.
+            </summary>
+            <param name="checkPointPos">The world position of the checkpoint.</param>
+            <param name="checkPointID">The unique ID of the checkpoint.</param>
+        </member>
+        <!-- Game State Management Properties -->
+        <member name="P:HeroController.BrosReleased">
+            <summary>
+                Gets or sets whether the bros (players) have been released to start playing. When
+                set to true by the host, sends an RPC to notify all other players. Network-aware
+                property that synchronizes game start state across multiplayer sessions.
+            </summary>
+            <returns>True if bros have been released; otherwise, false.</returns>
+        </member>
+        <member name="P:HeroController.isCountdownFinished">
+            <summary>
+                Gets or sets whether the game countdown has completed. Used to track the pre-game
+                countdown state and determine when players can begin playing.
+            </summary>
+            <returns>True if the countdown is finished; otherwise, false.</returns>
+        </member>
+        <!-- Game State Management Fields -->
+        <member name="F:HeroController.AllPlayersHaveJoined">
+            <summary>
+                Indicates whether all expected players have joined the game session. Used to delay
+                game start or enable certain features only after everyone is ready. Set by join
+                detection logic.
+            </summary>
+        </member>
+        <member name="F:HeroController.IDroppedOutThisRound">
+            <summary>
+                Tracks whether the local player has dropped out during the current round. Used to
+                manage rejoin behavior and prevent duplicate dropout processing. Reset at the start
+                of each new round.
+            </summary>
+        </member>
+        <member name="F:HeroController.WaitForAllPlayersToSpawnBeforeStarting">
+            <summary>
+                When true, delays game start until all joined players have spawned their characters.
+                Ensures synchronized starts in multiplayer. Hidden in inspector as it's typically
+                set programmatically based on game mode.
+            </summary>
+        </member>
+        <member name="F:HeroController._cameraHoldAfterLastHeroDeathTime">
+            <summary>
+                Time in seconds to hold the camera position after the last hero dies. Prevents
+                immediate camera transitions on death, giving players time to see what happened
+                before respawn or game over.
+            </summary>
+        </member>
+        <member name="F:HeroController._connectRegistered">
+            <summary>
+                Indicates whether network connection event handlers have been registered. Prevents
+                duplicate registration of OnDisconnect handlers which could cause multiple
+                executions of cleanup code.
+            </summary>
+        </member>
+        <member name="F:HeroController._curJoinMessageIndex">
+            <summary>
+                Tracks the current index for cycling through join notification messages. Used to
+                display varied messages when players join the game, preventing repetitive
+                notifications.
+            </summary>
+        </member>
+        <member name="F:HeroController._isCountdownFinished">
+            <summary>
+                Private backing field for the isCountdownFinished property. Tracks whether the
+                pre-game countdown sequence has completed. Set to true when players can begin
+                playing after the 3-2-1-GO countdown.
+            </summary>
+        </member>
+        <member name="F:HeroController.brosHaveBeenReleased">
+            <summary>
+                Private backing field for the BrosReleased property. Indicates whether players have
+                been released to start playing. Synchronized across network to ensure all players
+                start simultaneously.
+            </summary>
+        </member>
+        <member name="F:HeroController.checkPointSet">
+            <summary>
+                Indicates whether a checkpoint has been explicitly set this session. Used to
+                differentiate between default spawn positions and player-activated checkpoints for
+                spawn logic.
+            </summary>
+        </member>
+        <member name="F:HeroController.checkPointStart">
+            <summary>
+                World position of the current checkpoint spawn location. Default is (128, 196) which
+                represents the typical level start position. Updated when players activate new
+                checkpoints during gameplay.
+            </summary>
+        </member>
+        <member name="F:HeroController.currentCheckPointID">
+            <summary>
+                ID of the currently active checkpoint. Used to track level progression and determine
+                respawn locations. Set to -1 when no checkpoint is active. Static to persist across
+                scene transitions.
+            </summary>
+        </member>
+        <member name="F:HeroController.explosivesCounter">
+            <summary>
+                Timer for tracking explosive-related events. Used internally for managing timed
+                explosive spawns, detonations, or cooldowns related to explosive game mechanics.
+            </summary>
+        </member>
+        <member name="F:HeroController.faded">
+            <summary>
+                Tracks whether the screen has faded to black. Used during game over sequences, level
+                transitions, or cutscenes to manage visual state and prevent duplicate fade
+                operations.
+            </summary>
+        </member>
+        <member name="F:HeroController.finishedCounter">
+            <summary>
+                Timer tracking time since level completion. Increments after level finish to manage
+                post-completion sequences, delays before transitions, and ensure completion
+                animations play fully.
+            </summary>
+        </member>
+        <member name="F:HeroController.forceInvulnerability">
+            <summary>
+                Debug flag that makes all players permanently invulnerable. Used for testing,
+                debugging, or special game modes where players cannot be damaged. Accessed via debug
+                key commands.
+            </summary>
+        </member>
+        <member name="F:HeroController.forceSpecificBro">
+            <summary>
+                Forces all players to spawn as a specific hero type when set. Used for testing,
+                special game modes, or themed levels. Set to HeroType.None for normal hero selection
+                behavior.
+            </summary>
+        </member>
+        <member name="F:HeroController.heroesHaveBeenReleasedFromTransport">
+            <summary>
+                Indicates whether heroes have been released from the initial transport sequence.
+                Used to track if the opening helicopter drop or transport animation has completed
+                and players can begin normal gameplay.
+            </summary>
+        </member>
+        <member name="F:HeroController.lossCounterTime">
+            <summary>
+                Maximum time allowed after all players die before game over. Set to 0.5 seconds by
+                default. Gives a brief window for revival mechanics or last-second saves before
+                triggering the loss condition.
+            </summary>
+        </member>
+        <member name="F:HeroController.lossTimer">
+            <summary>
+                Countdown timer for game over when all players are dead. Starts at 0.5 seconds and
+                counts down to trigger loss condition. Can be reset if players gain lives or special
+                conditions are met.
+            </summary>
+        </member>
+        <member name="F:HeroController.nextHeroType">
+            <summary>
+                Stores the next hero type to be spawned. Used for hero selection queueing and
+                ensuring the correct hero spawns after death or level start. Hidden in inspector as
+                it's managed programmatically.
+            </summary>
+        </member>
+        <member name="F:HeroController.playerDelayTime">
+            <summary>
+                Default delay duration applied to players for various events. Set to 0.5 seconds.
+                Used by PlayerDelay method to create consistent timing for player state transitions.
+            </summary>
+        </member>
+        <member name="F:HeroController.suicideBroSpawnDelay">
+            <summary>
+                Array of spawn delays for each player in Suicide Horde mode. Negative values create
+                staggered spawn times: -2, -2.25, -2.5, -2.75 seconds. Prevents all players spawning
+                simultaneously at doors.
+            </summary>
+        </member>
+        <!-- Game Flow Control Methods -->
+        <member name="M:HeroController.BeginGame">
+            <summary>
+                Coroutine that manages the game start sequence. Waits for all players to spawn, then
+                either announces "GO!" immediately or starts a countdown based on GameModeController
+                settings. Handles different spawn timing for various game modes.
+            </summary>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:HeroController.BoostHeroes(System.Single)">
+            <summary>
+                Applies a speed boost to all living player characters for the specified duration.
+                Enhances movement and action speed, typically used for power-ups or special game
+                events that accelerate gameplay.
+            </summary>
+            <param name="time">Duration in seconds for the hero speed boost.</param>
+        </member>
+        <member name="M:HeroController.CanSpawn(System.Int32)">
+            <summary>
+                Checks if a player is eligible to spawn or respawn. Returns true only if the player
+                exists, has lives remaining, and is currently dead. Used internally by respawn logic
+                to determine spawn eligibility.
+            </summary>
+            <param name="playerNum">The player number to check spawn eligibility for.</param>
+            <returns>True if the player can spawn; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.CancelTimeBroBoost">
+            <summary>
+                Immediately cancels any active time manipulation effects from Time Bro. Restores
+                normal time flow by clearing boost timers and resetting time scale if Time Bro
+                effects were active.
+            </summary>
+        </member>
+        <member name="M:HeroController.GoBackToMainMenu">
+            <summary>
+                Returns the game to the main menu. Performs cleanup operations including stopping
+                Steam integration, clearing cutscene state, resetting time scale, and loading the
+                MainMenu scene.
+            </summary>
+        </member>
+        <member name="M:HeroController.HighFiveBoost(System.Single)">
+            <summary>
+                Activates high-five time dilation effect, slowing time to 50% speed for the
+                specified duration. Creates a bullet-time effect that enhances the high-five moment
+                between players.
+            </summary>
+            <param name="time">Duration in seconds for the time dilation effect.</param>
+        </member>
+        <member
+            name="M:HeroController.IsPlayerNearbyActivatedCheckPoint(UnityEngine.Vector2@,System.Boolean@)">
+            <summary>
+                Checks if any player is near an activated checkpoint and returns the checkpoint
+                data. Updates the position and airdrop flag references if a player is found near a
+                checkpoint. Used for respawn location determination.
+            </summary>
+            <param name="pos">Reference parameter that receives the checkpoint position if found.</param>
+            <param name="spawnViaAirdrop">Reference parameter that indicates if spawn should be via
+                airdrop.</param>
+            <returns>True if a player is near an activated checkpoint; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.OnDisconnect">
+            <summary>
+                Handles network disconnection events. Drops out all local players, displays a
+                disconnection error notification to the user for 5 seconds, and prepares the game
+                state for returning to the menu or reconnecting.
+            </summary>
+        </member>
+        <member name="M:HeroController.ReduceBroRespawnDelay(System.Single)">
+            <summary>
+                Reduces the respawn delay timer by the specified time. Resets to 0.4 seconds if no
+                heroes are dead, otherwise decrements the timer. Controls the pacing of automatic
+                respawns.
+            </summary>
+            <param name="t">Time in seconds to reduce from the respawn delay.</param>
+        </member>
+        <member name="M:HeroController.RunHeroRespawnLogic(System.Int32)">
+            <summary>
+                Executes complex respawn logic for a player based on game mode. Handles Campaign
+                checkpoint respawns, DeathMatch spawn queue system, and SuicideHorde spawn doors.
+                Checks lives, death status, and spawn conditions before respawning.
+            </summary>
+            <param name="playerNum">The player number to run respawn logic for.</param>
+        </member>
+        <member name="M:HeroController.SetRoundBeginTimeStamp(System.Single)">
+            <summary>
+                Sets the synchronized timestamp for when the round should begin. Used in multiplayer
+                to ensure all players start at the same time by setting a future timestamp for
+                coordinated round starts.
+            </summary>
+            <param name="timestamp">The network time when the round should begin.</param>
+        </member>
+        <member name="M:HeroController.StartCountdown">
+            <summary>
+                Initiates the game countdown sequence. Cancels any delayed announcements and starts
+                the countdown coroutine through the Announcer system. Called to begin the pre-game
+                countdown before releasing players.
+            </summary>
+        </member>
+        <member name="M:HeroController.SyncRespawnQueue(System.Int32[])">
+            <summary>
+                Synchronizes the deathmatch respawn queue from the network host. Converts the array
+                to a list for local spawn order management in deathmatch games.
+            </summary>
+            <param name="_deathmatchSpawnQueue">Array of player numbers in spawn order.</param>
+        </member>
+        <member name="M:HeroController.TimeBroBoost(System.Single)">
+            <summary>
+                Activates Time Bro's time manipulation ability, slowing time to 35% speed for the
+                specified duration. More extreme time dilation than high-five, specific to the Time
+                Bro character's special ability.
+            </summary>
+            <param name="time">Duration in seconds for the time manipulation effect.</param>
+        </member>
+        <member name="M:HeroController.TimeBroBoostHeroes(System.Single)">
+            <summary>
+                Applies Time Bro's time boost effect to all living heroes for the specified
+                duration. Gives all players enhanced abilities similar to Time Bro's powers, used
+                for special cooperative moments.
+            </summary>
+            <param name="time">Duration in seconds for the Time Bro boost effect.</param>
+        </member>
+        <!-- Game Flow Control Fields -->
+        <member name="F:HeroController.RoundHasBegun">
+            <summary>
+                Tracks whether the current round has officially started. Set to true when the
+                synchronized start time is reached or countdown completes. Controls game flow state
+                transitions.
+            </summary>
+        </member>
+        <member name="F:HeroController.allDead">
+            <summary>
+                Tracks whether all players are currently dead. Used to trigger game over sequences,
+                manage respawn timing, and control camera behavior when no living players remain.
+            </summary>
+        </member>
+        <member name="F:HeroController.beginRoundAtTimeStamp">
+            <summary>
+                Network timestamp for synchronized round start. Stores the exact time when all
+                players should begin the round, ensuring multiplayer synchronization across
+                different network latencies.
+            </summary>
+        </member>
+        <member name="F:HeroController.broRespawnDelay">
+            <summary>
+                Minimum delay between automatic respawn attempts. Set to 0.4 seconds to prevent
+                respawn spam and ensure death animations complete before new spawn attempts begin.
+            </summary>
+        </member>
+        <member name="F:HeroController.inputDelay">
+            <summary>
+                Delay in seconds before player input is processed after spawning. Set to 0.25
+                seconds by default. Prevents accidental inputs during spawn animations and ensures
+                players have time to orient themselves.
+            </summary>
+        </member>
+        <member name="F:HeroController.timeStampSet">
+            <summary>
+                Indicates whether the round begin timestamp has been set. Prevents multiple
+                timestamp assignments and ensures the round starts at the designated time across all
+                clients.
+            </summary>
+        </member>
+        <member name="F:HeroController.waitForPlayersTimeout">
+            <summary>
+                Timeout duration for waiting for all players to join or spawn. Prevents infinite
+                waiting if a player fails to connect or load. Game proceeds when timeout expires
+                regardless of missing players.
+            </summary>
+        </member>
+        <!-- Camera System Methods -->
+        <member name="M:HeroController.AddTemporaryPlayerTarget(System.Int32,UnityEngine.Transform)">
+            <summary>
+                RPC method that adds a temporary follow target for a specific player's camera. Used
+                for cutscenes or special camera focus events where the camera needs to track
+                something other than the player character temporarily.
+            </summary>
+            <param name="playerNum">The player number whose camera should follow the target.</param>
+            <param name="target">The transform for the camera to follow.</param>
+        </member>
+        <member
+            name="M:HeroController.AddToExtents(UnityEngine.Vector3,System.Single@,System.Single@,System.Single@,System.Single@)">
+            <summary>
+                Adds a position to the camera view extents calculation. Updates the minimum and
+                maximum X/Y bounds by reference to include the given position. Used internally for
+                calculating camera bounds that encompass all relevant targets.
+            </summary>
+            <param name="pos">The position to include in the extents.</param>
+            <param name="minX">Reference to minimum X bound, updated if pos.x is smaller.</param>
+            <param name="maxX">Reference to maximum X bound, updated if pos.x is larger.</param>
+            <param name="minY">Reference to minimum Y bound, updated if pos.y is smaller.</param>
+            <param name="maxY">Reference to maximum Y bound, updated if pos.y is larger.</param>
+        </member>
+        <member
+            name="M:HeroController.CanFollow(UnityEngine.Vector3,System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Determines if a position can be followed by the camera while keeping it within
+                screen bounds. Calculates whether including this position would push the camera view
+                beyond acceptable limits with the specified buffer.
+            </summary>
+            <param name="otherPosition">The position to check for followability.</param>
+            <param name="minX">Current minimum X bound of the camera.</param>
+            <param name="maxX">Current maximum X bound of the camera.</param>
+            <param name="minY">Current minimum Y bound of the camera.</param>
+            <param name="maxY">Current maximum Y bound of the camera.</param>
+            <param name="requiredBuffer">Buffer distance from screen edges (default 24).</param>
+            <returns>True if the position can be followed within bounds; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.CanLookForReposition">
+            <summary>
+                Determines if the camera can look for repositioning opportunities. Returns false if
+                controlled by trigger actions, in ExplosionRun mode, within reposition delay
+                cooldown, or if any player has a temporary camera target. Sets a 0.6 second cooldown
+                when conditions aren't met.
+            </summary>
+            <returns>True if camera repositioning is allowed; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.GetGetFollowPosition(UnityEngine.Vector3@)">
+            <summary>
+                Calculates the optimal camera follow position based on all active players, extra
+                targets, and game state. This complex method handles multiple scenarios including
+                death cam, race mode, helicopter sequences, and ensures all important elements stay
+                in view. Updates the position parameter by reference.
+            </summary>
+            <param name="pos">Reference parameter that receives the calculated follow position.</param>
+            <returns>True if a valid follow position was calculated; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.RemoveTemporaryPlayerTarget(System.Int32)">
+            <summary>
+                RPC method that removes the temporary follow target for a player's camera, returning
+                it to normal player following behavior. Called when special camera events end.
+            </summary>
+            <param name="playerNum">The player number to remove the temporary target from.</param>
+        </member>
+        <member name="M:HeroController.StopFollowing(UnityEngine.Transform)">
+            <summary>
+                Removes a transform from the extra camera follow positions list. Called when an
+                object no longer needs camera attention, such as when it's destroyed or becomes
+                irrelevant.
+            </summary>
+            <param name="trans">The transform to stop following.</param>
+        </member>
+        <member name="M:HeroController.TryFollow(UnityEngine.Transform)">
+            <summary>
+                Adds a transform to the list of extra camera follow positions if not already
+                present. Used for dynamic camera targets like important game objects or NPCs that
+                the camera should include in its view calculations.
+            </summary>
+            <param name="trans">The transform to add to camera following.</param>
+        </member>
+        <!-- Camera System Fields -->
+        <member name="F:HeroController.followingPreferredPlayer">
+            <summary>
+                Player number that the camera should prefer to follow. Set to -1 for no preference.
+                Used to bias camera positioning toward specific players during gameplay or
+                cutscenes.
+            </summary>
+        </member>
+        <member name="F:HeroController.lastCameraFollowPos">
+            <summary>
+                Stores the last calculated camera follow position. Used for smooth camera
+                interpolation and to track camera movement history. Updated each frame when
+                calculating new follow positions.
+            </summary>
+        </member>
+        <member name="F:HeroController.lastFollowTimeSwitch">
+            <summary>
+                Timestamp of the last camera follow target switch. Used to prevent rapid camera
+                target changes and ensure smooth transitions between follow targets.
+            </summary>
+        </member>
+        <member name="F:HeroController.lastFollowTimeSwitchBack">
+            <summary>
+                Timestamp of the last switch back to default camera following. Tracks when the
+                camera returned from following special targets to prevent oscillation between
+                targets.
+            </summary>
+        </member>
+        <member name="F:HeroController.repositionDelay">
+            <summary>
+                Cooldown timer for camera repositioning attempts. Prevents rapid camera adjustments
+                by enforcing a minimum delay between reposition checks. Set when repositioning is
+                blocked to create smoother camera behavior.
+            </summary>
+        </member>
+        <member name="F:HeroController.timeSinceFinish">
+            <summary>
+                Time elapsed since level completion. Used for post-level timing, delayed
+                transitions, and ensuring completion sequences play out fully before moving to next
+                level.
+            </summary>
+        </member>
+        <member name="F:HeroController.wasFollowingExtra">
+            <summary>
+                Tracks whether the camera was previously following extra targets beyond players.
+                Used to detect state changes in camera following behavior and manage transitions
+                between following players only versus including additional targets.
+            </summary>
+        </member>
+        <!-- UI/HUD System Methods -->
+        <member name="M:HeroController.DisableHud">
+            <summary>
+                Disables the HUD display for all players. Loops through all player slots and calls
+                DisableHud on each player instance. Used during cutscenes or special game states
+                where HUD should be hidden.
+            </summary>
+        </member>
+        <member name="M:HeroController.EnableHud">
+            <summary>
+                Enables the HUD display for all players. Loops through all player slots and calls
+                EnableHud on each player instance. Used to restore HUD visibility after cutscenes or
+                special events.
+            </summary>
+        </member>
+        <member name="M:HeroController.FlashAvatar(System.Int32,System.Single,System.Boolean)">
+            <summary>
+                Triggers a flashing effect on the player's avatar for the specified duration. Used
+                to draw attention to status changes, damage, or special events. The avatar will
+                flash for the given time period.
+            </summary>
+            <param name="playerNum">The player number whose avatar should flash.</param>
+            <param name="time">Duration in seconds for the flash effect.</param>
+            <param name="primaryAvatar">True to flash primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.GetAvatarMaterial(HeroType)">
+            <summary>
+                Retrieves the avatar material associated with a specific hero type. Each hero can
+                have a unique avatar material for special visual effects in the HUD. Returns null if
+                no custom material exists for the hero type.
+            </summary>
+            <param name="heroType">The hero type to get avatar material for.</param>
+            <returns>The avatar Material for the hero type or null if not found.</returns>
+        </member>
+        <member name="M:HeroController.MustShowHuds">
+            <summary>
+                Returns whether HUDs must be shown based on the global mustShowHUDS flag. Simple
+                accessor for the HUD visibility state used by various game systems.
+            </summary>
+            <returns>True if HUDs must be shown; otherwise, false.</returns>
+        </member>
+        <member name="M:HeroController.SetAvatarAngry(System.Int32,System.Boolean)">
+            <summary>
+                Sets the player's avatar to the angry expression state. Updates the HUD avatar
+                display to show an aggressive face, typically during combat or special actions. Can
+                target either primary or secondary avatar displays.
+            </summary>
+            <param name="playerNum">The player number whose avatar to update.</param>
+            <param name="primaryAvatar">True to update primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarBounceDown(System.Int32,System.Boolean)">
+            <summary>
+                Triggers a downward bounce animation on the player's avatar. Creates a visual
+                feedback effect where the avatar appears to compress or bounce downward, often used
+                for impact or landing effects.
+            </summary>
+            <param name="playerNum">The player number whose avatar should bounce down.</param>
+            <param name="primaryAvatar">True to bounce primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarBounceUp(System.Int32,System.Boolean)">
+            <summary>
+                Triggers an upward bounce animation on the player's avatar. Creates a visual
+                feedback effect where the avatar appears to stretch or bounce upward, often used for
+                jump or spring effects.
+            </summary>
+            <param name="playerNum">The player number whose avatar should bounce up.</param>
+            <param name="primaryAvatar">True to bounce primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarCalm(System.Int32,System.Boolean)">
+            <summary>
+                Sets the player's avatar to the calm expression state. Updates the HUD avatar
+                display to show the normal, non-angry face for the specified player. Can target
+                either primary or secondary avatar displays.
+            </summary>
+            <param name="playerNum">The player number whose avatar to update.</param>
+            <param name="primaryAvatar">True to update primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarDead(System.Int32,System.Boolean)">
+            <summary>
+                Sets the player's avatar to the dead state. Updates the HUD to show the death
+                animation or static dead frame, indicating the player has died. Can target either
+                primary or secondary avatar displays.
+            </summary>
+            <param name="playerNum">The player number whose avatar to mark as dead.</param>
+            <param name="primaryAvatar">True to update primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarFire(System.Int32,System.Boolean)">
+            <summary>
+                Sets the player's avatar to display fire animation. Shows the avatar with flames,
+                typically used when the player is on fire or using fire-based abilities. Can target
+                either primary or secondary avatar displays.
+            </summary>
+            <param name="playerNum">The player number whose avatar to set on fire.</param>
+            <param name="primaryAvatar">True to update primary avatar; false for secondary.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarFireFrame(System.Int32,System.Int32)">
+            <summary>
+                Sets a specific frame of the fire animation for the player's avatar. Allows precise
+                control over which frame of the burning animation is displayed, useful for
+                synchronized effects.
+            </summary>
+            <param name="playerNum">The player number whose avatar fire frame to set.</param>
+            <param name="frame">The specific animation frame number to display.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarFrame(System.Int32,System.Int32)">
+            <summary>
+                Internal method to set a specific animation frame for the player's avatar. Provides
+                low-level control over avatar animation state for custom effects or specific
+                animation requirements.
+            </summary>
+            <param name="playerNum">The player number whose avatar frame to set.</param>
+            <param name="avatarFrame">The specific frame number to display.</param>
+        </member>
+        <member name="M:HeroController.SetAvatarMaterial(System.Int32,UnityEngine.Material)">
+            <summary>
+                Sets a custom material for the player's avatar display. Allows special visual
+                effects by replacing the avatar's rendering material, such as for power-ups or
+                status effects.
+            </summary>
+            <param name="playerNum">The player number whose avatar material to change.</param>
+            <param name="material">The Material to apply to the avatar.</param>
+        </member>
+        <member name="M:HeroController.ShowHuds">
+            <summary>
+                Shows all player HUD displays if mustShowHUDS flag is true. Iterates through all
+                players and calls Show() on each HUD component to make health, ammo, and lives
+                visible.
+            </summary>
+        </member>
+        <member name="M:HeroController.SwitchAvatarMaterial(SpriteSM,HeroType)">
+            <summary>
+                Switches a sprite's material to match the specified hero type's avatar material.
+                Retrieves the appropriate material and applies it to the sprite if available.
+                Returns whether the switch was successful.
+            </summary>
+            <param name="sprite">The SpriteSM to update with new material.</param>
+            <param name="heroType">The hero type whose avatar material to use.</param>
+            <returns>True if material was found and applied; otherwise, false.</returns>
+        </member>
+        <!-- UI/HUD System Fields -->
+        <member name="F:HeroController.blankAvatar">
+            <summary>
+                Material used as a placeholder avatar when no hero-specific avatar is available.
+                Displayed in the HUD before a hero is selected or as a fallback for missing avatar
+                materials.
+            </summary>
+        </member>
+        <member name="F:HeroController.doubleBroSevenAvatarCount">
+            <summary>
+                Tracks the current avatar index for Double Bro Seven. Used to cycle through
+                available avatar textures, providing visual variety for this character's HUD
+                representation.
+            </summary>
+        </member>
+        <member name="F:HeroController.infoBarColor">
+            <summary>
+                Color used for the info bar display during countdown and announcements. Default is
+                black. Can be customized per level or game mode to match the visual theme.
+            </summary>
+        </member>
+        <member name="F:HeroController.mustShowHUDS">
+            <summary>
+                Global flag controlling HUD visibility. When true, all player HUDs must be shown.
+                Used to force HUD display during gameplay and hide during cutscenes or menus.
+            </summary>
+        </member>
+        <member name="F:HeroController.textureDoubleBroSevenAvatars">
+            <summary>
+                Array of avatar textures specifically for the Double Bro Seven character. Supports
+                multiple avatar variations for this unique hero type that can cycle through
+                different appearances.
+            </summary>
+        </member>
+        <!-- Serialization Methods -->
+        <member name="M:HeroController.DeserializeForJoin(UnityStream)">
+            <summary>
+                Deserializes player data received during network join. Unpacks and updates the local
+                arrays for playing status, controller IDs, and PIDs from the received stream data.
+            </summary>
+            <param name="stream">The UnityStream containing serialized player data.</param>
+        </member>
+        <member name="M:HeroController.OnAfterDeserialize">
+            <summary>
+                Unity deserialization callback that rebuilds the hero data dictionary from the
+                serialized list. Handles duplicate keys by incrementing enum values to ensure data
+                integrity. Part of the ISerializationCallbackReceiver interface.
+            </summary>
+        </member>
+        <member name="M:HeroController.OnBeforeSerialize">
+            <summary>
+                Unity serialization callback that converts the internal hero data dictionary to a
+                serializable list format. Part of the ISerializationCallbackReceiver interface
+                implementation for saving game state.
+            </summary>
+        </member>
+        <member name="M:HeroController.PackState(UnityStream)">
+            <summary>
+                Packs the HeroController's network state for synchronization. Includes checkpoint
+                position, bros released status, round timestamps, and checkpoint ID. Overrides base
+                class to add hero-specific state data.
+            </summary>
+            <param name="stream">The UnityStream to pack state into.</param>
+            <returns>The stream with packed state data.</returns>
+        </member>
+        <member name="M:HeroController.SerializeForJoin(UnityStream)">
+            <summary>
+                Serializes essential player data for network join operations. Packs the playing
+                status, controller IDs, and network PIDs into the stream for transmission to joining
+                players.
+            </summary>
+            <param name="stream">The UnityStream to serialize data into.</param>
+        </member>
+        <member name="M:HeroController.UnpackState(UnityStream)">
+            <summary>
+                Unpacks network state data to synchronize the HeroController. Restores checkpoint
+                position, bros released status, timestamps, and checkpoint ID from the stream.
+                Ensures proper state synchronization across the network.
+            </summary>
+            <param name="stream">The UnityStream containing packed state data.</param>
+            <returns>The stream after unpacking.</returns>
+        </member>
+        <!-- Testing/Debug Methods -->
+        <member name="M:HeroController.DebugDraw">
+            <summary>
+                Comprehensive debug GUI display showing detailed player and game state information.
+                Displays camera positions, player data tables including controllers, PIDs, playing
+                status, hero states, positions, bot brain settings, and following relationships.
+                Includes interactive controls for bot brain configuration during debug sessions.
+            </summary>
+        </member>
+        <member name="M:HeroController.FindRemotePlayerToFollow(Player)">
+            <summary>
+                Finds a suitable remote player for bot brain following behavior. Prioritizes remote
+                players over local ones, returning the first remote player found or the last local
+                player if no remote players exist. Returns -1 if no suitable follow target is found.
+            </summary>
+            <param name="player">The player looking for someone to follow.</param>
+            <returns>The player index to follow or -1 if none found.</returns>
+        </member>
+        <member name="M:HeroController.SetTestInfo(HeroType)">
+            <summary>
+                Sets which hero type should always be chosen for testing purposes. Overrides normal
+                hero selection to force a specific character for debugging and testing.
+            </summary>
+            <param name="alwaysChoose">The HeroType to always select during testing.</param>
+        </member>
+        <member name="M:HeroController.UpdateDebugInputs">
+            <summary>
+                Processes debug keyboard inputs for development and testing. Handles force
+                invulnerability (F8), force level finish (Ctrl+Shift+F9), HUD toggle (Ctrl+F12), and
+                editor-only commands like speed boost and unlock clearing.
+            </summary>
+        </member>
+        <!-- Testing/Debug Fields -->
+        <member name="F:HeroController.alwaysChooseHero">
+            <summary>
+                Forces all players to spawn as a specific hero type when set. Used for testing
+                specific heroes or creating themed gameplay experiences. Set to HeroType.None for
+                normal random/sequential hero selection.
+            </summary>
+        </member>
+        <!-- Inner Class HeroDefinition Fields -->
+        <member name="F:HeroController.HeroDefinition.avatar">
+            <summary>
+                Avatar material for the hero in the HeroDefinition. Used for HUD display to show the
+                hero's face/portrait. Each hero has a unique avatar material for visual
+                identification.
+            </summary>
+        </member>
+        <member name="F:HeroController.HeroDefinition.characterReference">
+            <summary>
+                Reference to the hero character prefab in the HeroDefinition. Points to the
+                TestVanDammeAnim asset that will be instantiated when this hero type is spawned.
+            </summary>
+        </member>
+        <member name="F:HeroController.HeroDefinition.name">
+            <summary>
+                Display name of the hero in the HeroDefinition data structure. Used for UI display,
+                announcements, and hero selection screens. Part of the hero configuration system.
+            </summary>
+        </member>
+        <!-- Inner Class HeroSetupKeyPair Fields -->
+        <member name="F:HeroController.HeroSetupKeyPair.data">
+            <summary>
+                The HeroDefinition data in the key-value pair structure. Contains the actual hero
+                configuration including name, prefab reference, and avatar material for the
+                associated HeroType.
+            </summary>
+        </member>
+        <member name="F:HeroController.HeroSetupKeyPair.enumName">
+            <summary>
+                The HeroType enum value in the key-value pair structure. Maps the enum to its
+                corresponding HeroDefinition data for serialization and configuration management.
+            </summary>
+        </member>
+    </members>
+</doc>

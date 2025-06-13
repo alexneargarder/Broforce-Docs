@@ -1,0 +1,1280 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:BroBase.Awake">
+            <summary>
+                Initializes the BroBase instance, marking it as a hero character and adding it to
+                the static bros list. Sets up essential hero-specific functionality before other
+                components initialize.
+            </summary>
+        </member>
+        <member name="M:BroBase.OnDestroy">
+            <summary>
+                Cleans up the BroBase instance by removing it from the static bros list before
+                destruction. Ensures proper cleanup of static references to prevent memory leaks.
+            </summary>
+        </member>
+        <member name="M:BroBase.Start">
+            <summary>
+                Completes BroBase initialization after all objects are created. Sets up network
+                syncing and jetpack state.
+            </summary>
+        </member>
+        <member name="M:BroBase.Update">
+            <summary>
+                Processes BroBase-specific updates each frame including flex invulnerability,
+                network synchronization, performance enhancement effects, cardio/dashing mechanics,
+                jetpack functionality, and holy water revival timing. Extends base update
+                functionality with hero-specific behaviors.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:BroBase.AnimateCustomMelee">
+            <summary>
+                Handles animation for custom melee types. Default implementation delegates to knife
+                melee animation, serving as override point for unique attack animations in derived
+                bros.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateKnifeMelee">
+            <summary>
+                Animates knife attacks with context-specific sprite sequences. Uses row 1 (frames
+                25-31) for standing attacks and row 6 (frames 17-23) for jumping/dashing variants.
+                Triggers attack on frame 3 with extended timing for dashing strikes.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateMelee">
+            <summary>
+                Routes melee animation to type-specific methods. Directs knife attacks to knife
+                animation, punches to punch animation, and all other types to custom melee
+                animation. Central routing point for the 15 different melee attack types.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateMeleeCommon">
+            <summary>
+                Provides shared animation logic for melee attacks. Handles sprite resets, frame
+                timing (40 FPS), melee follow-up loops, and high-five interrupts for throwing nearby
+                mooks during melee combos.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimatePunch">
+            <summary>
+                Animates punch attacks using sprite frames 25-33. Triggers punch attacks on frame 3,
+                with extended attack window for jetpack punches (frames 4-5). Includes impact
+                emphasis delays and combo loop support.
+            </summary>
+        </member>
+        <member name="M:BroBase.CanStartMeleeFollowUp">
+            <summary>
+                Determines if a follow-up melee attack can begin during current animation. Returns
+                true after frame 7, enabling combo chains and continuous melee sequences.
+            </summary>
+            <returns>True if current animation frame is greater than 7; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.CanStartNewMelee">
+            <summary>
+                Checks if a new melee attack can interrupt the current action. Allows new attacks
+                when not meleeing or after frame 3 of current melee, enabling responsive combat and
+                combo potential.
+            </summary>
+            <returns>True if not meleeing or frame is greater than 3; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.CanStartNewPunch">
+            <summary>
+                Validates timing for new punch attacks with slightly stricter requirements than
+                general melee. Allows punches when not meleeing or after frame 4, providing balanced
+                combo timing.
+            </summary>
+            <returns>True if not meleeing or frame is greater than 4; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.CancelMelee">
+            <summary>
+                Cancels ongoing melee attacks and resets related state. Clears the chosen melee
+                target, restores normal fall speed, and resets direction change cancellation flag.
+                Ensures clean exit from melee state.
+            </summary>
+        </member>
+        <member name="M:BroBase.KickDoors(System.Single)">
+            <summary>
+                Kicks doors and destructible objects within specified range. Performs raycast
+                detection, excludes parachutes, sends open command with direction, and applies 500
+                horizontal crush force to break barriers.
+            </summary>
+            <param name="range">Maximum distance to check for kickable objects.</param>
+        </member>
+        <member name="M:BroBase.PerformKnifeMeleeAttack(System.Boolean,System.Boolean)">
+            <summary>
+                Executes knife slash attacks with 14x24 unit hit box. Deals knife damage type, kicks
+                doors within 24 units, applies 200 horizontal and 500 vertical knockback force.
+                Creates appropriate hit effects and sounds.
+            </summary>
+            <param name="shouldTryHitTerrain">Whether to attempt terrain damage if no unit is hit.</param>
+            <param name="playMissSound">Whether to play miss sound if attack fails to connect.</param>
+        </member>
+        <member name="M:BroBase.PerformOverriddenMelee">
+            <summary>
+                Virtual hook for derived classes to implement custom melee attacks. Empty base
+                implementation allows subclasses to define unique melee behaviors without modifying
+                core melee system.
+            </summary>
+        </member>
+        <member name="M:BroBase.PerformPunchAttack(System.Boolean,System.Boolean)">
+            <summary>
+                Executes punch attacks with standard or jetpack-enhanced variants. Standard punches
+                deal 4 damage with 250 knockback force, while jetpack punches deal 10 damage with
+                600 knockback force. Creates visual effects, kicks doors, damages terrain, and adds
+                upward momentum for jetpack variant.
+            </summary>
+            <param name="shouldTryHitTerrain">Whether to attempt terrain damage if no unit is hit.</param>
+            <param name="playMissSound">Whether to play miss sound if attack fails to connect.</param>
+        </member>
+        <member name="M:BroBase.PerformSmashAttack">
+            <summary>
+                Performs crushing smash attacks with 8 unit range. Deals 10 crush damage with
+                minimal horizontal knockback (20 force) but moderate vertical force (50). Uses
+                alternate sound effects to differentiate from standard attacks.
+            </summary>
+        </member>
+        <member name="M:BroBase.ResetMeleeValues">
+            <summary>
+                Resets melee state flags to prepare for new attacks. Clears miss sound, attack
+                performed, and hit flags. Virtual method allowing subclasses to reset additional
+                melee-related state.
+            </summary>
+        </member>
+        <member name="M:BroBase.RunCustomMeleeMovement">
+            <summary>
+                Controls movement during custom melee attacks. Default implementation uses knife
+                melee movement pattern, providing override point for specialized movement behaviors.
+            </summary>
+        </member>
+        <member name="M:BroBase.RunJetPackPunchMovement">
+            <summary>
+                Manages special movement for jetpack-powered punches. Creates horizontal jetpack
+                flames and applies 200 unit thrust force during frames 2-4, followed by rapid
+                deceleration. Provides unique physics for aerial combat moves.
+            </summary>
+        </member>
+        <member name="M:BroBase.RunMelee">
+            <summary>
+                Manages movement during melee attacks based on type. Routes knife attacks to knife
+                movement, punches to punch movement, jetpack punches to special jetpack movement,
+                and others to custom movement handlers.
+            </summary>
+        </member>
+        <member name="M:BroBase.RunPunchMovement">
+            <summary>
+                Controls movement during punch attacks. Applies gravity for aerial punches, enables
+                dash movement toward targets on frames 2-4 (up to 1.7x speed), and stops movement
+                during recovery frames. Cancels if falling below ground.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartCustomMelee">
+            <summary>
+                Initiates custom melee attacks with combo support. Validates attack timing, enables
+                dashing melee mode when grounded, applies movement velocity, and handles melee
+                follow-up chains. Entry point for non-standard melee types.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartKnifeMelee">
+            <summary>
+                Initiates knife melee attacks with timing validation. Resets interaction timers,
+                deactivates weapons, handles combo chains through melee follow-up system, and
+                applies movement for dashing variants.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartMelee">
+            <summary>
+                Initializes melee attacks with type-specific routing. Detects special conditions
+                like standing on animals (forces knife melee) and routes to appropriate start
+                methods: knife, punch, or custom melee based on the current melee type.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartMeleeCommon">
+            <summary>
+                Common initialization for all melee attack types. Validates melee can start, resets
+                state flags, deactivates weapons, records starting position, and triggers initial
+                animation. Core setup for the melee system.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartPunch">
+            <summary>
+                Initializes punch attacks with combo support. Validates punch can start, handles
+                melee follow-up for combo chains, and delegates to common melee initialization.
+                Entry point for standard and combo punches.
+            </summary>
+        </member>
+        <member name="M:BroBase.TryMeleeTerrain(System.Int32,System.Int32)">
+            <summary>
+                Attempts to damage terrain or destructible objects with melee attacks. Performs
+                raycast detection in melee range, deals configurable damage, and creates appropriate
+                hit effects. Special handling for cage objects using full health as damage.
+            </summary>
+            <param name="offset">Horizontal offset for the terrain check.</param>
+            <param name="meleeDamage">Amount of damage to deal to terrain (default 2).</param>
+            <returns>True if terrain was hit and damaged; otherwise, false.</returns>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:BroBase.currentMeleeType">
+            <summary>
+                Active melee type being performed. Can differ from default when context changes
+                (animal attacks force knife). Controls animation and damage calculations. Dynamic
+                combat state.
+            </summary>
+        </member>
+        <member name="F:BroBase.disembowelmentViscera">
+            <summary>
+                Sprite template for gore effects during disembowel attacks. Instantiated and
+                positioned at enemy location when disembowel melee succeeds. Creates visceral
+                feedback for brutal melee finishers.
+            </summary>
+        </member>
+        <member name="F:BroBase.hasJumpedForKick">
+            <summary>
+                Tracks if automatic jump has occurred during kick animation. Prevents multiple jumps
+                per kick. At frame 2, adds 150 upward velocity if false and grounded. Ensures
+                consistent kick height.
+            </summary>
+        </member>
+        <member name="F:BroBase.lerpToMeleeTargetPos">
+            <summary>
+                Interpolation value for smooth melee movement toward target. Reset at melee start.
+                Enables fluid combat positioning. Animation smoothing parameter.
+            </summary>
+        </member>
+        <member name="F:BroBase.meleeStartPos">
+            <summary>
+                Starting position vector when melee attack initiated. Captured in StartCustomMelee.
+                Used for return positioning and movement calculations. Combat positioning anchor.
+            </summary>
+        </member>
+        <member name="F:BroBase.meleeType">
+            <summary>
+                Default melee attack type for this bro character. Source value for currentMeleeType.
+                Defines base combat style (knife, punch, etc). Character-specific combat identifier.
+            </summary>
+        </member>
+        <member name="F:BroBase.performedMeleeAttack">
+            <summary>
+                Tracks if damage has been dealt in current melee attack. Reset in ResetMeleeValues.
+                Prevents multiple damage applications per swing. Hit validation flag.
+            </summary>
+        </member>
+        <member name="F:BroBase.splitkick">
+            <summary>
+                Flag for split kick attack hitting both directions simultaneously. Set when
+                horizontal velocity is low during kick initiation. Enables martial arts characters
+                to hit enemies on both sides.
+            </summary>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:BroBase.AnimatePockettedSpecial">
+            <summary>
+                Animates pocketed special abilities with type-specific handling. Airstrike,
+                MechDrop, and AlienPheromones use custom animation (row 5, frames 17-24) with
+                ability trigger at frame 4. Other types use standard special animation.
+            </summary>
+        </member>
+        <member name="M:BroBase.GetPockettedAmmoType">
+            <summary>
+                Retrieves the current pocketed ammunition type to use. Returns the top item from the
+                stack or None if inventory is empty, determining which special ability executes on
+                use.
+            </summary>
+            <returns>The next pocketed ammo type to use, or None if empty.</returns>
+        </member>
+        <member name="M:BroBase.GetSprintValue">
+            <summary>
+                Determines if the bro can currently sprint. Prevents sprinting while exhausted from
+                overexertion, otherwise delegates to base sprint logic.
+            </summary>
+            <returns>False if exhausted; otherwise, returns base sprint value.</returns>
+        </member>
+        <member name="M:BroBase.MustUsePockettedSpecialAmmo">
+            <summary>
+                Determines if pocketed ammunition must be used before default specials. Forces
+                players to consume pickups before accessing their character's built-in abilities,
+                ensuring pickup utility.
+            </summary>
+            <returns>True if any pocketed ammo exists; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.PickupPockettableAmmo(PockettedSpecialAmmoType)">
+            <summary>
+                Adds pocketed special ammunition to inventory stack. Validates ammo type, appends to
+                end of list for LIFO usage order, and updates HUD to display the newly acquired
+                special ability.
+            </summary>
+            <param name="ammoType">The type of special ammunition being picked up.</param>
+        </member>
+        <member name="M:BroBase.ReducePockettedSpecialAmmo">
+            <summary>
+                Removes used pocketed ammunition from inventory stack. Removes from end of list
+                maintaining LIFO order and updates HUD to reflect remaining ammunition or return to
+                default special display.
+            </summary>
+        </member>
+        <member name="M:BroBase.ReleaseRemoteControlCar">
+            <summary>
+                Deploys remote-controlled vehicle from inventory. Simple wrapper that delegates to
+                base implementation for RC car spawning and control transfer mechanics.
+            </summary>
+        </member>
+        <member name="M:BroBase.SetPlayerHUDAmmo">
+            <summary>
+                Updates HUD special ability display based on current inventory. Shows top pocketed
+                ammo type with count of 1 if any exist, otherwise displays hero's default special
+                ability with actual ammo count.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartPockettedSpecial">
+            <summary>
+                Initiates use of pocketed special ammunition pickups. Validates bro state (not
+                acid-covered or meleeing), sets the active special type, flags special use, and
+                resets animation for special ability execution.
+            </summary>
+        </member>
+        <member name="M:BroBase.ThrowAirstrikeGrenade">
+            <summary>
+                Deploys airstrike grenade with stance-based trajectory. Crouching throws short (30
+                velocity, 70 angle) for close targets, standing throws long (200 velocity, 150
+                angle) for distant targets. Network-spawned projectile calls in aerial bombardment
+                on impact.
+            </summary>
+        </member>
+        <member name="M:BroBase.ThrowAlienPheromoneGrenade">
+            <summary>
+                Deploys alien pheromone grenade for biological warfare. Uses standard stance-based
+                throwing mechanics to deliver pheromones that affect alien behavior. Network-spawned
+                projectile with tactical deployment options.
+            </summary>
+        </member>
+        <member name="M:BroBase.ThrowMechDropGrenade">
+            <summary>
+                Deploys mech drop grenade with identical mechanics to airstrike. Uses stance-based
+                throwing system to mark landing zone for mech deployment. Network-synchronized
+                projectile spawns combat mech on detonation.
+            </summary>
+        </member>
+        <member name="M:BroBase.TimeSlowSpecialRPC">
+            <summary>
+                Executes time-slowing special ability with mode-specific targeting. Plays bass drop
+                sound, applies 1.2x general time boost, and adds color shift effect. In cooperative
+                modes boosts all heroes by 1.5x, in competitive modes only boosts the casting
+                player.
+            </summary>
+        </member>
+        <member name="M:BroBase.UsePockettedSpecial">
+            <summary>
+                Executes pocketed special abilities via type-specific RPC calls. Handles Airstrike,
+                Timeslow, RemoteControlCar, MechDrop, AlienPheromones, and Steroids. Manages ammo
+                consumption, HUD updates, and network synchronization for each ability type.
+            </summary>
+        </member>
+        <member name="M:BroBase.UseSteroids">
+            <summary>
+                Activates 10-second performance enhancement state. Sets enhanced flag, plays flex
+                sound at 0.6 volume, triggers flex gesture animation, and initializes grunt counter
+                based on player number for audio variety.
+            </summary>
+        </member>
+        <member name="M:BroBase.UseSteroidsForDuration(System.Single)">
+            <summary>
+                Activates performance enhancement for specified duration. Identical to standard
+                steroids but with customizable timing, maintaining all visual and audio feedback
+                effects.
+            </summary>
+            <param name="duration">Duration in seconds for the steroid effect.</param>
+        </member>
+        <member name="M:BroBase.UseSteroidsNetworked">
+            <summary>
+                Network wrapper for steroid activation across all players. Validates local ownership
+                before broadcasting RPC to trigger steroid effects on all connected clients,
+                ensuring synchronized performance enhancement.
+            </summary>
+        </member>
+        <member name="M:BroBase.UseSteroidsNetworkedForDuration(System.Single)">
+            <summary>
+                Network wrapper for variable-duration steroid activation. Broadcasts typed RPC with
+                custom duration parameter to apply performance enhancement across all players with
+                specified timing.
+            </summary>
+            <param name="duration">Duration in seconds for the steroid effect.</param>
+        </member>
+        <!-- Special Abilities Properties -->
+        <member name="P:BroBase.SpecialAmmo">
+            <summary>
+                Gets or sets the special ammo count with support for pocketed special ammo. When
+                getting, returns 1 if the bro has pocketed special ammo stored, otherwise returns
+                the actual special ammo count.
+            </summary>
+            <returns>1 if has pocketed special ammo; otherwise, the base special ammo count.</returns>
+        </member>
+        <!-- Special Abilities Fields -->
+        <member name="F:BroBase.usingPockettedSpecialType">
+            <summary>
+                Currently active pocketed special ammo type. Set during special ability use from
+                inventory. Determines animation behavior for Airstrike, MechDrop, AlienPheromones.
+                Default is Standard type.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:BroBase.AddSpeedLeft">
+            <summary>
+                Applies leftward movement with performance boost. When enhanced and not in
+                quicksand, increases left movement to 120% speed (maintains dash multiplier if
+                dashing). Base movement applied first.
+            </summary>
+        </member>
+        <member name="M:BroBase.AddSpeedRight">
+            <summary>
+                Applies rightward movement with performance boost. When enhanced and not in
+                quicksand, increases right movement to 120% speed (maintains dash multiplier if
+                dashing). Mirrors left movement logic.
+            </summary>
+        </member>
+        <member name="M:BroBase.AirJump">
+            <summary>
+                Executes air jump with fart-based mechanics. Level 1 creates smoke and sound
+                effects. Level 2 creates damaging explosion with huge fart sound. Jump force scales
+                0.5x-1.8x based on velocity, halves downward momentum before boost.
+            </summary>
+        </member>
+        <member name="M:BroBase.CanUseJetpack">
+            <summary>
+                Validates jetpack availability for use. Requires both local jetpack availability
+                flag and player having Jetpack value in ValueOrchestrator system.
+            </summary>
+            <returns>True if jetpack is available and player has jetpack power-up; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.CreateBlastOffFlames(System.Single)">
+            <summary>
+                Creates flame explosion effect at specified height. Spawns visual flame wall,
+                damages units in 14x10 area with fire damage, applies 50 upward force. Only executes
+                for local player ownership.
+            </summary>
+            <param name="yPos">Vertical position for flame effect spawn.</param>
+        </member>
+        <member name="M:BroBase.Fart(System.Int32)">
+            <summary>
+                Virtual method for fart effects implementation. Empty base implementation provides
+                hook for derived classes to implement custom fart behaviors based on fart level.
+            </summary>
+            <param name="fartLevel">Intensity level of the fart effect.</param>
+        </member>
+        <member name="M:BroBase.HitLeftWall">
+            <summary>
+                Handles left wall collisions with melee cancellation. Extends base wall hit behavior
+                by canceling ongoing melee attacks if a target has already been hit, preventing
+                attacks from continuing through walls.
+            </summary>
+        </member>
+        <member name="M:BroBase.HitRightWall">
+            <summary>
+                Handles right wall collisions with melee cancellation. Extends base wall hit
+                behavior by canceling ongoing melee attacks if a target has already been hit,
+                preventing attacks from continuing through walls.
+            </summary>
+        </member>
+        <member name="M:BroBase.Jump(System.Boolean)">
+            <summary>
+                Initiates jump with air ability resets. Enables flex air jumps and fart jumps based
+                on available powers. Resets elbow slam and somersault states for clean jump
+                execution.
+            </summary>
+            <param name="wallJump">Whether this is a wall jump.</param>
+        </member>
+        <member name="M:BroBase.Land">
+            <summary>
+                Handles landing mechanics with special elbow slam effects. Elbow slam creates
+                shockwave explosion, damages units in 22x8 area and ground in 24 radius. Normal
+                landing resets air abilities and jetpack availability.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartDashing">
+            <summary>
+                Initiates dashing with special "fart dash" enhancement. When specific conditions are
+                met, creates smoke effects, disturbs wildlife within 100 units, plays fart sound,
+                and adds 50 horizontal and 60 vertical velocity boost.
+            </summary>
+        </member>
+        <member name="M:BroBase.StopElbowSlamming">
+            <summary>
+                Cancels elbow slam state and restores abilities. Resets slam flag and re-enables
+                wall climbing capability. Simple state cleanup for movement system.
+            </summary>
+        </member>
+        <member name="M:BroBase.UseJetpack">
+            <summary>
+                Activates jetpack thrust with context-sensitive boost. Near ground (within 20 units)
+                creates blast-off flames and strong upward boost (140+ velocity). In air provides
+                moderate boost (60 velocity) with -50 floor. Manages jetpack state and audio.
+            </summary>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:BroBase.GetSpeed">
+            <summary>
+                Gets movement speed with exhaustion penalty. Returns 75% speed when exhausted,
+                normal speed when performance enhanced (negating exhaustion), or base speed
+                otherwise.
+            </summary>
+            <returns>Current movement speed multiplier.</returns>
+        </member>
+        <member name="P:BroBase.jumpForce">
+            <summary>
+                Gets or sets jump force with dynamic modifiers. Applies ValueOrchestrator
+                modifications when player exists, adds 10% boost when performance enhanced. Setter
+                stores base value for modification calculations.
+            </summary>
+            <returns>Modified jump force value based on power-ups and performance state.</returns>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:BroBase.cardioTime">
+            <summary>
+                Current sprint duration counter in seconds. Increments while dashing, decreases when
+                not. Clamped 0-3 seconds. Triggers exhaustion when exceeding player's modified
+                sprint time limit.
+            </summary>
+        </member>
+        <member name="F:BroBase.fartJumpsLeftCount">
+            <summary>
+                Counter for remaining flatulence-based air jumps. Reset to 1 when grounded or
+                acquiring flatulence power. Decremented on use. Enables comedic double-jump mechanic
+                with explosive effects.
+            </summary>
+        </member>
+        <member name="F:BroBase.fartingCounter">
+            <summary>
+                Timer for periodic fart explosions during flatulence. Resets every 0.07 seconds,
+                triggering tiny explosions, ground damage, and velocity changes. Creates continuous
+                area denial effect.
+            </summary>
+        </member>
+        <member name="F:BroBase.fartingTime">
+            <summary>
+                Active duration of flatulence explosion effect. Set to 0.3 for delayed fart, 0.36
+                for huge fart. While active, creates periodic explosions via fartingCounter. Comedy
+                mechanic with gameplay impact.
+            </summary>
+        </member>
+        <member name="F:BroBase.flexAirJumpsLeft">
+            <summary>
+                Counter for remaining flex-powered air jumps. Set to 1 when landing or acquiring
+                FlexAirJump perk. Consumed during air flex abilities. Enables acrobatic aerial
+                maneuvers.
+            </summary>
+        </member>
+        <member name="F:BroBase.frontSomersaulting">
+            <summary>
+                Active state flag for front flip animation sequence. Set after air flex completion
+                or specific actions. Enables chaining into elbow slam. Visual flourish for acrobatic
+                moves.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastAirFlexJumpTime">
+            <summary>
+                Timestamp of last air flex jump for cooldown enforcement. Prevents air flex spam
+                with 0.1 second minimum interval. Ensures balanced aerial movement.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastTeleportFlexJumpTime">
+            <summary>
+                Timestamp of last teleport flex use for 0.2 second cooldown. Prevents teleport
+                ability spam. Works with FlexTeleport perk for tactical repositioning.
+            </summary>
+        </member>
+        <member name="F:BroBase.maxCardioDuration">
+            <summary>
+                Base maximum sprint duration before exhaustion triggers. Default 2.5 seconds,
+                modified by ValueOrchestrator. Compared against cardioTime to determine when stamina
+                depletes.
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:BroBase.AlertNearbyMooks">
+            <summary>
+                Alerts nearby enemies with special pickpocket mechanic when dashing. If player has
+                PickPocketMoney value, finds unalerted mooks within 8x8 range, fully alerts them,
+                and triggers pickpocket perk event. Always alerts mooks normally afterward.
+            </summary>
+        </member>
+        <member name="M:BroBase.ApplyPerformanceEnhancedFlexing">
+            <summary>
+                Applies flexing animation when the bro is performance enhanced and idle. Virtual
+                method allowing derived bros to customize their flexing behavior.
+            </summary>
+        </member>
+        <member name="M:BroBase.BecomeExhausted">
+            <summary>
+                Makes the bro exhausted from overexertion, preventing sprinting for 2.3 seconds.
+                Stops any current dashing and resets cardio timer. Virtual method for subclass
+                customization.
+            </summary>
+        </member>
+        <member name="M:BroBase.BurstChest">
+            <summary>
+                Handles chest burst effect with flex invulnerability protection. Only processes
+                chest burst if not protected by flex invulnerability, preventing alien chest bursts
+                during temporary invulnerability periods.
+            </summary>
+        </member>
+        <member name="M:BroBase.CanFreeze">
+            <summary>
+                Determines if this bro can be affected by freeze effects. Always returns true for
+                BroBase characters, maintaining the base class behavior that heroes can be frozen.
+            </summary>
+            <returns>Always returns true.</returns>
+        </member>
+        <member name="M:BroBase.CanReduceLives">
+            <summary>
+                Determines if death should consume a life. Returns false if marked for revival
+                (preventing life loss), otherwise uses base logic. Critical for revival mechanics
+                where death is temporary.
+            </summary>
+            <returns>False if will revive; otherwise, base implementation result.</returns>
+        </member>
+        <member
+            name="M:BroBase.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+            <summary>
+                Processes incoming damage with revival and flex invulnerability checks. If marked
+                for revival and damaged within 5 seconds of death, accelerates revival to 0.6
+                seconds. Ignores all damage during flex invulnerability. Always cancels elbow slam
+                state when damaged.
+            </summary>
+            <param name="damage">Amount of damage to apply.</param>
+            <param name="damageType">Type of damage being inflicted.</param>
+            <param name="xI">Horizontal knockback force.</param>
+            <param name="yI">Vertical knockback force.</param>
+            <param name="direction">Direction of the damage source.</param>
+            <param name="damageSender">The object that caused the damage.</param>
+            <param name="hitX">X coordinate of the hit location.</param>
+            <param name="hitY">Y coordinate of the hit location.</param>
+        </member>
+        <member name="M:BroBase.Death(System.Single,System.Single,DamageObject)">
+            <summary>
+                Handles character death with special effect cleanup. Sets posthumous fart delay
+                (0.9s) for max flatulence level if not reviving. Destroys active flex effect
+                GameObject. Delegates core death logic to base implementation.
+            </summary>
+            <param name="xI">Horizontal death force/velocity.</param>
+            <param name="yI">Vertical death force/velocity.</param>
+            <param name="damage">The damage object that caused death.</param>
+        </member>
+        <member name="M:BroBase.DelayedRevive(System.Single)">
+            <summary>
+                Configures delayed revival after death. Sets revival timer, prevents gibbing during
+                revival window, marks for revival, and resets kill reporting. Integrates with holy
+                water revival system for death recovery.
+            </summary>
+            <param name="delay">Time in seconds before revival occurs.</param>
+        </member>
+        <member name="M:BroBase.HolyWaterRevive">
+            <summary>
+                Revives a dead bro using holy water mechanics. Restores the bro to life with 1
+                health, applies temporary invulnerability, launches them upward, triggers time
+                slowdown effects, and creates visual indicators.
+            </summary>
+        </member>
+        <member name="M:BroBase.HolyWaterReviveRPC">
+            <summary>
+                Network RPC handler for holy water revival. Processes revival commands from other
+                players in multiplayer, only executing if the bro is currently dead.
+            </summary>
+        </member>
+        <member name="M:BroBase.IsAlive">
+            <summary>
+                Checks character alive status including revival state. Returns true if marked for
+                revival with time remaining OR base alive check passes. Allows systems to treat
+                reviving characters as semi-alive.
+            </summary>
+            <returns>True if reviving or health greater than 0; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.PerformanceEnhancedGrunt">
+            <summary>
+                Creates area effects when grunting while performance enhanced. Every 4th grunt
+                panics nearby units within 64 units, and in competitive modes also stuns them.
+                Virtual method allowing subclass customization.
+            </summary>
+        </member>
+        <member name="M:BroBase.SetActionstateToIdle">
+            <summary>
+                Transitions the character to idle state with special handling for performance
+                enhancement mode. Resets animation frame to 0 when performance enhanced and not
+                performing other actions.
+            </summary>
+        </member>
+        <member name="M:BroBase.SetGestureAnimation(GestureElement.Gestures)">
+            <summary>
+                Complex gesture handler managing elbow slam, air flex, teleport flex, and visual
+                effects. Triggers elbow slam when somersaulting+flex+down in air. Manages air flex
+                with multiple validation checks. Creates flex visual effects and handles teleport
+                initiation with time gates.
+            </summary>
+            <param name="gesture">The gesture type to animate.</param>
+        </member>
+        <member name="M:BroBase.TriggerFlexEvent">
+            <summary>
+                Executes flex power effects based on player abilities. FlexAlluring attracts mooks
+                within 96 units. FlexGoldenLight spawns 8-12 projectiles in arc pattern.
+                FlexInvulnerability plays sound effect. Manages audio feedback for all flex powers.
+            </summary>
+        </member>
+        <!-- Character State & Effects Properties -->
+        <member name="P:BroBase.IsPerformanceEnhanced">
+            <summary>
+                Gets whether the character is currently performance enhanced from steroids. Returns
+                the value of the performanceEnhanced field which is set when using steroids for
+                temporary ability boosts.
+            </summary>
+            <returns>True if performance enhanced; otherwise, false.</returns>
+        </member>
+        <member name="P:BroBase.WillReviveAlready">
+            <summary>
+                Gets whether this bro will automatically revive after death. Set to true when holy
+                water revival is triggered, checked during update to perform the actual revival.
+            </summary>
+            <returns>True if the bro has a pending revival; otherwise, false.</returns>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:BroBase.cannotGibTime">
+            <summary>
+                Temporary gibbing immunity duration to preserve body during revival. Set during
+                DelayedRevive to prevent destruction. Ensures revival animations can play properly
+                without body disappearing.
+            </summary>
+        </member>
+        <member name="F:BroBase.exhaustedTime">
+            <summary>
+                Duration of exhaustion state after sprint overexertion in seconds. Set to 2.3 when
+                cardio limit exceeded. Prevents sprinting and continues sweat effects while active.
+                Core component of stamina system.
+            </summary>
+        </member>
+        <member name="F:BroBase.fartDelay">
+            <summary>
+                Timer for posthumous flatulence effect. Set to 0.9 seconds on death with max
+                flatulence. Creates comedic delayed explosion after death. Decrements until
+                triggering fart.
+            </summary>
+        </member>
+        <member name="F:BroBase.flexEffect">
+            <summary>
+                Visual effect object for active flex powers. Created for golden light or
+                invulnerability effects. Destroyed on state changes or death. Provides visual
+                feedback for flex abilities.
+            </summary>
+        </member>
+        <member name="F:BroBase.flexInvulnerability">
+            <summary>
+                Duration timer for flex-induced invulnerability in seconds. Set to 0.25 during flex
+                power activation. Prevents all damage while active. Strategic defensive window.
+            </summary>
+        </member>
+        <member name="F:BroBase.flexSpecialFrame">
+            <summary>
+                Animation frame counter for flex special moves. Increments during air flex, elbow
+                slam, and recovery. Controls sprite progression for special animations. Separate
+                from main frame counter.
+            </summary>
+        </member>
+        <member name="F:BroBase.gettingUpFromElbowSlam">
+            <summary>
+                Recovery state after elbow slam impact. Controls standup animation sequence.
+                Prevents other actions during recovery. Ensures smooth transition from slam.
+            </summary>
+        </member>
+        <member name="F:BroBase.isAirFlexing">
+            <summary>
+                Active state for air flex special move. Controls animation state and physics during
+                aerial flex. Cleared on landing or move completion. Part of flex combo system.
+            </summary>
+        </member>
+        <member name="F:BroBase.isElbowSlamming">
+            <summary>
+                Active state for downward elbow slam attack. Disables wall climbing and ladder
+                interaction. Creates ground impact on landing. Aerial ground pound state.
+            </summary>
+        </member>
+        <member name="F:BroBase.isFlatulent">
+            <summary>
+                Flag indicating active flatulence ability from power-ups. Set when Flatulence
+                modifier greater than 0. Enables fart jumps and death effects. Core comedy mechanic
+                flag.
+            </summary>
+        </member>
+        <member name="F:BroBase.performanceEnhanced">
+            <summary>
+                Active state flag for performance enhancement from steroids. When true, enables
+                special abilities like enhanced speed/jump, sweat particles, and area grunt effects.
+                Controlled by performanceEnhancedTime duration.
+            </summary>
+        </member>
+        <member name="F:BroBase.performanceEnhancedCounter">
+            <summary>
+                Frame timer for performance enhancement visual and audio effects. Triggers sweat
+                particles and grunt effects every 0.0667 seconds during enhancement or exhaustion.
+                Manages effect frequency.
+            </summary>
+        </member>
+        <member name="F:BroBase.performanceEnhancedTime">
+            <summary>
+                Remaining duration of performance enhancement (steroid) effect in seconds. Set to 10
+                seconds by default or custom duration via UseSteroidsForDuration. Decrements each
+                frame until reaching zero, then disables enhancement.
+            </summary>
+        </member>
+        <member name="F:BroBase.performanceGrunCount">
+            <summary>
+                Counter for performance enhancement grunt effects timing. Initialized to playerNum*4
+                when steroids activate. Every 4 grunts panics nearby units, every 16 plays flex
+                sound. Creates escalating intimidation effects.
+            </summary>
+        </member>
+        <member name="F:BroBase.reviveTime">
+            <summary>
+                Delay in seconds before automatic revival triggers. Set by DelayedRevive method, can
+                be extended by damage while dead. Compared against death time to initiate holy water
+                revival sequence.
+            </summary>
+        </member>
+        <member name="F:BroBase.willRevive">
+            <summary>
+                Flag indicating pending automatic revival after death. Set by DelayedRevive or holy
+                water mechanics. Prevents life loss and triggers revival when reviveTime expires.
+                Essential for revival system.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:BroBase.AnimateActualIdleDuckingFrames">
+            <summary>
+                Handles ducking idle animation with elbow slam recovery override. Displays recovery
+                animation when getting up from elbow slam, otherwise uses standard ducking idle
+                frames.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateActualIdleFrames">
+            <summary>
+                Manages idle animation with priority system for special states. Prioritizes elbow
+                slam recovery and air flexing animations over standard idle when hasNewAirFlexFrames
+                is true. Falls back to base idle animation otherwise.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateActualJumpingFrames">
+            <summary>
+                Complex jumping animation controller managing multiple aerial states. Handles elbow
+                slam (row 14), air flexing, front somersault (row 11, 12 frames), and recovery
+                animations. Adjusts frame rates and gun visibility based on current action.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateAirFlexing">
+            <summary>
+                Manages air flex animation sequence on sprite row 13. Creates flex effect during
+                early frames, triggers air jump at frame 3, transitions to somersault at frame 4+.
+                Variable frame timing for dramatic effect.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateFrozen">
+            <summary>
+                Overrides frozen animation with empty implementation. BroBase characters do not
+                display frozen animations, maintaining normal appearance even when frozen status is
+                applied.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateGesture">
+            <summary>
+                Animates gestures with special flex power effects. When flexing with appropriate
+                powers, grants temporary invulnerability (0.25s) and creates golden light visual
+                effects. Extends base gesture animation with gameplay benefits.
+            </summary>
+        </member>
+        <member name="M:BroBase.AnimateGettingUpFromElbowSlam">
+            <summary>
+                Handles 4-frame recovery animation from elbow slam on row 15. Fixed 0.07 frame rate,
+                deactivates gun during animation, calls cleanup when complete to restore normal
+                movement state.
+            </summary>
+        </member>
+        <member name="M:BroBase.FrontSomersault">
+            <summary>
+                Initiates front somersault animation state. Sets frontSomersaulting flag to trigger
+                rolling animation in the animation system.
+            </summary>
+        </member>
+        <member name="M:BroBase.IncreaseFrame">
+            <summary>
+                Advances animation frames with special counter for flex animations. Increments
+                flexSpecialFrame when performing air flex, elbow slam, or recovery animations,
+                maintaining separate timing for special moves.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Fields -->
+        <member name="F:BroBase.hasNewAirFlexFrames">
+            <summary>
+                Indicates availability of enhanced animation frames for flex moves. Controls which
+                sprite sequences are used. Affects elbow slam, air flex, and recovery animations.
+                Animation quality flag.
+            </summary>
+        </member>
+        <!-- Input & Control Methods -->
+        <member name="M:BroBase.CheckInput">
+            <summary>
+                Processes gesture button input for teleport cancellation. Destroys remote teleport
+                projectile when gesture button is pressed, allowing players to cancel teleport
+                targeting.
+            </summary>
+        </member>
+        <member name="M:BroBase.CheckWhetherShouldClearInput">
+            <summary>
+                Manages input restrictions during special animation states. Clears specific inputs
+                during elbow slam (fire/highfive/special), recovery (movement unless other input
+                detected), and air flexing (all except down when jumping).
+            </summary>
+        </member>
+        <member name="M:BroBase.DestroyRemoteProjectile">
+            <summary>
+                Cleans up remote projectile with cooldown update. Calls base destruction logic and
+                sets teleport cooldown timer to manage ability frequency.
+            </summary>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:BroBase.PlayBackflipGruntSound">
+            <summary>
+                Plays a specific grunt sound for backflip maneuvers. Uses voice pack backflip grunt
+                clips at a fixed volume of 0.12. Called during chimney flips and other acrobatic
+                moves.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayChimneyFlipSound(System.Single)">
+            <summary>
+                Plays sound during chimney flip/wall jump maneuvers. Combines a backflip grunt sound
+                with the base dash sound effect for the complete audio experience.
+            </summary>
+            <param name="volume">Volume level for the dash sound component.</param>
+        </member>
+        <member name="M:BroBase.PlayClimbSound">
+            <summary>
+                Plays climbing sound with voice pack support and frequency-based volume reduction.
+                Reduces volume to 66% if another climb sound was played within 1.5 seconds. Uses
+                random volume variation (0.23-0.28) for variety.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayDeathSound">
+            <summary>
+                Plays death sound when the bro dies. Uses voice pack death clips if available at 0.3
+                volume, otherwise falls back to standard hit sounds. Provides character-specific
+                death audio.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayExitLadderSound">
+            <summary>
+                Plays sound when exiting a ladder. Simply delegates to the jump sound system to
+                provide appropriate footstep audio.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayFlexSound(System.Single)">
+            <summary>
+                Plays flexing sound during flex gestures. Cycles through an array of flex sounds
+                using a static index to provide variety. Each bro can have multiple unique flex
+                sounds that play in sequence.
+            </summary>
+            <param name="volumne">Volume level for the flex sound.</param>
+        </member>
+        <member name="M:BroBase.PlayJetpackSound(System.Single)">
+            <summary>
+                Plays jetpack sound effect. Initializes and manages the jetpack sound instance for
+                continuous jetpack audio during flight.
+            </summary>
+            <param name="volumne">Volume level for the jetpack sound.</param>
+        </member>
+        <member name="M:BroBase.PlayJumpSound">
+            <summary>
+                Plays jump sound with voice pack support and frequency-based volume reduction.
+                Reduces volume to 66% if another jump sound was played within 2.5 seconds to prevent
+                audio spam. Always plays footstep sounds in addition to voice.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayPushBlockSound">
+            <summary>
+                Plays grunt sound when pushing blocks with voice pack support. Reduces volume by 40%
+                if called within 1.7 seconds of the last push sound to prevent audio spam during
+                continuous pushing.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayRollLandSound">
+            <summary>
+                Plays a landing grunt sound when the bro lands from a roll. Uses voice pack fall
+                grunt clips with a 2-second cooldown to prevent spam. Volume varies randomly between
+                0.1-0.12.
+            </summary>
+        </member>
+        <member name="M:BroBase.PlayThrowHeavySound(System.Single)">
+            <summary>
+                Plays the heavy throwing sound (typically for throwing mooks) with voice pack
+                support. Uses unique bro voice if available and not bypassed, otherwise plays
+                standard throw sound.
+            </summary>
+            <param name="v">Volume multiplier for the sound playback.</param>
+        </member>
+        <member name="M:BroBase.PlayThrowLightSound(System.Single)">
+            <summary>
+                Plays the light throwing sound (typically for grenades) with voice pack support.
+                Uses unique bro voice if available and not bypassed, otherwise plays standard throw
+                sound.
+            </summary>
+            <param name="v">Volume multiplier for the sound playback.</param>
+        </member>
+        <member name="M:BroBase.PlayYeahSound(System.Single,System.Single,System.Boolean)">
+            <summary>
+                Plays celebration/victory sound with voice pack support. Uses character-specific
+                "yeah" clips if available, otherwise falls back to standard power-up sounds.
+            </summary>
+            <param name="volumne">Base volume level for the sound.</param>
+            <param name="pitch">Pitch modification for the sound.</param>
+            <param name="bypassReverb">Whether to bypass reverb effects.</param>
+        </member>
+        <!-- Audio System Properties -->
+        <member name="P:BroBase.BypassNewVoices">
+            <summary>
+                Gets whether new voice lines should be bypassed for this bro. Combines a static
+                class-wide bypass flag with an instance-specific bypass flag.
+            </summary>
+            <returns>True if voices should be bypassed globally or for this specific bro; otherwise,
+                false.</returns>
+        </member>
+        <member name="P:BroBase.SoundHolderVoice">
+            <summary>
+                Gets the voice sound holder for this bro, providing access to unique character voice
+                lines. Virtual property allowing derived bros to provide different voice packs.
+            </summary>
+            <returns>The SoundHolderVoice instance for this bro.</returns>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:BroBase.byPassNewVoices">
+            <summary>
+                Global static flag to disable voice pack system for all bros. When true, forces all
+                BroBase instances to use standard sound effects instead of character-specific voice
+                packs. Combines with instance field in BypassNewVoices property.
+            </summary>
+        </member>
+        <member name="F:BroBase.bypassNewVoicesOnThisBro">
+            <summary>
+                Instance-specific flag to disable voice pack for individual bro. Public field
+                allowing per-character voice configuration. Combines with static byPassNewVoices in
+                BypassNewVoices property for flexible audio control.
+            </summary>
+        </member>
+        <member name="F:BroBase.flexSoundIndex">
+            <summary>
+                Shared static counter for cycling through flex sound variations. Incremented each
+                time any bro plays flex sound, used with modulo to select from flex sound array.
+                Ensures audio variety across all characters.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastClimbSoundTime">
+            <summary>
+                Tracks timestamp of last climbing sound for frequency-based volume control. Reduces
+                climb sound volume to 66% if played within 1.5 seconds of previous climb sound,
+                preventing audio fatigue during continuous climbing.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastJumpSoundTime">
+            <summary>
+                Tracks timestamp of last jump sound playback for volume management. Used to reduce
+                volume to 66% if jumps occur within 2.5 seconds, preventing audio spam while
+                maintaining variety in repeated jump vocalizations.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastLandSoundTime">
+            <summary>
+                Tracks timestamp of last roll landing sound to prevent audio spam. Prevents landing
+                sounds from playing if less than 2 seconds have passed since last landing, managing
+                fall grunt frequency.
+            </summary>
+        </member>
+        <member name="F:BroBase.lastPushSoundTime">
+            <summary>
+                Tracks timestamp of last block pushing sound for volume management. Reduces push
+                grunt volume by 40% if played within 1.7 seconds, preventing repetitive audio during
+                continuous block pushing.
+            </summary>
+        </member>
+        <member name="F:BroBase.soundHolderVoice">
+            <summary>
+                Stores reference to the voice sound collection component containing
+                character-specific voice clips. Used throughout audio methods for jump grunts, climb
+                sounds, death sounds, and other vocalizations. Accessed via SoundHolderVoice
+                property.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:BroBase.IsOverLadder(System.Single@)">
+            <summary>
+                Checks if the bro is positioned over a ladder for climbing. Prevents ladder
+                interaction during elbow slam state to maintain downward attack momentum.
+            </summary>
+            <param name="ladderXPos">Output parameter for the ladder's X position if found.</param>
+            <returns>True if over a ladder and not elbow slamming; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.IsOverLadder(System.Single,System.Single@)">
+            <summary>
+                Checks if the bro is over a ladder with horizontal offset consideration. Prevents
+                ladder grabbing during elbow slam attacks to ensure attack completion.
+            </summary>
+            <param name="xOffset">Horizontal offset from bro position to check.</param>
+            <param name="ladderXPos">Output parameter for the ladder's X position if found.</param>
+            <returns>True if over a ladder at offset and not elbow slamming; otherwise, false.</returns>
+        </member>
+        <member name="M:BroBase.ReachedCheckPoint">
+            <summary>
+                Called when the bro reaches a checkpoint. Performs base checkpoint behavior and
+                attempts to spawn a companion drone.
+            </summary>
+        </member>
+        <member name="M:BroBase.SpawnDrone">
+            <summary>
+                Spawns a networked drone companion at the player's position. Creates drone 3 units
+                above player, stores reference in currentDrone field for tracking. Virtual method
+                allowing custom drone types in derived bros.
+            </summary>
+        </member>
+        <member name="M:BroBase.TrySpawnDrone">
+            <summary>
+                Attempts to spawn a companion drone for the bro. Only spawns if no current drone
+                exists. Sets tracking flag after spawning.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:BroBase.currentDrone">
+            <summary>
+                Reference to active drone companion. Spawned when player has Drones modifier.
+                Checked for null/alive status before spawning new drone. Persistent AI companion.
+            </summary>
+        </member>
+        <member name="F:BroBase.droneCounter">
+            <summary>
+                Unused timer initialized to 1.0 for drone system. Currently has no active
+                functionality. Placeholder for potential future drone mechanics.
+            </summary>
+        </member>
+        <member name="F:BroBase.hasHadDrone">
+            <summary>
+                Tracks if drone has been spawned this session. Triggers initial drone spawn attempt
+                when false. Set true after first successful spawn. One-time spawn flag.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:BroBase.AirFlexJump">
+            <summary>
+                Executes flex-powered air jump with dynamic velocity scaling. Time-gated at 0.1s
+                intervals, calculates jump boost between 0.5x-1.8x based on current velocity.
+                Creates land effect and consumes flex jump charge.
+            </summary>
+        </member>
+        <member name="M:BroBase.CreateJetpackFlames(UnityEngine.Vector3)">
+            <summary>
+                Creates vertical jetpack flame particles for upward thrust visualization. Generates
+                dual plume effects positioned at ±2.5 units horizontally, with -70 downward velocity
+                creating realistic exhaust. Particles last 0.4 seconds with 1.3x fade rate.
+            </summary>
+            <param name="currentJetpackDirection">Direction vector for jetpack thrust orientation.</param>
+        </member>
+        <member name="M:BroBase.CreateJetpackFlamesDash(UnityEngine.Vector3@)">
+            <summary>
+                Creates continuous flame trail during jetpack dash movements. Calculates path
+                between positions, generates particles at 2 unit intervals up to 50 units maximum.
+                Updates reference position for smooth trail continuity across frames.
+            </summary>
+            <param name="lastFlamePos">Reference to last flame position for trail calculation.</param>
+        </member>
+        <member name="M:BroBase.CreateJetpackFlamesHorizontal(UnityEngine.Vector3)">
+            <summary>
+                Creates horizontal jetpack flame particles for lateral movement. Similar to vertical
+                flames but with -10 downward velocity for wider spread pattern. Provides visual
+                feedback for horizontal jetpack maneuvers.
+            </summary>
+            <param name="currentJetpackDirection">Direction vector for jetpack thrust orientation.</param>
+        </member>
+        <member name="M:BroBase.CreateSweatParticle">
+            <summary>
+                Creates visual sweat particle effects near the bro. Generates water drip particles
+                with random position offset within a unit circle, adjusted for ducking state.
+                Particles inherit some of the bro's velocity for realistic movement.
+            </summary>
+        </member>
+        <member name="M:BroBase.MustSync">
+            <summary>
+                Indicates whether this character requires network synchronization. Virtual method
+                always returning true for BroBase, ensuring all player characters are synchronized
+                in multiplayer.
+            </summary>
+            <returns>Always returns true.</returns>
+        </member>
+        <member name="M:BroBase.SetupThrownMookVelocity(System.Single@,System.Single@)">
+            <summary>
+                Configures the throwing velocity for captured mooks. Uses stronger throw velocity
+                (360 horizontal, 120 vertical) when performance enhanced, otherwise uses standard
+                velocity (210 horizontal, 120 vertical). Adds portion of current velocity to throw.
+            </summary>
+            <param name="XI">Output horizontal velocity for the thrown mook.</param>
+            <param name="YI">Output vertical velocity for the thrown mook.</param>
+        </member>
+        <member name="M:BroBase.StartElbowSlam">
+            <summary>
+                Initiates elbow slam attack sequence with physics modifications. Disables wall
+                climbing, sets animation timing (0.066f), adjusts downward velocity (minimum 210),
+                and plays flex sound. Prepares for ground pound attack.
+            </summary>
+        </member>
+        <member name="M:BroBase.StartTeleportFlexing">
+            <summary>
+                Initiates teleport targeting with 0.2s cooldown check. Spawns RemoteTeleportTarget
+                projectile for position marking if no existing projectile and cooldown expired.
+                Activates bro and manages projectile reference.
+            </summary>
+        </member>
+        <member name="M:BroBase.TryCreateFlexEffect">
+            <summary>
+                Creates visual effects for flex powers when not already active. Spawns golden light
+                effect for FlexGoldenLight power or invulnerability effect for FlexInvulnerability
+                power. Prevents duplicate effects by checking flexEffect null state.
+            </summary>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:BroBase.jetPackActive">
+            <summary>
+                Active state flag for jetpack thrust effect. When true, provides upward velocity and
+                creates flame particles. Controlled by jetPackTime duration and manages thrust
+                physics.
+            </summary>
+        </member>
+        <member name="F:BroBase.jetPackAvailable">
+            <summary>
+                One-time use flag for jetpack power-up availability. Set false when consumed via
+                UseJetpack. Reset on landing. Gates access to jetpack ability.
+            </summary>
+        </member>
+        <member name="F:BroBase.jetPackFlameCounter">
+            <summary>
+                Timer for jetpack flame particle spawning. Triggers effects every 0.0225 seconds.
+                Active during jetpack use and JetpackPunch attacks. Visual effect timing control.
+            </summary>
+        </member>
+        <member name="F:BroBase.jetPackSprite">
+            <summary>
+                Visual sprite component for jetpack equipment display. Activated when jetpack is
+                used, deactivated when jetPackTime expires. Provides visual feedback for jetpack
+                power-up state.
+            </summary>
+        </member>
+        <member name="F:BroBase.jetPackTime">
+            <summary>
+                Active jetpack thrust duration timer. Set to 0.66 seconds on activation. Different
+                thrust levels: extra boost above 0.36s, normal boost above 0.16s. Controls jetpack
+                physics phases.
+            </summary>
+        </member>
+    </members>
+</doc>

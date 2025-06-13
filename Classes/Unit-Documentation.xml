@@ -1,0 +1,1222 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Unit.Awake">
+            <summary>
+                Unity's Awake method that initializes the unit by caching AI components. Searches
+                for PolymorphicAI components both on the unit itself and recursively through its
+                parent/child hierarchy.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Unit.BurnInternal(System.Int32,System.Int32)">
+            <summary>
+                Handles internal burn damage to the unit. Base implementation is empty. Override in
+                derived classes to implement burn damage effects and animations.
+            </summary>
+            <param name="damage">The amount of burn damage to apply.</param>
+            <param name="direction">The direction of the burn effect (-1 for left, 1 for right).</param>
+        </member>
+        <member name="M:Unit.CreateGibEffects(DamageType,System.Single,System.Single)">
+            <summary>
+                Creates visual gib effects when the unit is destroyed. Base implementation is empty.
+                Override in derived classes to spawn gib particles and effects.
+            </summary>
+            <param name="damageType">The type of damage that caused the gibbing.</param>
+            <param name="xI">The horizontal force for gib particles.</param>
+            <param name="yI">The vertical force for gib particles.</param>
+        </member>
+        <member
+            name="M:Unit.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+            <summary>
+                Handles damage dealt to the unit. Base implementation is empty. Override in derived
+                classes to implement damage processing, health reduction, and death handling.
+            </summary>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="xI">The X impulse force from the damage.</param>
+            <param name="yI">The Y impulse force from the damage.</param>
+            <param name="direction">The direction the damage came from (-1 for left, 1 for right).</param>
+            <param name="damageSender">The MonoBehaviour that caused the damage.</param>
+            <param name="hitX">The X coordinate where the damage hit.</param>
+            <param name="hitY">The Y coordinate where the damage hit.</param>
+        </member>
+        <member name="M:Unit.Death(System.Single,System.Single,DamageObject)">
+            <summary>
+                Handles the unit's death, hiding attachments and setting the action state to Dead.
+                Sends death notification via RPC if the unit is owned by the local player or is not
+                a hero. Special handling for MookArmouredGuy with SelfEsteem damage.
+            </summary>
+            <param name="xI">The horizontal force applied at death.</param>
+            <param name="yI">The vertical force applied at death.</param>
+            <param name="damage">The damage object containing information about what killed the
+                unit.</param>
+        </member>
+        <member name="M:Unit.DeathRPC(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Remote procedure call for synchronizing death across the network. Sets the unit's
+                position and triggers the Death method if the unit isn't already dead.
+            </summary>
+            <param name="xI">The horizontal force applied at death.</param>
+            <param name="yI">The vertical force applied at death.</param>
+            <param name="_x">The X position where death occurred.</param>
+            <param name="_y">The Y position where death occurred.</param>
+        </member>
+        <member name="M:Unit.Gib(DamageType,System.Single,System.Single)">
+            <summary>
+                Protected method for gibbing the unit into pieces. Base implementation is empty.
+                Override in derived classes to implement gibbing mechanics.
+            </summary>
+            <param name="damageType">The type of damage that caused the gibbing.</param>
+            <param name="xI">The horizontal force of the gibbing.</param>
+            <param name="yI">The vertical force of the gibbing.</param>
+        </member>
+        <member name="M:Unit.GibNow(DamageType,System.Single,System.Single)">
+            <summary>
+                Immediately gibs (explodes into pieces) the unit. Public wrapper that calls the
+                protected Gib method.
+            </summary>
+            <param name="damageType">The type of damage that caused the gibbing.</param>
+            <param name="xI">The horizontal force of the gibbing.</param>
+            <param name="yI">The vertical force of the gibbing.</param>
+        </member>
+        <member
+            name="M:Unit.HeadShot(System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+            <summary>
+                Handles headshot damage to the unit. Simply delegates to the regular Damage method
+                with the same parameters. Override in derived classes to implement special headshot
+                behavior.
+            </summary>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="xI">The X impulse force from the damage.</param>
+            <param name="yI">The Y impulse force from the damage.</param>
+            <param name="direction">The direction the damage came from (-1 for left, 1 for right).</param>
+            <param name="xHit">The X coordinate where the headshot hit.</param>
+            <param name="yHit">The Y coordinate where the headshot hit.</param>
+            <param name="damageSender">The MonoBehaviour that caused the damage.</param>
+        </member>
+        <member
+            name="M:Unit.Impale(UnityEngine.Transform,UnityEngine.Vector3,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Impales the unit on an object, attaching it to the specified transform. Base
+                implementation is empty. Override in derived classes to implement impalement
+                mechanics.
+            </summary>
+            <param name="impaleTransform">The transform to attach the impaled unit to.</param>
+            <param name="direction">The direction vector of the impalement.</param>
+            <param name="damage">The damage dealt by the impalement.</param>
+            <param name="xI">The horizontal velocity imparted by the impalement.</param>
+            <param name="yI">The vertical velocity imparted by the impalement.</param>
+            <param name="xOffset">The horizontal offset from the impale transform.</param>
+            <param name="yOffset">The vertical offset from the impale transform.</param>
+        </member>
+        <member name="M:Unit.Knock(DamageType,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Applies knockback force to the unit. Base implementation is empty. Override in
+                derived classes to implement knockback physics and animations.
+            </summary>
+            <param name="damageType">The type of damage causing the knockback.</param>
+            <param name="xI">The X knockback force.</param>
+            <param name="yI">The Y knockback force.</param>
+            <param name="forceTumble">Whether to force the unit into a tumbling state.</param>
+        </member>
+        <member name="M:Unit.KnockSimple(DamageObject)">
+            <summary>
+                Simplified knockback method that processes knockback from a DamageObject. Base
+                implementation is empty. Override in derived classes to extract knockback parameters
+                from the damage object.
+            </summary>
+            <param name="damageObject">The damage object containing knockback information.</param>
+        </member>
+        <member name="M:Unit.QuietDeath">
+            <summary>
+                Kills the unit quietly without visual or audio effects. Sets health to 0, action
+                state to Dead, and sends RPC notification if not already sent.
+            </summary>
+        </member>
+        <member name="M:Unit.QuietDeathRPC(System.Single,System.Single)">
+            <summary>
+                Remote procedure call for synchronizing quiet death across the network. Sets the
+                unit's position and triggers QuietDeath if the unit isn't already dead.
+            </summary>
+            <param name="_x">The X position where death occurred.</param>
+            <param name="_y">The Y position where death occurred.</param>
+        </member>
+        <member name="M:Unit.ReduceDeathTimer(System.Int32,System.Single)">
+            <summary>
+                Reduces the unit's death timer, potentially used for revival mechanics. Base
+                implementation is empty. Override in derived classes to implement death timer
+                reduction.
+            </summary>
+            <param name="playerNum">The player number requesting the timer reduction.</param>
+            <param name="newTime">The new death timer value.</param>
+        </member>
+        <member name="M:Unit.SetDeathType(DamageType,System.Int32)">
+            <summary>
+                Determines the death animation type based on damage type and remaining health. If
+                health is below -10, sets to Gibbed (or Explode for Unholy/Explosion damage).
+                Otherwise selects appropriate death type: Fire damage causes fire death, explosions
+                cause bullet death, melee/knife causes knife death, falls cause fall death, etc.
+            </summary>
+            <param name="damageType">The type of damage that killed the unit.</param>
+            <param name="health">The unit's health at time of death.</param>
+        </member>
+        <member name="M:Unit.SetVelocity(DamageType,System.Single,System.Single,System.Single)">
+            <summary>
+                Sets the unit's velocity from damage or explosion effects. Base implementation is
+                empty. Override in derived classes to apply velocity changes.
+            </summary>
+            <param name="damageType">The type of damage causing the velocity change.</param>
+            <param name="xI">The base X velocity.</param>
+            <param name="xIBlast">The additional X blast velocity.</param>
+            <param name="yIBlast">The Y blast velocity.</param>
+        </member>
+        <member name="M:Unit.SilentDeath">
+            <summary>
+                Alias for QuietDeath that kills the unit without visual or audio effects. Simply
+                calls QuietDeath internally.
+            </summary>
+        </member>
+        <member
+            name="M:Unit.Unimpale(System.Int32,DamageType,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+            <summary>
+                Removes the unit from an impaled state and applies damage. Reduces the knockback
+                velocity by 20% and applies damage at the unit's position with an 8 unit vertical
+                offset.
+            </summary>
+            <param name="damage">The damage to apply when unimpaling.</param>
+            <param name="damageType">The type of damage to apply.</param>
+            <param name="xI">The horizontal knockback force.</param>
+            <param name="yI">The vertical knockback force.</param>
+            <param name="firedBy">The MonoBehaviour that caused the unimpalement.</param>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Unit._diedFromOOB">
+            <summary>
+                Protected flag indicating whether this unit died from going out of bounds. Set
+                during death processing to track boundary-related deaths.
+            </summary>
+        </member>
+        <member name="F:Unit.burnCounter">
+            <summary>
+                Protected timer that tracks when to apply the next burn damage tick. Counts down
+                between damage applications.
+            </summary>
+        </member>
+        <member name="F:Unit.burnDamage">
+            <summary>
+                Protected value specifying the amount of damage dealt per burn tick. Applied
+                periodically while the unit is burning.
+            </summary>
+        </member>
+        <member name="F:Unit.burnTime">
+            <summary>
+                The total duration in seconds that the unit will burn when set on fire. Hidden in
+                Unity Inspector. Controls how long burn damage is applied.
+            </summary>
+        </member>
+        <member name="F:Unit.deathNotificationSent">
+            <summary>
+                Public flag tracking whether death has been synchronized across the network.
+                Prevents duplicate death RPCs in multiplayer.
+            </summary>
+        </member>
+        <member name="F:Unit.deathTime">
+            <summary>
+                Protected timestamp recording when the unit died. Used for death animation timing
+                and cleanup scheduling.
+            </summary>
+        </member>
+        <member name="F:Unit.deathType">
+            <summary>
+                Protected enum storing how this unit died (Bullet, Explode, Fire, etc.). Used to
+                select appropriate death animations and effects. Set by SetDeathType method.
+            </summary>
+        </member>
+        <member name="F:Unit.hasNotifiedDeathType">
+            <summary>
+                Protected flag indicating whether the death type has been reported for achievements
+                or statistics. Ensures deaths are only counted once.
+            </summary>
+        </member>
+        <member name="F:Unit.hasReportedKill">
+            <summary>
+                Protected flag tracking whether kill credit has been given to the player who killed
+                this unit. Prevents duplicate kill scoring.
+            </summary>
+        </member>
+        <member name="F:Unit.plasmaCounter">
+            <summary>
+                Protected timer that tracks when to apply the next plasma damage tick. Counts down
+                between damage applications.
+            </summary>
+        </member>
+        <member name="F:Unit.plasmaDamage">
+            <summary>
+                Protected value specifying the amount of damage dealt per plasma damage tick.
+                Applied periodically while affected by plasma.
+            </summary>
+        </member>
+        <member name="F:Unit.projectile">
+            <summary>
+                Reference to a projectile this unit has caught or is holding. Used by units that can
+                catch and redirect projectiles. Null when not holding anything.
+            </summary>
+        </member>
+        <member name="F:Unit.shockCounter">
+            <summary>
+                Protected timer that tracks when to apply the next shock damage tick. Counts down
+                between damage applications.
+            </summary>
+        </member>
+        <member name="F:Unit.shockDamage">
+            <summary>
+                Protected value specifying the amount of damage dealt per electrical shock tick.
+                Applied periodically while being shocked.
+            </summary>
+        </member>
+        <member name="F:Unit.timesKickedByVanDammeSinceLanding">
+            <summary>
+                Tracks the number of consecutive kicks received from Van Damme (JCVD) characters
+                since the unit last touched the ground. Used for multi-kick combo tracking and
+                special animations. Hidden in Unity Inspector.
+            </summary>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:Unit.CatchFriendlyBullets">
+            <summary>
+                Determines whether this unit can catch and neutralize friendly projectiles. Base
+                implementation returns false. Override in units with bullet-catching abilities.
+            </summary>
+            <returns>True if the unit can catch friendly bullets, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.GetSpecialAmmo">
+            <summary>
+                Returns the current amount of special ammunition for this unit. Base implementation
+                returns 0. Override in units with special weapons to return actual ammo count.
+            </summary>
+            <returns>The amount of special ammunition available.</returns>
+        </member>
+        <member name="M:Unit.IsFlexing">
+            <summary>
+                Checks whether the unit is currently performing a flex animation or pose. Base
+                implementation returns false. Override in units with flex animations to return
+                actual state.
+            </summary>
+            <returns>True if flexing, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsInStealthMode">
+            <summary>
+                Checks whether the unit is currently in stealth mode. Base implementation returns
+                false. Override in stealth-capable units to return actual stealth state.
+            </summary>
+            <returns>True if in stealth mode, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.PlayingSummoningAnimation">
+            <summary>
+                Checks whether the unit is currently playing any part of a summoning animation. Base
+                implementation returns false. Override in summoning units to return actual animation
+                state.
+            </summary>
+            <returns>True if playing any summoning animation, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.PlayingSummoningAnimationIntro">
+            <summary>
+                Checks whether the unit is currently playing the intro portion of a summoning
+                animation. Base implementation returns false. Override in summoning units to track
+                animation state.
+            </summary>
+            <returns>True if playing summoning intro animation, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.ShowFuelGauge">
+            <summary>
+                Determines whether this unit should display a fuel gauge in the UI. Base
+                implementation returns false. Override in fuel-consuming units to enable fuel gauge
+                display.
+            </summary>
+            <returns>True if fuel gauge should be shown, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.StartSummoningAnimation">
+            <summary>
+                Begins playing a summoning animation sequence. Base implementation is empty.
+                Override in units with summoning abilities to trigger the animation.
+            </summary>
+        </member>
+        <member name="M:Unit.StopSummoningAnimation">
+            <summary>
+                Stops the currently playing summoning animation. Base implementation is empty.
+                Override in units with summoning abilities to handle animation cleanup.
+            </summary>
+        </member>
+        <member name="M:Unit.UsingJetpack">
+            <summary>
+                Checks whether the unit is currently using a jetpack. Base implementation returns
+                false. Override in jetpack-equipped units to return actual jetpack usage state.
+            </summary>
+            <returns>True if using jetpack, false otherwise.</returns>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Unit.BackSomersault(System.Boolean)">
+            <summary>
+                Performs a backward somersault animation or movement. Base implementation is empty.
+                Override in acrobatic units to implement backflip mechanics.
+            </summary>
+            <param name="forceTumble">Whether to force the unit into a tumbling state.</param>
+        </member>
+        <member name="M:Unit.CanDisableOffGround">
+            <summary>
+                Determines whether this unit can be disabled when not touching the ground. Base
+                implementation always returns false. Override in derived classes to allow air
+                disabling.
+            </summary>
+            <returns>True if the unit can be disabled while airborne, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.ForceFaceDirection(System.Int32)">
+            <summary>
+                Forces the unit to face a specific direction by flipping its transform scale.
+                Negative values face left (X scale -1), positive values face right (X scale 1), and
+                zero does nothing.
+            </summary>
+            <param name="direction">The direction to face (-1 for left, 1 for right, 0 for no
+                change).</param>
+        </member>
+        <member name="M:Unit.FrontSomersault">
+            <summary>
+                Performs a forward somersault animation or movement. Base implementation is empty.
+                Override in acrobatic units to implement frontflip mechanics.
+            </summary>
+        </member>
+        <member name="M:Unit.IsInQuicksand">
+            <summary>
+                Checks whether the unit is currently in quicksand. Base implementation always
+                returns false. Override in derived classes to implement quicksand detection.
+            </summary>
+            <returns>True if the unit is in quicksand, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsNearGround(System.Single)">
+            <summary>
+                Checks whether the unit is within a specified distance from the ground. Base
+                implementation always returns true regardless of the offset parameter. Override in
+                derived classes for actual distance checking.
+            </summary>
+            <param name="maxOffset">The maximum distance from ground to check.</param>
+            <returns>True if within maxOffset distance from ground, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsOnGround">
+            <summary>
+                Checks whether the unit is currently on the ground. Base implementation always
+                returns true. Override in derived classes to implement ground detection logic.
+            </summary>
+            <returns>True if the unit is on ground, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.SetPosition">
+            <summary>
+                Updates the unit's world position using the X and Y coordinates with Z offset
+                adjustments. If the unit is submerged in a blood pool, adds an additional 8 units to
+                the Z offset to create a visual depth effect.
+            </summary>
+        </member>
+        <member
+            name="M:Unit.SetPositionAndVelocity(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Sets both the position and velocity of the unit in one operation. Base
+                implementation is empty. Override in derived classes to handle synchronized position
+                and velocity updates.
+            </summary>
+            <param name="X">The X coordinate to set.</param>
+            <param name="Y">The Y coordinate to set.</param>
+            <param name="xi">The X velocity to set.</param>
+            <param name="yi">The Y velocity to set.</param>
+        </member>
+        <member name="M:Unit.SetSpeed(System.Single,System.Single)">
+            <summary>
+                Sets the unit's horizontal and vertical velocity components. Overrides the base
+                implementation to directly assign both velocity values.
+            </summary>
+            <param name="xi">The horizontal velocity to set.</param>
+            <param name="yi">The vertical velocity to set.</param>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:Unit.IsParachuteActive">
+            <summary>
+                Gets or sets whether the unit's parachute is currently active. Base implementation
+                always returns true for the getter and does nothing for the setter. Override in
+                derived classes to implement actual parachute logic.
+            </summary>
+        </member>
+        <member name="P:Unit.TheCollider">
+            <summary>
+                Gets the cached Collider component for this unit. Lazy-loads and caches the
+                component on first access for efficient physics interactions.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Unit.attachedToZipline">
+            <summary>
+                Reference to the ZipLine object this unit is currently attached to. Null when not on
+                a zipline. Set by AttachToZipline method.
+            </summary>
+        </member>
+        <member name="F:Unit.collider_">
+            <summary>
+                Private cached reference to the unit's Collider component. Used by the TheCollider
+                property to avoid repeated GetComponent calls.
+            </summary>
+        </member>
+        <member name="F:Unit.collumn">
+            <summary>
+                The grid column position of this unit. Used for grid-based positioning systems in
+                certain game modes or enemy formations. Note: Field name is misspelled.
+            </summary>
+        </member>
+        <member name="F:Unit.headHeight">
+            <summary>
+                The height of the unit's head hitbox for headshot detection in game units. Defaults
+                to 15 units. Hidden in Unity Inspector.
+            </summary>
+        </member>
+        <member name="F:Unit.height">
+            <summary>
+                The height of the unit's collision bounds in game units. Defaults to 8 units. Used
+                for physics collision detection and spatial calculations.
+            </summary>
+        </member>
+        <member name="F:Unit.lastWallAttachDirection">
+            <summary>
+                Protected storage of the previous wall attachment direction. Used to detect
+                direction changes during wall climbing transitions.
+            </summary>
+        </member>
+        <member name="F:Unit.rope">
+            <summary>
+                Protected reference to a PredabroRope object for general rope interactions.
+                Different from strungUpBy which specifically handles trap suspension. Used for
+                climbing or other rope mechanics.
+            </summary>
+        </member>
+        <member name="F:Unit.row">
+            <summary>
+                The grid row position of this unit. Used for grid-based positioning systems in
+                certain game modes or enemy formations.
+            </summary>
+        </member>
+        <member name="F:Unit.slidingOnZipline">
+            <summary>
+                Flag indicating whether the unit is actively sliding along a zipline. True during
+                zipline traversal, false when stationary or not on zipline.
+            </summary>
+        </member>
+        <member name="F:Unit.strungUpBy">
+            <summary>
+                Reference to the PredabroRope that has trapped and suspended this unit. Used by
+                Predator-style rope trap mechanics. Null when not trapped.
+            </summary>
+        </member>
+        <member name="F:Unit.strungUpX">
+            <summary>
+                The X coordinate where this unit is suspended when caught in a rope trap. Used with
+                Predator-style rope trap mechanics. Hidden in Unity Inspector.
+            </summary>
+        </member>
+        <member name="F:Unit.strungUpY">
+            <summary>
+                The Y coordinate where this unit is suspended when caught in a rope trap. Paired
+                with strungUpX for complete position storage during rope suspension. Hidden in Unity
+                Inspector.
+            </summary>
+        </member>
+        <member name="F:Unit.suspendFromRope">
+            <summary>
+                Flag indicating whether this unit should be suspended from a rope trap. Controls
+                whether the SuspendFromRope method will create a rope trap for this unit.
+            </summary>
+        </member>
+        <member name="F:Unit.t">
+            <summary>
+                Protected time value used for frame-independent calculations. Defaults to 0.1f. When
+                set to 0, the T property returns clamped delta time instead of this value.
+            </summary>
+        </member>
+        <member name="F:Unit.wallAttachDirection">
+            <summary>
+                The current direction this unit is attached to a wall. Uses DirectionEnum (Up, Down,
+                Left, Right, Any) to track wall climbing orientation.
+            </summary>
+        </member>
+        <member name="F:Unit.width">
+            <summary>
+                The width of the unit's collision bounds in game units. Defaults to 8 units. Used
+                for physics collision detection and spatial calculations.
+            </summary>
+        </member>
+        <member name="F:Unit.zOffset">
+            <summary>
+                The Z-axis offset for this unit's position. Used for depth sorting and visual
+                layering. Modified when submerged in blood pools or for special effects.
+            </summary>
+        </member>
+        <!-- Character State & Effects Properties -->
+        <member name="P:Unit.CanDisembowel">
+            <summary>
+                Gets whether this unit can be disemboweled for gruesome death animations. Returns
+                true if the canDisembowel field is set. Special handling for MookRiotShield units
+                which also checks if their shield is not present.
+            </summary>
+        </member>
+        <member name="P:Unit.CanHear">
+            <summary>
+                Gets or sets whether this unit can detect sounds and noise from other units. Only
+                returns true if both the internal canHear flag is true AND the GameObject is active
+                in the hierarchy. Used for AI awareness and detection systems.
+            </summary>
+        </member>
+        <member name="P:Unit.CanHearFriendlies">
+            <summary>
+                Gets whether this unit can hear sounds from friendly units. Base implementation
+                always returns false, but can be overridden in derived classes to allow friendly
+                unit detection.
+            </summary>
+        </member>
+        <member name="P:Unit.T">
+            <summary>
+                Gets the frame-independent time value used for animations and movement calculations.
+                If the internal time field is 0, returns the current delta time clamped to a maximum
+                of 0.03334f (30 FPS). Otherwise returns the stored time value.
+            </summary>
+        </member>
+        <member name="P:Unit.actionState">
+            <summary>
+                Gets or sets the current action state of the unit, such as Dead or other states that
+                define what the unit is currently doing.
+            </summary>
+        </member>
+        <member name="P:Unit.frame">
+            <summary>
+                Gets or sets the current animation frame number for this unit. Used to track which
+                frame of animation is currently being displayed.
+            </summary>
+        </member>
+        <member name="P:Unit.invulnerable">
+            <summary>
+                Gets or sets whether the unit is invulnerable to damage. Returns true if the
+                Invulnerable field is set, the GameObject is inactive, or if force invulnerability
+                is enabled and the unit is a hero. Setting this property directly modifies the
+                Invulnerable field.
+            </summary>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:Unit.Invulnerable">
+            <summary>
+                Private backing field for the invulnerable property. Controls whether the unit can
+                take damage. Used in conjunction with other invulnerability conditions.
+            </summary>
+        </member>
+        <member name="F:Unit._actionState">
+            <summary>
+                Public backing field for the actionState property. Stores the current action state
+                (e.g., Dead, Idle) of the unit. Part of the main state machine system.
+            </summary>
+        </member>
+        <member name="F:Unit._frame">
+            <summary>
+                Protected backing field for the frame property. Stores the current animation frame
+                number for this unit.
+            </summary>
+        </member>
+        <member name="F:Unit.bloodColor">
+            <summary>
+                The color of blood particles emitted when this unit takes damage. Enum values
+                include Red (default), Green (alien), Oil (mechanical), Ash (fire), and Blue_Flash
+                (special).
+            </summary>
+        </member>
+        <member name="F:Unit.canDisembowel">
+            <summary>
+                Flag determining whether this unit can be disemboweled for gruesome death
+                animations. Used by the CanDisembowel property which adds special handling for
+                shielded units.
+            </summary>
+        </member>
+        <member name="F:Unit.flash">
+            <summary>
+                Controls whether the unit should flash white when taking damage. Used for visual
+                feedback to indicate the unit has been hit.
+            </summary>
+        </member>
+        <member name="F:Unit.isHellEnemy">
+            <summary>
+                Flag marking this unit as a Hell-themed enemy. Affects enemy behavior, scoring
+                systems, and potentially damage resistances or special abilities.
+            </summary>
+        </member>
+        <member name="F:Unit.isZombie">
+            <summary>
+                Protected flag indicating whether this unit is an undead/zombie type. Affects AI
+                behavior and potentially damage resistance or animation sets.
+            </summary>
+        </member>
+        <member name="F:Unit.skinnedPrefab">
+            <summary>
+                Reference to an alternate "skinned" version of this unit prefab. Used to spawn a
+                flayed variant when the unit dies from specific damage types or conditions.
+            </summary>
+        </member>
+        <member name="F:Unit.useImpaledFrames">
+            <summary>
+                Determines whether the unit should use special impaled animation frames when impaled
+                on spikes or other objects. Enables death-specific animations.
+            </summary>
+        </member>
+        <!-- Input & Control Methods -->
+        <member name="M:Unit.AnyInput">
+            <summary>
+                Checks whether the unit is receiving any input from a controller or AI. Base
+                implementation always returns false. Override in derived classes to detect input.
+            </summary>
+            <returns>True if any input is detected, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsPressingDown">
+            <summary>
+                Checks whether the unit is pressing the down input direction. Base implementation
+                returns false. Override in controllable units to check actual input state.
+            </summary>
+            <returns>True if pressing down, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsPressingLeftOrRight">
+            <summary>
+                Checks whether the unit is pressing left or right directional input. Base
+                implementation returns false. Override in controllable units to check actual
+                horizontal input state.
+            </summary>
+            <returns>True if pressing left or right, false otherwise.</returns>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:Unit.AttachToZipline(ZipLine)">
+            <summary>
+                Attaches the unit to a zipline for traversal. Sets the attachedToZipline field to
+                the provided zipline reference.
+            </summary>
+            <param name="zipLine">The zipline to attach to.</param>
+        </member>
+        <member name="M:Unit.IsSubmergedInPool">
+            <summary>
+                Checks whether the unit is currently standing in a blood pool. Returns true if the
+                block the unit is standing on has a blood pool above it.
+            </summary>
+            <returns>True if submerged in a blood pool, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.RollOnto(System.Int32)">
+            <summary>
+                Handles the unit being rolled onto by another object. Base implementation is empty.
+                Override in derived classes to implement crushing or rolling interactions.
+            </summary>
+            <param name="direction">The direction of the rolling object (-1 for left, 1 for right).</param>
+        </member>
+        <member name="M:Unit.SuspendFromRope">
+            <summary>
+                Suspends the unit from a rope by instantiating a PredabroRope object from the Map's
+                prefab and setting it up with this unit.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:Unit.barbedWireWithin">
+            <summary>
+                Protected reference to barbed wire (Spikes object) that the unit is currently in
+                contact with. Used for environmental damage and movement restriction from barbed
+                wire hazards.
+            </summary>
+        </member>
+        <member name="F:Unit.blockCurrentlyStandingOn">
+            <summary>
+                Reference to the terrain Block that this unit is currently standing on. Used for
+                ground detection and environmental hazard checks like blood pools.
+            </summary>
+        </member>
+        <member name="F:Unit.submergedInPool">
+            <summary>
+                Protected flag tracking whether the unit is currently standing in a blood pool. Set
+                based on the block the unit is standing on having a blood pool above it.
+            </summary>
+        </member>
+        <member name="F:Unit.submergedOffset">
+            <summary>
+                The Z-axis offset applied when the unit is submerged in a blood pool. Defaults to 8
+                units. Creates a visual depth effect by adjusting the unit's rendering layer.
+            </summary>
+        </member>
+        <!-- Status Effects Methods -->
+        <member name="M:Unit.Blind(System.Single)">
+            <summary>
+                Applies a blind status effect to the unit for the specified duration. Base
+                implementation is empty. Override in derived classes to implement vision impairment
+                effects.
+            </summary>
+            <param name="time">The duration of the blind effect in seconds.</param>
+        </member>
+        <member name="M:Unit.Blind">
+            <summary>
+                Applies a blind status effect to the unit with a default duration. Base
+                implementation is empty. Override in derived classes to implement vision impairment
+                effects.
+            </summary>
+        </member>
+        <member name="M:Unit.CanFreeze">
+            <summary>
+                Checks whether this unit can be affected by freeze effects. Base implementation
+                returns false, providing freeze immunity by default. Override to allow freezing.
+            </summary>
+            <returns>True if the unit can be frozen, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.Dance(System.Single)">
+            <summary>
+                Forces the unit to dance for the specified duration as a crowd control effect. Base
+                implementation is empty. Override in derived classes to implement dancing animations
+                and behavior.
+            </summary>
+            <param name="time">The duration of the dance effect in seconds.</param>
+        </member>
+        <member name="M:Unit.Freeze(System.Single)">
+            <summary>
+                Applies a freeze status effect to the unit for the specified duration. Base
+                implementation is empty. Override in derived classes to implement freezing mechanics
+                and visuals.
+            </summary>
+            <param name="time">The duration of the freeze effect in seconds.</param>
+        </member>
+        <member name="M:Unit.IsBlind">
+            <summary>
+                Checks whether the unit is currently affected by a blind status effect. Base
+                implementation always returns false. Override in derived classes to return actual
+                blind state.
+            </summary>
+            <returns>True if the unit is blinded, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsIncapacitated">
+            <summary>
+                Checks whether the unit is currently incapacitated and unable to act. Base
+                implementation always returns false. Override in derived classes to implement
+                incapacitation logic.
+            </summary>
+            <returns>True if incapacitated, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.Panic(System.Boolean)">
+            <summary>
+                Causes the unit to panic, affecting its AI behavior. Base implementation is empty.
+                Override in derived classes to implement panic behavior.
+            </summary>
+            <param name="forgetPlayer">Whether the unit should forget its current target player.</param>
+        </member>
+        <member name="M:Unit.Panic(System.Single,System.Boolean)">
+            <summary>
+                Causes the unit to panic for a specified duration. Base implementation is empty.
+                Override in derived classes to implement timed panic behavior.
+            </summary>
+            <param name="time">The duration of the panic effect in seconds.</param>
+            <param name="forgetPlayer">Whether the unit should forget its current target player.</param>
+        </member>
+        <member name="M:Unit.Panic(System.Int32,System.Single,System.Boolean)">
+            <summary>
+                Causes the unit to panic in a specific direction for a specified duration. Base
+                implementation is empty. Override in derived classes to implement directional panic
+                behavior.
+            </summary>
+            <param name="direction">The direction to panic in (-1 for left, 1 for right).</param>
+            <param name="time">The duration of the panic effect in seconds.</param>
+            <param name="forgetPlayer">Whether the unit should forget its current target player.</param>
+        </member>
+        <member name="M:Unit.RecoverFromInsemination">
+            <summary>
+                Allows the unit to recover from alien insemination status. Base implementation is
+                empty. Override in units that can be inseminated to implement recovery logic.
+            </summary>
+        </member>
+        <member name="M:Unit.Stun(System.Single)">
+            <summary>
+                Applies a stun status effect to the unit for the specified duration, preventing
+                actions. Base implementation is empty. Override in derived classes to implement stun
+                behavior.
+            </summary>
+            <param name="time">The duration of the stun effect in seconds.</param>
+        </member>
+        <member name="M:Unit.Stun">
+            <summary>
+                Applies a stun status effect to the unit with a default duration. Base
+                implementation is empty. Override in derived classes to implement stun behavior.
+            </summary>
+        </member>
+        <member name="M:Unit.TearGas(System.Single)">
+            <summary>
+                Applies a tear gas status effect to the unit for the specified duration. Base
+                implementation is empty. Override in derived classes to implement tear gas effects
+                like impaired vision and movement.
+            </summary>
+            <param name="time">The duration of the tear gas effect in seconds.</param>
+        </member>
+        <member name="M:Unit.Terrify">
+            <summary>
+                Applies a terrify effect to the unit, likely more intense than panic. Base
+                implementation is empty. Override in derived classes to implement terror behavior.
+            </summary>
+        </member>
+        <!-- Unit Management Methods -->
+        <member name="M:Unit.Activate">
+            <summary>
+                Activates the unit, enabling its functionality. Base implementation always returns
+                true indicating success. Override to implement activation logic.
+            </summary>
+            <returns>True if activation was successful, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.CanBeThrown">
+            <summary>
+                Determines whether this unit can be thrown by other units. Returns the inverse of
+                IsHeavy() - units that are not heavy can be thrown.
+            </summary>
+            <returns>True if the unit can be thrown, false if too heavy.</returns>
+        </member>
+        <member name="M:Unit.CanHeadShot">
+            <summary>
+                Determines whether this unit can receive headshot damage. Base implementation
+                returns true. Override to disable headshot vulnerability for specific units.
+            </summary>
+            <returns>True if the unit can be headshot, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.CanPilotUnit(System.Int32)">
+            <summary>
+                Determines whether this unit can pilot another unit (such as vehicles or mechs).
+                Base implementation returns false. Override in units capable of piloting to
+                implement eligibility checks.
+            </summary>
+            <param name="newPlayerNum">The player number attempting to pilot.</param>
+            <returns>True if this unit can pilot other units, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.CheckDestroyed">
+            <summary>
+                Checks whether the unit should be destroyed or removed from the game. Base
+                implementation is empty. Override in derived classes to implement destruction
+                conditions.
+            </summary>
+        </member>
+        <member name="M:Unit.Deactivate">
+            <summary>
+                Deactivates the unit, disabling its functionality. Base implementation always
+                returns true indicating success. Override to implement deactivation logic.
+            </summary>
+            <returns>True if deactivation was successful, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.DestroyCharacter">
+            <summary>
+                Destroys this unit's game object, removing it from the game. Can be overridden to
+                implement custom destruction behavior or cleanup.
+            </summary>
+        </member>
+        <member
+            name="M:Unit.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Ejects the pilot from this unit at the specified position and velocity. Base
+                implementation is empty. Override in pilotable units to implement pilot ejection
+                mechanics.
+            </summary>
+            <param name="x">The X position where the pilot should be ejected.</param>
+            <param name="y">The Y position where the pilot should be ejected.</param>
+            <param name="xI">The horizontal velocity to apply to the ejected pilot.</param>
+            <param name="yI">The vertical velocity to apply to the ejected pilot.</param>
+            <param name="stunUnit">Whether to stun the pilot upon ejection.</param>
+        </member>
+        <member name="M:Unit.GetFuel">
+            <summary>
+                Returns the current fuel level of the unit. Base implementation returns 0. Override
+                in fuel-consuming units like vehicles or jetpack units to return actual fuel amount.
+            </summary>
+            <returns>The current fuel level as a float value.</returns>
+        </member>
+        <member name="M:Unit.GetFuelWarning">
+            <summary>
+                Checks whether the unit's fuel is low enough to display a warning. Base
+                implementation returns false. Override in fuel-consuming units to implement low fuel
+                detection.
+            </summary>
+            <returns>True if fuel is critically low, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.GetMookType">
+            <summary>
+                Returns the type of mook (enemy) this unit represents. Base implementation returns
+                MookType.None. Override in enemy units to return specific mook type.
+            </summary>
+            <returns>The MookType enum value for this unit.</returns>
+        </member>
+        <member name="M:Unit.GetPilottedUnit">
+            <summary>
+                Returns the unit currently being piloted by this unit. Base implementation returns
+                null. Override in pilot-capable units to return the actual piloted unit reference.
+            </summary>
+            <returns>The piloted unit, or null if not piloting anything.</returns>
+        </member>
+        <member name="M:Unit.IsDecapitated">
+            <summary>
+                Checks whether the unit has been decapitated (head removed). Base implementation
+                returns false. Override in units that can be decapitated to track headless state.
+            </summary>
+            <returns>True if decapitated, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsEvil">
+            <summary>
+                Determines whether this unit is an evil/enemy character. Base implementation returns
+                false. Override in enemy units to return true.
+            </summary>
+            <returns>True if the unit is evil, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.IsHeavy">
+            <summary>
+                Determines whether this unit is too heavy for certain interactions like throwing.
+                Base implementation returns false. Override in heavy units to return true.
+            </summary>
+            <returns>True if the unit is heavy, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.OpenParachute">
+            <summary>
+                Opens the unit's parachute for controlled descent. Base implementation is empty.
+                Override in derived classes to implement parachute deployment.
+            </summary>
+        </member>
+        <member name="M:Unit.PilotUnit(Unit)">
+            <summary>
+                Initiates the piloting of this unit by another unit. Only processes if the piloting
+                unit belongs to the local player and sends RPC to synchronize the piloting state
+                across all players.
+            </summary>
+            <param name="pilotUnit">The unit that will pilot this unit.</param>
+        </member>
+        <member name="M:Unit.PilotUnitRPC(Unit)">
+            <summary>
+                Remote procedure call handler for synchronizing pilot unit changes across the
+                network. Base implementation is empty. Override in pilotable units to handle the
+                pilot assignment.
+            </summary>
+            <param name="newPilotUnit">The new pilot unit to assign.</param>
+        </member>
+        <member name="M:Unit.Revive(System.Int32,System.Boolean,TestVanDammeAnim)">
+            <summary>
+                Attempts to revive this unit from death or incapacitation. Base implementation
+                returns false. Override in revivable units to implement revival mechanics.
+            </summary>
+            <param name="playerNum">The player number who will control the revived unit.</param>
+            <param name="isUnderPlayerControl">Whether the revived unit will be under player
+                control.</param>
+            <param name="reviveSource">The unit performing the revival.</param>
+            <returns>True if revival was successful, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.ReviveRPC(System.Int32,System.Boolean,TestVanDammeAnim)">
+            <summary>
+                Remote procedure call for synchronizing unit revival across the network. Calls the
+                local Revive method with the provided parameters.
+            </summary>
+            <param name="playerNum">The player number who will control the revived unit.</param>
+            <param name="isUnderPlayerControl">Whether the revived unit will be under player
+                control.</param>
+            <param name="reviveSource">The unit performing the revival.</param>
+        </member>
+        <member name="M:Unit.SetCanParachute">
+            <summary>
+                Enables the unit's ability to use a parachute. Calls SetCanParachute(true)
+                internally.
+            </summary>
+        </member>
+        <member name="M:Unit.SetCanParachute(System.Boolean)">
+            <summary>
+                Sets whether the unit can use a parachute. Base implementation is empty. Override in
+                derived classes to implement parachute capability toggling.
+            </summary>
+            <param name="canParachute">True to enable parachute capability, false to disable.</param>
+        </member>
+        <member name="M:Unit.SetFriendlyExplosion">
+            <summary>
+                Marks explosions created by this unit as friendly, preventing them from damaging
+                allies. Base implementation is empty. Override to implement friendly fire
+                prevention.
+            </summary>
+        </member>
+        <member name="M:Unit.SetImmuneToOutOfBounds">
+            <summary>
+                Makes the unit immune to out-of-bounds death. Base implementation is empty. Override
+                to implement immunity to boundary-based destruction.
+            </summary>
+        </member>
+        <member name="M:Unit.StartPilotingUnit(Unit)">
+            <summary>
+                Called when this unit begins piloting another unit. Base implementation is empty.
+                Override in units that can pilot to implement pilot initialization logic.
+            </summary>
+            <param name="pilottedUnit">The unit that this unit is starting to pilot.</param>
+        </member>
+        <member name="M:Unit.TryConnectHighFive">
+            <summary>
+                Attempts to connect a high-five with another unit. Base implementation always
+                returns false. Override in player units to enable high-five connections.
+            </summary>
+            <returns>True if high-five was successful, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.WhereDidIDie">
+            <summary>
+                Returns the position where this unit died. Base implementation returns the current
+                transform position. Override to return a stored death location if needed.
+            </summary>
+            <returns>The 3D position where the unit died.</returns>
+        </member>
+        <!-- Unit Management Properties -->
+        <member name="P:Unit.IsNotReplicantHero">
+            <summary>
+                Gets whether this unit is not a replicated hero from another player. Returns true if
+                the unit belongs to the local player or if it's not a hero unit. Used for network
+                replication logic.
+            </summary>
+        </member>
+        <!-- Unit Management Fields -->
+        <member name="F:Unit.beingControlledByTriggerAction">
+            <summary>
+                Flag indicating this unit is under scripted control from a trigger action. When
+                true, normal AI behavior is suspended.
+            </summary>
+        </member>
+        <member name="F:Unit.controllingTriggerAction">
+            <summary>
+                Reference to the CharacterAction that is currently controlling this unit through
+                scripted sequences. Null when under normal AI control.
+            </summary>
+        </member>
+        <!-- AI Awareness Methods -->
+        <member name="M:Unit.Alert(System.Single,System.Single)">
+            <summary>
+                Alerts the unit to activity at specific coordinates, raising its awareness level.
+                Base implementation is empty. Override in derived classes to implement alert
+                behavior.
+            </summary>
+            <param name="alertX">The X coordinate of the alert source.</param>
+            <param name="alertY">The Y coordinate of the alert source.</param>
+        </member>
+        <member name="M:Unit.Attract(System.Single,System.Single)">
+            <summary>
+                Attracts the unit's attention to specific coordinates, affecting AI targeting and
+                movement. Base implementation is empty. Override in derived classes to implement
+                attraction behavior.
+            </summary>
+            <param name="xTarget">The X coordinate to be attracted to.</param>
+            <param name="yTarget">The Y coordinate to be attracted to.</param>
+        </member>
+        <member name="M:Unit.FetchObject(UnityEngine.Transform)">
+            <summary>
+                Allows the unit to fetch or pick up an object. Base implementation is empty.
+                Override in derived classes to implement object fetching behavior.
+            </summary>
+            <param name="fetchObject">The transform of the object to fetch.</param>
+        </member>
+        <member name="M:Unit.ForgetPlayer(System.Int32)">
+            <summary>
+                Removes a dead player from the unit's memory and targeting system. Base
+                implementation is empty. Override in derived classes to implement AI memory
+                management.
+            </summary>
+            <param name="deadPlayerNum">The player number to forget.</param>
+        </member>
+        <member name="M:Unit.FullyAlert(System.Single,System.Single,System.Int32)">
+            <summary>
+                Fully alerts the unit to a specific player's presence at given coordinates,
+                maximizing awareness. Base implementation is empty. Override in derived classes to
+                implement full alert behavior.
+            </summary>
+            <param name="x">The X coordinate of the player.</param>
+            <param name="y">The Y coordinate of the player.</param>
+            <param name="playerNum">The player number that triggered the full alert.</param>
+        </member>
+        <member name="M:Unit.HearSound(System.Single,System.Single)">
+            <summary>
+                Allows the unit to respond to sounds at specific coordinates. Base implementation is
+                empty. Override in derived classes to implement sound-based AI awareness.
+            </summary>
+            <param name="alertX">The X coordinate of the sound source.</param>
+            <param name="alertY">The Y coordinate of the sound source.</param>
+        </member>
+        <member name="M:Unit.RunWarning(System.Single,System.Single)">
+            <summary>
+                Provides warning to the unit about an incoming explosion. Base implementation is
+                empty. Override in derived classes to implement evasion or protective behavior.
+            </summary>
+            <param name="t">The current time or progress value.</param>
+            <param name="explosionTime">The time until the explosion occurs.</param>
+        </member>
+        <member name="M:Unit.SetTargetPlayerNum(System.Int32,UnityEngine.Vector3)">
+            <summary>
+                Sets the target player number and position for AI targeting. Base implementation is
+                empty. Override in AI-controlled units to implement targeting behavior.
+            </summary>
+            <param name="pN">The player number to target.</param>
+            <param name="TargetPosition">The 3D position of the target.</param>
+        </member>
+        <!-- AI Awareness Fields -->
+        <member name="F:Unit.canHear">
+            <summary>
+                Master toggle for the unit's hearing ability. Defaults to true. When false, the unit
+                ignores all sound-based alerts regardless of range.
+            </summary>
+        </member>
+        <member name="F:Unit.hearingRangeX">
+            <summary>
+                The horizontal range in game units within which this unit can hear sounds and become
+                alerted. Defaults to 300 units. Used by the AI detection system.
+            </summary>
+        </member>
+        <member name="F:Unit.hearingRangeY">
+            <summary>
+                The vertical range in game units within which this unit can hear sounds and become
+                alerted. Defaults to 200 units. Used by the AI detection system.
+            </summary>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:Unit.showDebugInfoForThisEnemy">
+            <summary>
+                Controls whether debug information is displayed for this specific unit. Defaults to
+                true. Useful for debugging individual unit behavior.
+            </summary>
+        </member>
+        <!-- Alien Infection System Methods -->
+        <member name="M:Unit.CanInseminate(System.Single,System.Single)">
+            <summary>
+                Checks whether this unit can be inseminated by an alien facehugger at the given
+                velocity. Base implementation returns false. Override in units that can be infected
+                to implement eligibility checks.
+            </summary>
+            <param name="xI">The horizontal velocity of the insemination attempt.</param>
+            <param name="yI">The vertical velocity of the insemination attempt.</param>
+            <returns>True if the unit can be inseminated, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.Inseminate(AlienFaceHugger,System.Single,System.Single)">
+            <summary>
+                Attempts to inseminate this unit with an alien facehugger. Base implementation
+                returns false. Override in units that can be infected to implement insemination
+                mechanics.
+            </summary>
+            <param name="unit">The AlienFaceHugger attempting to inseminate.</param>
+            <param name="xForce">The horizontal force applied during insemination.</param>
+            <param name="yForce">The vertical force applied during insemination.</param>
+            <returns>True if insemination was successful, false otherwise.</returns>
+        </member>
+        <!-- Acid Coverage System Methods -->
+        <member name="M:Unit.HasBeenCoveredInAcid">
+            <summary>
+                Checks whether the unit has been covered in acid and has the acid status effect.
+                Base implementation returns false. Override in units that can be affected by acid.
+            </summary>
+            <returns>True if covered in acid, false otherwise.</returns>
+        </member>
+        <member name="M:Unit.RemoveAcid">
+            <summary>
+                Removes the acid status effect from the unit. Base implementation is empty. Override
+                in units that can be affected by acid to implement acid removal logic.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,348 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:ProjectileController.Awake">
+            <summary>
+                Unity's Awake method that initializes mathematical lookup tables when the
+                ProjectileController is first created.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Properties -->
+        <member name="P:ProjectileController.instance">
+            <summary>
+                Gets the singleton instance of ProjectileController. Uses lazy initialization to
+                find or create the instance when first accessed.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:ProjectileController.inst">
+            <summary>
+                Private static field that stores the singleton instance of ProjectileController.
+            </summary>
+        </member>
+        <!-- Projectile Spawning Methods -->
+        <member
+            name="M:ProjectileController.SpawnGrenadeLocally(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32)">
+            <summary>
+                Spawns a grenade locally without network synchronization. Sets up the grenade with
+                physics parameters and launches it.
+            </summary>
+            <param name="grenadePrefab">The grenade prefab to instantiate.</param>
+            <param name="firedBy">The MonoBehaviour that threw this grenade.</param>
+            <param name="x">The X position to spawn the grenade.</param>
+            <param name="y">The Y position to spawn the grenade.</param>
+            <param name="radius">The explosion radius of the grenade (passed to SetupGrenade but
+                actual usage depends on grenade type).</param>
+            <param name="force">The explosion force of the grenade (passed to SetupGrenade but
+                actual usage depends on grenade type).</param>
+            <param name="xI">The initial X velocity of the grenade.</param>
+            <param name="yI">The initial Y velocity of the grenade.</param>
+            <param name="playerNum">The player number who owns this grenade.</param>
+            <param name="seed">Random seed for deterministic grenade behavior.</param>
+            <returns>The spawned Grenade instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnGrenadeOverNetwork(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single)">
+            <summary>
+                Spawns a grenade across the network for multiplayer synchronization. Creates the
+                grenade and sends RPCs to set it up and launch it on all clients. Note: Network
+                functionality may not work reliably in mods.
+            </summary>
+            <param name="grenadePrefab">The grenade prefab to instantiate.</param>
+            <param name="firedBy">The MonoBehaviour that threw this grenade.</param>
+            <param name="x">The X position to spawn the grenade.</param>
+            <param name="y">The Y position to spawn the grenade.</param>
+            <param name="radius">The explosion radius (usage depends on grenade type).</param>
+            <param name="force">The explosion force (usage depends on grenade type).</param>
+            <param name="xI">The initial X velocity of the grenade.</param>
+            <param name="yI">The initial Y velocity of the grenade.</param>
+            <param name="playerNum">The player number who owns this grenade.</param>
+            <param name="lifeM">Life multiplier for the grenade. Values less than 1 reduce the
+                grenade's fuse time.</param>
+            <returns>The spawned Grenade instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnLaserBeamLocally(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+                Spawns a laser beam locally without network synchronization. Creates a laser beam
+                with specified angle and rotation parameters.
+            </summary>
+            <param name="prefab">The laser beam prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that created this laser beam.</param>
+            <param name="x">The X position to spawn the laser beam.</param>
+            <param name="y">The Y position to spawn the laser beam.</param>
+            <param name="z">The Z position to spawn the laser beam.</param>
+            <param name="angle">The initial angle of the laser beam in degrees.</param>
+            <param name="duration">How long the laser beam should last in seconds.</param>
+            <param name="rotateSpeed">The rotation speed of the laser beam in degrees per second.</param>
+            <param name="playerNum">The player number who owns this laser beam.</param>
+            <returns>The spawned LaserBeam instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnLaserBeamOverNetwork(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform,System.Boolean,System.Int32,System.Boolean)">
+            <summary>
+                Spawns a laser beam across the network for multiplayer synchronization. Can target a
+                specific transform. Note: Network functionality may not work reliably in mods.
+            </summary>
+            <param name="prefab">The laser beam prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that created this laser beam.</param>
+            <param name="x">The X position to spawn the laser beam.</param>
+            <param name="y">The Y position to spawn the laser beam.</param>
+            <param name="z">The Z position to spawn the laser beam.</param>
+            <param name="duration">How long the laser beam should last in seconds.</param>
+            <param name="target">Optional transform for the laser to track/target.</param>
+            <param name="synced">Whether to enable continuous network synchronization.</param>
+            <param name="playerNum">The player number who owns this laser beam.</param>
+            <param name="executeImmediately">Whether to execute the network commands immediately.</param>
+            <returns>The spawned LaserBeam instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+                Spawns a projectile locally without network synchronization. This is the simplest
+                overload for local projectile creation.
+            </summary>
+            <param name="projectilePrefab">The projectile prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile (usually the
+                character or weapon).</param>
+            <param name="x">The X position to spawn the projectile.</param>
+            <param name="y">The Y position to spawn the projectile.</param>
+            <param name="xI">The initial X velocity of the projectile.</param>
+            <param name="yI">The initial Y velocity of the projectile.</param>
+            <param name="playerNum">The player number who owns this projectile.</param>
+            <returns>The spawned Projectile instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Single)">
+            <summary>
+                Spawns a projectile locally with additional z-offset control. The
+                AddTemporaryPlayerTarget parameter appears to be unused in this overload.
+            </summary>
+            <param name="prefab">The projectile prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile.</param>
+            <param name="x">The X position to spawn the projectile.</param>
+            <param name="y">The Y position to spawn the projectile.</param>
+            <param name="xI">The initial X velocity of the projectile.</param>
+            <param name="yI">The initial Y velocity of the projectile.</param>
+            <param name="playerNum">The player number who owns this projectile.</param>
+            <param name="AddTemporaryPlayerTarget">Unused parameter in this overload.</param>
+            <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
+            <returns>The spawned Projectile instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
+            <summary>
+                Spawns a projectile locally with all available parameters. The synced,
+                AddTemporaryPlayerTarget, and executeImmediately parameters appear to be unused in
+                local spawning.
+            </summary>
+            <param name="prefab">The projectile prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile.</param>
+            <param name="x">The X position to spawn the projectile.</param>
+            <param name="y">The Y position to spawn the projectile.</param>
+            <param name="xI">The initial X velocity of the projectile.</param>
+            <param name="yI">The initial Y velocity of the projectile.</param>
+            <param name="synced">Unused parameter in local spawning.</param>
+            <param name="playerNum">The player number who owns this projectile.</param>
+            <param name="AddTemporaryPlayerTarget">Unused parameter in local spawning.</param>
+            <param name="executeImmediately">Unused parameter in local spawning.</param>
+            <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
+            <returns>The spawned Projectile instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SpawnProjectileOverNetwork(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
+            <summary>
+                Spawns a projectile across the network for multiplayer synchronization. Creates the
+                projectile and sends RPCs to synchronize its state across all players. Note: Network
+                functionality may not work reliably in mods.
+            </summary>
+            <param name="prefab">The projectile prefab to instantiate.</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile.</param>
+            <param name="x">The X position to spawn the projectile.</param>
+            <param name="y">The Y position to spawn the projectile.</param>
+            <param name="xI">The initial X velocity of the projectile.</param>
+            <param name="yI">The initial Y velocity of the projectile.</param>
+            <param name="synced">Whether to enable continuous network synchronization for this
+                projectile.</param>
+            <param name="playerNum">The player number who owns this projectile.</param>
+            <param name="AddTemporaryPlayerTarget">Whether to add this projectile as a temporary
+                target for the specified player.</param>
+            <param name="executeImmediately">Whether to execute the network commands immediately or
+                queue them.</param>
+            <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
+            <returns>The spawned Projectile instance.</returns>
+        </member>
+        <member
+            name="M:ProjectileController.SummonPortalNetworked(WarlockPortal,System.Int32,UnityEngine.Vector2,System.Single)">
+            <summary>
+                Spawns a warlock portal across the network with a delay. Only creates the portal if
+                spawnPos is not Vector2.zero. Note: Network functionality may not work reliably in
+                mods.
+            </summary>
+            <param name="portalPrefab">The warlock portal prefab to instantiate.</param>
+            <param name="seenPlayerNum">The player number associated with this portal.</param>
+            <param name="spawnPos">The position to spawn the portal. Portal is not created if this
+                is Vector2.zero.</param>
+            <param name="delay">Delay in seconds before the portal activates.</param>
+        </member>
+        <!-- Projectile Return System Methods -->
+        <member
+            name="M:ProjectileController.CheckReturnZone(System.Single,System.Single,System.Int32@,ProjectileReturnZone@,UnityEngine.MonoBehaviour@)">
+            <summary>
+                Checks if a position is within any registered return zone. If found, updates the
+                projectile ownership and provides zone information. Return zones only affect
+                projectiles from different players.
+            </summary>
+            <param name="x">The X position to check.</param>
+            <param name="y">The Y position to check.</param>
+            <param name="playerNum">The current player number of the projectile. Updated to the
+                zone's player number if a zone is found.</param>
+            <param name="returnZone">Output parameter that receives the ProjectileReturnZone if one
+                is found at the position.</param>
+            <param name="zoneFiredBy">Output parameter that receives the MonoBehaviour that created
+                the return zone.</param>
+            <returns>True if a return zone was found at the position, false otherwise.</returns>
+        </member>
+        <member name="M:ProjectileController.RegisterReturnZone(ProjectileReturnZone)">
+            <summary>
+                Registers a projectile return zone with the controller. Return zones can capture and
+                redirect projectiles that enter their area.
+            </summary>
+            <param name="zone">The ProjectileReturnZone to register.</param>
+        </member>
+        <member name="M:ProjectileController.RemoveReturnZone(ProjectileReturnZone)">
+            <summary>
+                Removes a previously registered projectile return zone from the controller.
+            </summary>
+            <param name="zone">The ProjectileReturnZone to unregister.</param>
+        </member>
+        <!-- Projectile Return System Fields -->
+        <member name="F:ProjectileController.returnZones">
+            <summary>
+                List of all currently active projectile return zones. These zones can capture and
+                redirect projectiles that enter their radius.
+            </summary>
+        </member>
+        <!-- Prefab Management Methods -->
+        <member name="M:ProjectileController.GetAirstrikeGrenadePrefab">
+            <summary>
+                Gets the airstrike grenade prefab used for calling in aerial bombardments.
+            </summary>
+            <returns>The airstrike Grenade prefab.</returns>
+        </member>
+        <member name="M:ProjectileController.GetAlienPheromoneGrenadePrefab">
+            <summary>
+                Gets the alien pheromone grenade prefab used for alien-related mechanics.
+            </summary>
+            <returns>The alien pheromone Grenade prefab.</returns>
+        </member>
+        <member name="M:ProjectileController.GetMechDropGrenadePrefab">
+            <summary>
+                Gets the mech drop grenade prefab used for deploying mechs.
+            </summary>
+            <returns>The mech drop Grenade prefab.</returns>
+        </member>
+        <!-- Prefab Management Fields -->
+        <member name="F:ProjectileController.airstrikeGrenade">
+            <summary>
+                The grenade prefab for airstrike special abilities. Used by character abilities and
+                perks to call in aerial bombardment at marked locations. Can be spawned with
+                stance-based trajectories (close-range: 30 velocity/70 angle, long-range: 200
+                velocity/150 angle) or immediately detonated for instant strikes. Shared with
+                SpecialAbilitiesController for consistent access.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.alienPheromoneGrenade">
+            <summary>
+                The grenade prefab for alien pheromone biological warfare. Creates pheromone effects
+                that influence alien enemy behavior when detonated. Available as pocketed special
+                ammunition pickup. Uses stance-based throwing system (crouching: 30/70 for close
+                range, standing: 200/150 for long range) and shares animation behavior with
+                airstrike and mech drop abilities.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.allGrenadePrefabs">
+            <summary>
+                Unity Inspector field containing references to all grenade prefabs in the game. Not
+                referenced in code but likely populated via Unity Editor for cataloging, validation,
+                or potential editor tooling purposes. Serves as a central registry of available
+                grenade types.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.allProjectilePrefabs">
+            <summary>
+                Unity Inspector field containing references to all projectile prefabs in the game.
+                Not referenced in code but likely populated via Unity Editor for cataloging,
+                validation, or potential editor tooling purposes. Initialized as empty list in code.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.assasinationTargetPrefab">
+            <summary>
+                The assassination target prefab used by Matilda for marking elimination targets.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.broGummerSniperTargetPrefab">
+            <summary>
+                The specialized sniper targeting system prefab used by Bro Gummer.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.brobocop">
+            <summary>
+                The projectile prefab specifically used by Brobocop character.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.fireBallBombardment">
+            <summary>
+                The projectile prefab used for fireball bombardment attacks. Used in
+                TimePressureBombardment for Rogueforce procedural generation mode to create
+                environmental fire hazards. Spawned at random positions and immediately detonated to
+                create explosive fiery bombardment effects.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.goldenLightProjectile">
+            <summary>
+                The golden light projectile prefab, likely used for special holy or light-based
+                attacks by specific characters or abilities.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.mechDropGrenade">
+            <summary>
+                The grenade prefab for mech deployment special ability. Acts as a beacon that spawns
+                a combat mech on detonation. Part of the pocketed special ammo system - players can
+                collect and use this to deploy mechs using stance-based throwing mechanics identical
+                to airstrikes. Uses custom animation sequence (row 5, frames 17-24) with deployment
+                trigger at frame 4.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.remoteRocketPrefab">
+            <summary>
+                The prefab for remote-controlled rockets that can be guided by the player.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.shellBombardment">
+            <summary>
+                The projectile prefab used for artillery shell bombardment attacks.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.targetPrefab">
+            <summary>
+                A general-purpose following object prefab that can track targets.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.targetSystemPrefab">
+            <summary>
+                The targeting system prefab used by Robocop for locking onto enemies.
+            </summary>
+        </member>
+        <member name="F:ProjectileController.teleportTargetPrefab">
+            <summary>
+                The remote teleport target prefab used for marking teleportation destinations in
+                teleportation-based abilities and mechanics.
+            </summary>
+        </member>
+    </members>
+</doc>

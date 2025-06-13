@@ -1,0 +1,789 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Projectile.Awake">
+            <summary>
+                Initializes layer masks, barrier layers, and projectile configuration during Unity's
+                Awake phase. Sets up collision layers for ground, fragile objects, and team-specific
+                barriers, initializes z-offset from transform position, and establishes random seed
+                for deterministic effects.
+            </summary>
+        </member>
+        <member name="M:Projectile.Start">
+            <summary>
+                Initializes damage background counter with a random offset between 0 and 0.2
+                seconds. This creates variation in when projectiles start damaging background
+                elements.
+            </summary>
+        </member>
+        <member name="M:Projectile.Update">
+            <summary>
+                Main update loop that drives projectile behavior. Calls RunProjectile and RunLife
+                methods each frame with the current delta time to process movement, collision, and
+                lifetime.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Projectile.barrierLayer">
+            <summary>
+                Layer mask for enemy barrier detection. Set during Awake to include "MobileBarriers"
+                and "IndestructibleGround" layers. Used to detect barriers that can reflect player
+                projectiles, changing their ownership and increasing damage.
+            </summary>
+        </member>
+        <member name="F:Projectile.fragileLayer">
+            <summary>
+                Layer mask for fragile/destructible object detection. Set to "DirtyHippie" layer
+                during Awake. Used to detect breakable objects like doors and crates that
+                projectiles can damage or destroy on contact.
+            </summary>
+        </member>
+        <member name="F:Projectile.friendlyBarrierLayer">
+            <summary>
+                Layer mask for player-created barrier detection. Set to "FriendlyBarriers" layer
+                during Awake. Used to detect barriers that can reflect enemy projectiles, converting
+                them to player-owned projectiles with increased damage.
+            </summary>
+        </member>
+        <member name="F:Projectile.groundLayer">
+            <summary>
+                Layer mask for ground and solid object collision detection. Set during Awake to
+                include "Ground", "LargeObjects", and "FLUI" layers. Used in raycast operations to
+                detect walls and terrain that should stop or reflect projectiles.
+            </summary>
+        </member>
+        <member name="F:Projectile.random">
+            <summary>
+                Random number generator instance for deterministic projectile variations.
+                Initialized in Awake with either a random seed (0-10000) or the specified seed
+                value. Used to create small random offsets for damage timing and other projectile
+                behaviors that need to be consistent across clients.
+            </summary>
+        </member>
+        <member name="F:Projectile.seed">
+            <summary>
+                Seed value for deterministic random number generation. Set via the SetSeed method to
+                ensure synchronized projectile behavior across networked games. Used to initialize
+                the random field for consistent randomization of effects and variations.
+            </summary>
+        </member>
+        <member name="F:Projectile.t">
+            <summary>
+                Delta time value for frame-independent movement calculations. Initialized to 0.011f
+                and updated each frame with clamped Time.deltaTime (maximum 0.0334f). Used
+                throughout the projectile system for consistent movement and timing regardless of
+                framerate.
+            </summary>
+        </member>
+        <member name="F:Projectile.zOffset">
+            <summary>
+                Z-axis rendering offset for visual depth variation. Randomly set between -0.04 and
+                0.04 in Awake, or can be overridden during Fire method. Applied to transform
+                position to create slight 3D depth effect and prevent z-fighting when multiple
+                projectiles overlap.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Projectile.Bounce(UnityEngine.RaycastHit)">
+            <summary>
+                Reverses the projectile's Y velocity to create a bounce effect off surfaces. Sets
+                the Y velocity to its absolute value, ensuring upward movement after bounce. Updates
+                projectile rotation to match new trajectory.
+            </summary>
+            <param name="raycastHit">Information about the surface that was hit</param>
+        </member>
+        <member
+            name="M:Projectile.Damage(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+                Applies damage to this projectile if it's damageable. Reduces projectile damage by
+                the incoming damage amount and destroys the projectile if damage reaches zero. Only
+                processes damage for projectiles marked with isDamageable flag.
+            </summary>
+            <param name="damage">Amount of damage to apply to the projectile</param>
+            <param name="damageType">Type of damage being applied</param>
+            <param name="xI">X force component (unused)</param>
+            <param name="yI">Y force component (unused)</param>
+            <param name="damageDelay">Delay before damage is applied (unused)</param>
+            <param name="newPlayerNum">Player number applying the damage (unused)</param>
+        </member>
+        <member name="M:Projectile.HitFragile">
+            <summary>
+                Processes collision with fragile/destructible objects. Uses sphere overlap to detect
+                fragile objects within projectile radius and applies damage to each one found.
+                Called during projectile movement to handle destruction of breakable terrain.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitGrenades">
+            <summary>
+                Detects and interacts with grenades within projectile radius if canHitGrenades is
+                enabled. Uses Map.KnockAndDamageGrenades to apply knockback force based on
+                projectile velocity. Only processes for projectiles with projectileSize greater than
+                3.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitHorizontalWalls">
+            <summary>
+                Specialized collision detection for wide projectiles against horizontal walls. Uses
+                three parallel raycasts (center, up, down) spaced by projectileSize. Only active
+                when horizontalProjectile is set to true.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitOil">
+            <summary>
+                Checks for oil particles and oily terrain at the projectile's position. Ignites any
+                oil found using EffectsController.IgniteOilParticles within a 24-unit radius. Also
+                ignites oily blocks detected via raycast collision.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitProjectiles">
+            <summary>
+                Checks for collisions with other projectiles in the vicinity. Uses
+                Map.HitProjectiles to detect and handle projectile-on-projectile interactions within
+                the projectile's radius.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitUnits">
+            <summary>
+                Detects and damages enemy units within the projectile's area. Uses Map.HitUnits with
+                projectile ownership to find valid targets. Awards deflection achievement if
+                projectile was reflected and kills an enemy. Destroys projectile on successful hit.
+            </summary>
+        </member>
+        <member name="M:Projectile.HitWalls">
+            <summary>
+                Performs raycast collision detection against walls in the projectile's path. Handles
+                standard wall impacts by applying damage, creating effects, and destroying the
+                projectile. Special handling for depleted uranium perk creates 24-radius explosions
+                on impact. Returns true if wall was hit.
+            </summary>
+            <returns>True if the projectile hit a wall and was destroyed, false otherwise</returns>
+        </member>
+        <member name="M:Projectile.HitWildLife">
+            <summary>
+                Checks for and damages wildlife units within the projectile's radius. Destroys the
+                projectile with effects if any wildlife is hit. Uses Map.DamageWildLife to apply
+                damage to animals.
+            </summary>
+        </member>
+        <member
+            name="M:Projectile.MakeSparkShower(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Creates an intense shower of spark particles at the specified position. Generates 12
+                sparks with randomized velocities based on the provided shower direction. Each spark
+                has high initial velocity (250+ units) for dramatic visual effect.
+            </summary>
+            <param name="xPos">X position to create sparks</param>
+            <param name="yPos">Y position to create sparks</param>
+            <param name="showerXI">Base X velocity for spark shower direction</param>
+            <param name="showerYI">Base Y velocity for spark shower direction</param>
+        </member>
+        <member
+            name="M:Projectile.ProjectileApplyDamageToBlock(UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single)">
+            <summary>
+                Applies damage to terrain blocks with special handling for depleted uranium perks.
+                Creates a 24-radius explosion for player projectiles with depleted uranium,
+                otherwise applies standard block damage. Handles oil ignition for fire damage types.
+            </summary>
+            <param name="blockObject">The block GameObject to damage</param>
+            <param name="damage">Amount of damage to apply</param>
+            <param name="type">Type of damage being applied</param>
+            <param name="forceX">X component of impact force</param>
+            <param name="forceY">Y component of impact force</param>
+        </member>
+        <member name="M:Projectile.ReflectProjectile(UnityEngine.RaycastHit)">
+            <summary>
+                Reflects the projectile off barriers with complex angle calculations and damage
+                bonuses. Changes projectile ownership, adds +12 damage, plays reflection sound, and
+                calculates reflection angle based on impact normal and projectile direction. Awards
+                achievement for deflection kills. Returns false if canReflect is disabled.
+            </summary>
+            <param name="raycastHit">Raycast hit information containing impact point and surface
+                normal</param>
+            <returns>True if projectile was successfully reflected, false if reflection is disabled</returns>
+        </member>
+        <member name="M:Projectile.RunDamageBackground(System.Single)">
+            <summary>
+                Periodically damages background doodads along the projectile's path. Uses a timer
+                that triggers every 0.033 seconds, checking and damaging doodads within 3 units of
+                the projectile position. Only processes if affectScenery is enabled.
+            </summary>
+            <param name="t">Delta time for this frame</param>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Projectile.damage">
+            <summary>
+                Base damage value for the projectile. Default value is 1. This is the initial damage
+                setting that gets copied to damageInternal during initialization and can be modified
+                by SetDamage method. Represents the projectile's intended damage before any
+                modifiers.
+            </summary>
+        </member>
+        <member name="F:Projectile.damageInternal">
+            <summary>
+                The actual damage value used in calculations. Initially set from the damage field,
+                but can be modified by fadeDamage mechanics, reflection bonuses (+12), or other
+                gameplay effects. This is the value actually applied when the projectile hits
+                targets.
+            </summary>
+        </member>
+        <member name="F:Projectile.damageType">
+            <summary>
+                Specifies the type of damage this projectile inflicts (e.g., Bullet, Fire,
+                Explosion). Passed to all damage application methods to determine appropriate hit
+                reactions, visual effects, and special damage behaviors like oil ignition for fire
+                damage.
+            </summary>
+        </member>
+        <member name="F:Projectile.fadeDamage">
+            <summary>
+                When enabled, causes projectile damage to decrease proportionally with remaining
+                life. Uses the formula damageInternal = fullDamage * (life/fullLife) to create
+                projectiles that weaken over distance. Special interaction with BulletSnakeBroskin
+                weapon type.
+            </summary>
+        </member>
+        <member name="F:Projectile.firedBy">
+            <summary>
+                Reference to the MonoBehaviour (usually a unit) that created this projectile. Used
+                for damage attribution, preventing self-collision at spawn, and special behaviors
+                like inseminator targeting. Can be modified by return zones and reflection
+                mechanics.
+            </summary>
+        </member>
+        <member name="F:Projectile.fullDamage">
+            <summary>
+                Stores the original damage value at projectile initialization. Used with fadeDamage
+                mechanic to calculate damage reduction over time using the formula: damage =
+                fullDamage * (life/fullLife). Preserves the initial damage for percentage
+                calculations.
+            </summary>
+        </member>
+        <member name="F:Projectile.playerNum">
+            <summary>
+                Identifies which player fired this projectile. Value of -1 indicates enemy
+                projectile, 0-3 indicates player 1-4, and 5 indicates a reflected projectile. Used
+                for friendly fire checks, material selection, and damage attribution. Modified
+                during reflection.
+            </summary>
+        </member>
+        <member name="F:Projectile.unitHit">
+            <summary>
+                Reference to the last unit hit by this projectile. While this field exists in the
+                base Projectile class, it is not actively used and is likely intended for derived
+                classes that need to track specific hit targets.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Projectile.Death">
+            <summary>
+                Handles projectile destruction with appropriate effects. Creates visual impact
+                effects at the projectile's position, plays death sound if configured, and destroys
+                the GameObject.
+            </summary>
+        </member>
+        <member name="M:Projectile.IncreaseLife(System.Single)">
+            <summary>
+                Extends the projectile's remaining lifetime by a multiplier. Increases both current
+                life and maximum life values proportionally, allowing projectiles to travel further
+                before expiring.
+            </summary>
+            <param name="m">Multiplier to apply to the projectile's life (e.g., 2.0 doubles
+                remaining life)</param>
+        </member>
+        <member
+            name="M:Projectile.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+                Creates visual effects when the projectile impacts. Generates sparks with
+                physics-based trajectories, optional puff effects, and plays impact sounds. Supports
+                both raycast-based hit information and position-only effects. Only creates effects
+                once unless canMakeEffectsMoreThanOnce is enabled.
+            </summary>
+            <param name="particles">Whether to create particle effects (currently unused)</param>
+            <param name="x">X position for the effects</param>
+            <param name="y">Y position for the effects</param>
+            <param name="useRayCast">Whether to use raycast hit information for effect direction</param>
+            <param name="hitNormal">Normal vector of the surface hit (used if useRayCast is true)</param>
+            <param name="hitPoint">Exact point of impact (used if useRayCast is true)</param>
+        </member>
+        <member name="M:Projectile.MoveProjectile">
+            <summary>
+                Updates the projectile's position based on current velocity and delta time. Applies
+                doubled movement when doubleSpeed is enabled, effectively moving the projectile
+                twice per frame for increased speed. Handles Z-axis positioning for rendering depth.
+            </summary>
+        </member>
+        <member name="M:Projectile.OnDestroy">
+            <summary>
+                Cleanup method called when the projectile GameObject is destroyed. Deregisters the
+                projectile from the Map system and calls base class cleanup.
+            </summary>
+        </member>
+        <member name="M:Projectile.PlayDeathSound">
+            <summary>
+                Plays the projectile's death sound effect if a sound holder is configured. Uses the
+                projectile's position and configured volume, with playback priority of 0.65.
+            </summary>
+        </member>
+        <member name="M:Projectile.RunLife(System.Single)">
+            <summary>
+                Manages projectile lifetime countdown and destruction. Decrements life by delta time
+                each frame, applying damage fade if enabled. When life reaches zero or damage fades
+                completely, destroys the projectile with appropriate effects.
+            </summary>
+            <param name="t">Delta time for this frame</param>
+        </member>
+        <member name="M:Projectile.RunProjectile(System.Single)">
+            <summary>
+                Core projectile update method that processes movement, collision detection, and
+                damage application. Handles projectile physics, checks for unit/terrain hits,
+                applies damage to background elements, manages return zone interactions, and
+                processes special behaviors like reversing. Updates position based on velocity and
+                delta time.
+            </summary>
+            <param name="t">Delta time for this frame</param>
+        </member>
+        <member name="M:Projectile.SetDoubleSpeed">
+            <summary>
+                Activates double speed mode for the projectile. Limits the projectile's life to a
+                maximum of 1 second and enables the doubleSpeed flag which causes MoveProjectile to
+                update position twice per frame.
+            </summary>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:Projectile.Position">
+            <summary>
+                Gets or sets the projectile's 2D position. Setting the position updates both the X
+                and Y coordinates and immediately applies the new position to the transform. Getting
+                returns the current X,Y as a Vector2.
+            </summary>
+        </member>
+        <member name="P:Projectile.Velocity">
+            <summary>
+                Gets or sets the projectile's 2D velocity vector. Setting velocity updates both xI
+                and yI components and recalculates the projectile's rotation to match the new
+                direction. Getting returns xI,yI as a Vector2.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Projectile.affectScenery">
+            <summary>
+                Controls whether this projectile can damage background scenery and doodads. Default
+                is true. When disabled, the projectile passes through destructible background
+                elements without affecting them. Checked in RunDamageBackground method.
+            </summary>
+        </member>
+        <member name="F:Projectile.canHitGrenades">
+            <summary>
+                Determines if this projectile can interact with grenades. Default is true. When
+                enabled, the projectile will knock back and potentially damage grenades it
+                encounters. Only applies to projectiles with projectileSize greater than 3.
+            </summary>
+        </member>
+        <member name="F:Projectile.canMakeEffectsMoreThanOnce">
+            <summary>
+                When enabled, allows MakeEffects to create visual effects multiple times during the
+                projectile's lifetime. Works with hasMadeEffects flag to control whether effects can
+                be repeated for projectiles that hit multiple targets or surfaces.
+            </summary>
+        </member>
+        <member name="F:Projectile.damageBackgroundCounter">
+            <summary>
+                Timer controlling periodic background damage checks. Initialized with a small random
+                negative value (-0.2 to 0) and increments by delta time. When positive, triggers
+                background damage check every 0.033 seconds if affectScenery is enabled.
+            </summary>
+        </member>
+        <member name="F:Projectile.damagedBackground">
+            <summary>
+                Flag tracking whether this projectile has already damaged background elements.
+                Prevents multiple damage applications to scenery during a single projectile's
+                lifetime. Set to true after first background damage event.
+            </summary>
+        </member>
+        <member name="F:Projectile.doubleSpeed">
+            <summary>
+                Speed multiplier flag that doubles projectile movement when enabled. Set via
+                SetDoubleSpeed method which also caps projectile life at 1 second. Applied in
+                MoveProjectile to effectively move the projectile twice per frame.
+            </summary>
+        </member>
+        <member name="F:Projectile.flickPuff">
+            <summary>
+                Puff effect prefab created when the projectile damages background scenery or
+                doodads. Instantiated by EffectsController.CreateProjectilePuff during background
+                damage checks to provide visual feedback for environmental destruction.
+            </summary>
+        </member>
+        <member name="F:Projectile.fullLife">
+            <summary>
+                Original lifetime value stored at projectile initialization. Used with fadeDamage to
+                calculate damage reduction over time and preserved for any mechanics that need to
+                reference the projectile's initial lifetime setting.
+            </summary>
+        </member>
+        <member name="F:Projectile.hasHit">
+            <summary>
+                Flag indicating the projectile has already hit a target. Set to true on successful
+                collision to prevent multiple hit registrations from the same impact. Ensures
+                projectiles only deal damage once per target.
+            </summary>
+        </member>
+        <member name="F:Projectile.hasMadeEffects">
+            <summary>
+                Tracks whether visual impact effects have been created. Prevents duplicate effect
+                spawning unless canMakeEffectsMoreThanOnce is enabled. Set to true after first
+                effect creation in MakeEffects method.
+            </summary>
+        </member>
+        <member name="F:Projectile.isDamageable">
+            <summary>
+                Indicates whether this projectile can be damaged and destroyed by attacks. While
+                this field exists in the base class, it is not actively used in the base
+                implementation and is likely intended for derived projectile types that can be shot
+                down.
+            </summary>
+        </member>
+        <member name="F:Projectile.life">
+            <summary>
+                Remaining lifetime of the projectile in seconds. Default value is 4 seconds.
+                Decreases by delta time each frame and destroys the projectile when it reaches zero.
+                Can be modified by SetDoubleSpeed (caps at 1 second) and IncreaseLife methods.
+            </summary>
+        </member>
+        <member name="F:Projectile.projectileSize">
+            <summary>
+                Collision radius of the projectile in units. Default value is 8. Used for all
+                sphere-based collision checks, hit detection radii, and raycast distances. Larger
+                values create projectiles that can hit targets more easily and affect wider areas.
+            </summary>
+        </member>
+        <member name="F:Projectile.shrapnel">
+            <summary>
+                Shrapnel prefab reference for creating debris particles. While not directly used in
+                the base Projectile class, this field is available for derived projectile types to
+                create custom shrapnel effects on impact.
+            </summary>
+        </member>
+        <member name="F:Projectile.shrapnelSpark">
+            <summary>
+                Spark shrapnel prefab reference for creating spark particles. While not directly
+                used in the base Projectile class, this field is available for derived projectile
+                types to create custom spark effects, particularly for metal impacts.
+            </summary>
+        </member>
+        <member name="F:Projectile.sound">
+            <summary>
+                Lazy-initialized Sound instance for playing projectile audio effects. Created on
+                demand in PlayDeathSound when the projectile is destroyed. Cached to avoid creating
+                multiple Sound objects for the same projectile.
+            </summary>
+        </member>
+        <member name="F:Projectile.soundHolder">
+            <summary>
+                Reference to the SoundHolder component containing this projectile's sound effects.
+                Used in PlayDeathSound to play impact sounds when the projectile is destroyed.
+                Configured per projectile type for unique audio feedback.
+            </summary>
+        </member>
+        <member name="F:Projectile.soundVolume">
+            <summary>
+                Volume level for projectile sound effects. Default value is 0.2f (20% volume).
+                Applied when playing death sounds through the sound holder to control audio levels
+                relative to other game sounds.
+            </summary>
+        </member>
+        <member name="F:Projectile.sparkCount">
+            <summary>
+                Number of spark particles created on impact. Default value is 10. Used in
+                MakeEffects to determine how many sparks to generate. Different impact contexts use
+                full count or reduced counts for visual variety.
+            </summary>
+        </member>
+        <member name="F:Projectile.startProjectileSpeed">
+            <summary>
+                Initial speed magnitude of the projectile when fired. Default 400f but set from
+                velocity vector magnitude in Fire method. Used in collision prediction calculations
+                to determine raycast distances based on projectile speed.
+            </summary>
+        </member>
+        <member name="F:Projectile.whitePopEffect">
+            <summary>
+                Determines the type of impact effect created. When true, creates a white pop effect
+                instead of the standard projectile pop effect. Used in MakeEffects to provide visual
+                variety for different projectile types.
+            </summary>
+        </member>
+        <member name="F:Projectile.z">
+            <summary>
+                The projectile's Z-axis position used for rendering depth. Updated during movement
+                to maintain proper visual layering with other game objects.
+            </summary>
+        </member>
+        <!-- Projectile Initialization & Configuration Methods -->
+        <member
+            name="M:Projectile.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
+            <summary>
+                Primary initialization method that launches the projectile. Sets position, velocity,
+                player ownership, and performs comprehensive spawn validation including collision
+                checks, unit hits, and barrier reflections. Applies perk-based scaling for player
+                projectiles and sets appropriate team materials.
+            </summary>
+            <param name="newX">Starting X position of the projectile</param>
+            <param name="newY">Starting Y position of the projectile</param>
+            <param name="xI">Initial X velocity</param>
+            <param name="yI">Initial Y velocity</param>
+            <param name="_zOffset">Z-axis offset for rendering depth</param>
+            <param name="playerNum">Player number who fired the projectile (0-3 for players, -1 for
+                enemies)</param>
+            <param name="FiredBy">Reference to the unit that fired this projectile</param>
+        </member>
+        <member name="M:Projectile.GetSuggestedSpeed">
+            <summary>
+                Returns the suggested default speed for projectiles, used as a baseline for velocity
+                calculations. Standard projectiles return 120 units per second.
+            </summary>
+            <returns>The suggested projectile speed (120f)</returns>
+        </member>
+        <member name="M:Projectile.SetDamage(System.Int32)">
+            <summary>
+                Sets the projectile's damage value, updating both the internal damage tracking and
+                the public damage field used for display and calculations.
+            </summary>
+            <param name="d">The damage value to set</param>
+        </member>
+        <member name="M:Projectile.SetPosition">
+            <summary>
+                Updates the projectile's transform position using rounded X and Y coordinates with
+                the configured z-offset for proper rendering depth.
+            </summary>
+        </member>
+        <member name="M:Projectile.SetRotation">
+            <summary>
+                Calculates and applies rotation to the projectile's transform based on its current
+                velocity. Uses atan2 to determine angle from velocity vector and converts to
+                degrees. Applies an additional 180-degree rotation for horizontal projectiles.
+            </summary>
+        </member>
+        <member name="M:Projectile.SetSeed(System.Int32)">
+            <summary>
+                Sets the random seed for this projectile, creating a new Randomf instance with the
+                specified seed for deterministic random behavior in effects and variations.
+            </summary>
+            <param name="newSeed">The seed value for random number generation</param>
+        </member>
+        <member name="M:Projectile.SetSpeed(System.Single,System.Single)">
+            <summary>
+                Updates the projectile's velocity vector and recalculates its rotation to match the
+                new direction of travel.
+            </summary>
+            <param name="xI">New X velocity component</param>
+            <param name="yI">New Y velocity component</param>
+        </member>
+        <!-- Projectile Initialization & Configuration Fields -->
+        <member name="F:Projectile.canReflect">
+            <summary>
+                Controls whether this projectile can be reflected by barriers. Default is true. When
+                disabled, projectile ignores barrier collision checks that would normally cause
+                reflection. Used to create projectiles that pass through or are destroyed by
+                barriers instead of bouncing off.
+            </summary>
+        </member>
+        <member name="F:Projectile.enemyMaterial">
+            <summary>
+                Material applied to enemy-fired projectiles for visual team identification. Set
+                through CheckFriendlyFireMaterial when playerNum is negative. Creates visual
+                distinction between projectiles that can harm the player versus those that cannot.
+            </summary>
+        </member>
+        <member name="F:Projectile.friendlyMaterial">
+            <summary>
+                Material applied to player-fired projectiles for visual team identification. Set
+                through CheckFriendlyFireMaterial when playerNum is 0 or greater. Helps players
+                distinguish between friendly and enemy projectiles at a glance.
+            </summary>
+        </member>
+        <member name="F:Projectile.horizontalProjectile">
+            <summary>
+                Determines raycast behavior for collision detection. Default is true. When true,
+                uses offset raycasts from projectile sides for barrier detection. When false, uses
+                direct center raycasts. Affects how projectiles interact with barriers and walls.
+            </summary>
+        </member>
+        <member name="F:Projectile.isWideProjectile">
+            <summary>
+                Indicates if this is a wide projectile that requires special collision handling.
+                When true, skips horizontal wall collision checks. Used in conjunction with
+                horizontalProjectile to determine appropriate collision detection methods.
+            </summary>
+        </member>
+        <!-- Collision Detection & Spawn Validation Methods -->
+        <member name="M:Projectile.CheckSpawnPoint">
+            <summary>
+                Comprehensive spawn point validation that checks for walls, doodads, return zones,
+                barriers, and units at the projectile's starting position. Handles barrier
+                reflections for both enemy and friendly projectiles, destroys projectile if spawning
+                inside solid objects, and attempts to hit units at spawn location. Registers
+                projectile with Map system if spawn is valid.
+            </summary>
+        </member>
+        <member name="M:Projectile.CheckSpawnPointFragile">
+            <summary>
+                Checks for fragile/destructible objects at spawn location using a 5-unit radius
+                sphere overlap. Creates puff effects and applies damage to all fragile objects
+                found, but does not destroy the projectile.
+            </summary>
+        </member>
+        <member name="M:Projectile.CheckWallsAtSpawnPoint">
+            <summary>
+                Checks for wall collisions at the projectile's spawn position using a 5-unit radius
+                sphere overlap. Applies damage to any walls found (excluding the firing unit's
+                collider) and destroys the projectile if walls are hit, creating appropriate impact
+                effects.
+            </summary>
+            <returns>True if walls were hit and projectile was destroyed, false otherwise</returns>
+        </member>
+        <member name="M:Projectile.TryHitUnitsAtSpawn">
+            <summary>
+                Attempts to damage units at the projectile's spawn location. Handles special case
+                for inseminator units (alien face huggers) by targeting their host unit with double
+                damage. Destroys projectile with effects if any units are successfully hit.
+            </summary>
+        </member>
+        <!-- Collision Detection & Spawn Validation Fields -->
+        <member name="F:Projectile.raycastHit">
+            <summary>
+                Stores the result of raycast collision detection operations. Contains hit point,
+                surface normal, collider reference, and other collision data used for creating
+                effects, calculating reflections, and applying damage at the correct position and
+                angle.
+            </summary>
+        </member>
+        <!-- Special Projectile Behaviors Methods -->
+        <member name="M:Projectile.AvoidRect(UnityEngine.Transform,System.Single,System.Single)">
+            <summary>
+                Virtual method for implementing projectile avoidance behavior around rectangular
+                areas. Base implementation is empty - derived projectile types override this to
+                steer around obstacles.
+            </summary>
+            <param name="avoidTransform">Transform of the rectangle to avoid</param>
+            <param name="avoidWidth">Width of the avoidance area</param>
+            <param name="avoidHeight">Height of the avoidance area</param>
+        </member>
+        <member name="M:Projectile.CheckFriendlyFireMaterial">
+            <summary>
+                Updates the projectile's visual material based on team affiliation. Player
+                projectiles (playerNum &gt;= 0) use the friendly material if available, while enemy
+                projectiles use the enemy material. Helps players identify projectile ownership
+                visually.
+            </summary>
+        </member>
+        <member name="M:Projectile.CheckReturnZones">
+            <summary>
+                Scans for nearby ProjectileReturnZones that can capture and reverse this projectile.
+                Only captures enemy projectiles (playerNum -1) within 64 units of an active zone.
+                Initiates reversal behavior when a valid zone is found.
+            </summary>
+            <returns>True if the projectile was captured by a return zone, false otherwise</returns>
+        </member>
+        <member name="M:Projectile.IsHeldByZone">
+            <summary>
+                Checks if this projectile is currently being held and reversed by a return zone.
+                Returns true when the projectile has an active zone reference and is in reversing
+                state.
+            </summary>
+            <returns>True if held by a return zone, false otherwise</returns>
+        </member>
+        <member name="M:Projectile.ReverseProjectile">
+            <summary>
+                Initiates projectile reversal toward its firing unit. Sets reverse velocity targets
+                to 80% of negative initial velocity, creating a boomerang effect. Only reverses if
+                the original firing unit still exists.
+            </summary>
+        </member>
+        <member name="M:Projectile.RunReversing">
+            <summary>
+                Handles projectile reversal behavior when captured by return zones. Gradually
+                adjusts velocity toward the zone's return point using interpolation. Destroys the
+                projectile when it gets within 16 units of the target position.
+            </summary>
+        </member>
+        <member name="M:Projectile.Target(System.Single,System.Single,System.Int32)">
+            <summary>
+                Virtual method for implementing projectile targeting behavior. Base implementation
+                is empty - guided projectile types override this to track toward specified
+                coordinates.
+            </summary>
+            <param name="targetX">X coordinate of the target position</param>
+            <param name="targetY">Y coordinate of the target position</param>
+            <param name="playerNum">Player number associated with the targeting</param>
+        </member>
+        <!-- Special Projectile Behaviors Properties -->
+        <member name="P:Projectile.StopBeingControlled">
+            <summary>
+                Virtual property that indicates whether the projectile should stop being controlled
+                by external systems. Base implementation always returns false, but can be overridden
+                by guided projectiles to signal when they should stop tracking targets.
+            </summary>
+        </member>
+        <!-- Special Projectile Behaviors Fields -->
+        <member name="F:Projectile.giveDeflectAchievementOnMookKill">
+            <summary>
+                When enabled, awards the "bronald_bradman" achievement if this deflected projectile
+                kills an enemy. Checked in HitUnits when the projectile successfully damages a
+                target. Used to track player skill in deflecting enemy projectiles back at enemies.
+            </summary>
+        </member>
+        <member name="F:Projectile.heldDelay">
+            <summary>
+                Random delay before reversed projectile starts moving. Set to 0-0.333 seconds when
+                caught by a return zone. Decrements each frame in RunReversing, creating a brief
+                pause before the projectile reverses direction.
+            </summary>
+        </member>
+        <member name="F:Projectile.reverseXI">
+            <summary>
+                Target X velocity for projectile reversal. Set to 80% of negative current X velocity
+                when reversal begins. Used in RunReversing for smooth interpolation from current to
+                reversed trajectory.
+            </summary>
+        </member>
+        <member name="F:Projectile.reverseYI">
+            <summary>
+                Target Y velocity for projectile reversal. Set to 80% of negative current Y velocity
+                when reversal begins. Used in RunReversing for smooth interpolation from current to
+                reversed trajectory.
+            </summary>
+        </member>
+        <member name="F:Projectile.reversing">
+            <summary>
+                Indicates the projectile is being reversed by a return zone (like Brondleman's
+                ability). Set to true when captured by a ProjectileReturnZone. Triggers special
+                movement behavior in RunReversing that gradually redirects the projectile.
+            </summary>
+        </member>
+        <member name="F:Projectile.zone">
+            <summary>
+                Reference to the ProjectileReturnZone currently controlling this projectile. Set
+                when the projectile enters a return zone's area of effect. Used to determine if the
+                projectile should continue reversing behavior or has escaped the zone's influence.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Projectile.DeregisterProjectile">
+            <summary>
+                Removes this projectile from the Map's projectile tracking system, typically called
+                during cleanup when the projectile is destroyed.
+            </summary>
+        </member>
+        <member name="M:Projectile.RegisterProjectile">
+            <summary>
+                Registers this projectile with the Map's projectile tracking system, allowing it to
+                be found by other game systems for collision detection and effects.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Grenade.Awake">
+            <summary>
+                Initializes the grenade when the GameObject is created. Sets up the fragile
+                collision layer for detecting breakable objects and initializes the bounce tracking
+                list if needed.
+            </summary>
+        </member>
+        <member name="M:Grenade.RegisterGrenade">
+            <summary>
+                Registers this grenade with the Map's tracking systems. If the grenade is marked as
+                shootable, it's added to the shootable grenades list for AI targeting. All grenades
+                are added to the general grenade tracking list.
+            </summary>
+        </member>
+        <member name="M:Grenade.SetToDisable(System.Boolean)">
+            <summary>
+                Sets whether this grenade should start in a disabled state. Used for pre-placed
+                grenades in levels that shouldn't be active immediately.
+            </summary>
+            <param name="disabledAtStart">True to start disabled, false for normal behavior</param>
+        </member>
+        <member name="M:Grenade.SetupGrenade(System.Int32,System.Int32,UnityEngine.MonoBehaviour)">
+            <summary>
+                Initializes grenade ownership and visual properties. Sets the player number, random
+                seed, and who fired the grenade. Configures trail renderer colors based on the
+                player number, using player-specific colors for players 0-3 and red/yellow for
+                others.
+            </summary>
+            <param name="newSeed">Random seed for consistent behavior</param>
+            <param name="pNum">Player number who owns this grenade</param>
+            <param name="_FiredBy">The unit that launched this grenade</param>
+        </member>
+        <member name="M:Grenade.Start">
+            <summary>
+                Completes grenade initialization after all Awake calls. Caches the main material,
+                sets up the ground collision layer, registers the grenade with game systems, and
+                handles special disabled spawn states for pre-placed grenades.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Grenade.disabledAtStart">
+            <summary>
+                When true, the grenade starts in a disabled state. Used for pre-placed grenades in
+                levels that shouldn't be active until triggered. Set via SetToDisable method.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Grenade.Death">
+            <summary>
+                Handles the grenade explosion. Damages terrain, creates visual effects, and damages
+                units within the blast radius. Only the local player's grenades calculate unit
+                damage to prevent networking issues. Awards achievements for special kills and
+                triggers explosion effects.
+            </summary>
+        </member>
+        <member name="M:Grenade.DestroyGrenade">
+            <summary>
+                Removes the grenade from all tracking systems and destroys the GameObject. Called
+                after the explosion effects have been created.
+            </summary>
+        </member>
+        <member name="M:Grenade.Knock(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Applies knockback force to the grenade from explosions or other impacts. Adjusts
+                velocity based on the impact force and grenade weight, adds rotational spin, and
+                plays a defend sound.
+            </summary>
+            <param name="xDiff">Horizontal position difference from impact source</param>
+            <param name="yDiff">Vertical position difference from impact source</param>
+            <param name="xI">Incoming horizontal velocity of the impact</param>
+            <param name="yI">Incoming vertical velocity of the impact</param>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Grenade.blastForce">
+            <summary>
+                Physics knockback force applied to units caught in the explosion. Determines how far
+                units are pushed away from the blast center. Defaults to 50 force units.
+            </summary>
+        </member>
+        <member name="F:Grenade.damage">
+            <summary>
+                Base explosion damage dealt to units, terrain, and destructibles. Applied through
+                various multipliers for different explosion zones. Defaults to 5 damage.
+            </summary>
+        </member>
+        <member name="F:Grenade.damageType">
+            <summary>
+                Type of damage this grenade inflicts, determining how units resist or react to the
+                explosion. Also used when damaging fragile objects during flight.
+            </summary>
+        </member>
+        <member name="F:Grenade.firedBy">
+            <summary>
+                Reference to the unit that launched this grenade. Used for damage attribution,
+                achievement tracking, and determining local ownership for networking. Set during
+                initialization.
+            </summary>
+        </member>
+        <member name="F:Grenade.friendlyFire">
+            <summary>
+                Determines if this grenade damages units on the same team as the thrower. When true,
+                explosion damages all units. When false, only damages enemies. Defaults to true.
+            </summary>
+        </member>
+        <member name="F:Grenade.panicCounter">
+            <summary>
+                Timer controlling when to trigger panic in nearby AI units. Decrements each frame
+                when life is below 0.5 seconds, triggering Map.PanicUnits every 0.045 seconds to
+                make enemies flee.
+            </summary>
+        </member>
+        <member name="F:Grenade.playerNum">
+            <summary>
+                Identifies which player threw this grenade for damage attribution and scoring. Also
+                determines trail color for players 0-3. Defaults to -1 for non-player grenades.
+            </summary>
+        </member>
+        <member name="F:Grenade.range">
+            <summary>
+                Explosion radius in world units. Controls the area of effect for damage to units,
+                terrain, and doodads. Also scales visual explosion effects. Defaults to 48 units.
+            </summary>
+        </member>
+        <member name="F:Grenade.shootable">
+            <summary>
+                When true, this grenade can be targeted and detonated by projectiles. Registers with
+                Map.RegisterShootableGrenade for AI targeting systems.
+            </summary>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:Grenade.GiveBrotatoAchievementOnKill">
+            <summary>
+                Marks this grenade to award the Hot Brotato achievement if it kills a mook. Called
+                by special abilities or power-ups that enable achievement-granting grenades.
+            </summary>
+        </member>
+        <!-- Special Abilities Fields -->
+        <member name="F:Grenade.giveBrotatoAwardIfIKillAMook">
+            <summary>
+                When true, awards the Hot Brotato achievement if this grenade kills a mook enemy.
+                Checked during explosion damage and enemy bounce kills. Set via
+                GiveBrotatoAchievementOnKill method by special abilities or power-ups.
+            </summary>
+        </member>
+        <member name="F:Grenade.giveMartiniAchievement">
+            <summary>
+                When true, awards the Martini achievement when this grenade kills enemies by
+                bouncing off them. Only triggers during successful enemy bounce kills, not regular
+                explosions.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Grenade.Bounce(System.Boolean,System.Boolean)">
+            <summary>
+                Handles physics response when the grenade hits surfaces. Reduces velocities, applies
+                angular friction for realistic rolling, interacts with doors, triggers ground
+                effects like mines, and plays impact sounds based on collision force.
+            </summary>
+            <param name="bounceX">True if bouncing on the X axis (hit vertical surface)</param>
+            <param name="bounceY">True if bouncing on the Y axis (hit horizontal surface)</param>
+        </member>
+        <member name="M:Grenade.BounceOffEnemies">
+            <summary>
+                Processes bouncing off enemy units when the grenade hits them from above. Checks if
+                the grenade has sufficient downward velocity, then attempts to hit units below.
+                Supports both single and multiple bounce modes. Applies upward velocity based on
+                weight and reduces horizontal speed. Awards achievements for special bounce kills.
+            </summary>
+        </member>
+        <member name="M:Grenade.CanBounceOnEnemies">
+            <summary>
+                Determines if the grenade has sufficient downward velocity to bounce off enemies.
+                Prevents slow-moving grenades from triggering enemy bounces.
+            </summary>
+            <returns>True if downward velocity exceeds 120 units/second</returns>
+        </member>
+        <member name="M:Grenade.HitFragile">
+            <summary>
+                Detects and damages fragile objects in the grenade's path during flight. Uses
+                velocity direction to check ahead for breakable objects on the fragile layer.
+                Creates visual puff effects on impact and either bounces off doors or sends damage
+                messages to other fragile objects like glass.
+            </summary>
+        </member>
+        <member name="M:Grenade.Launch(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Primary method for spawning and launching grenades into the world. Handles complex
+                wall collision detection to prevent grenades from spawning inside terrain. Registers
+                the grenade as a fetchable object for AI awareness and initializes trail tracking.
+            </summary>
+            <param name="newX">Initial X position</param>
+            <param name="newY">Initial Y position</param>
+            <param name="xI">Initial horizontal velocity</param>
+            <param name="yI">Initial vertical velocity</param>
+        </member>
+        <member name="M:Grenade.ReduceLife(System.Single)">
+            <summary>
+                Multiplies the grenade's remaining fuse time by the specified factor. Used to create
+                shorter fuses for special grenade types or launch methods. Ensures a minimum life of
+                0.01 seconds to prevent instant detonation.
+            </summary>
+            <param name="launchLifeM">Multiplier for the remaining life (0-1 reduces, &gt;1 extends)</param>
+        </member>
+        <member name="M:Grenade.RunMovement">
+            <summary>
+                Updates grenade physics each frame. Checks for collisions with fragile objects,
+                handles bouncing off enemies if enabled, and processes base movement physics.
+            </summary>
+        </member>
+        <member name="M:Grenade.SetMinLife(System.Single)">
+            <summary>
+                Ensures the grenade has at least the specified fuse time remaining. Used to prevent
+                instant explosions when grenades are thrown or knocked.
+            </summary>
+            <param name="amount">Minimum life time in seconds</param>
+        </member>
+        <member name="M:Grenade.SetPosition">
+            <summary>
+                Updates the grenade's transform position. Simple override that calls the base
+                implementation to maintain position synchronization.
+            </summary>
+        </member>
+        <member
+            name="M:Grenade.ThrowGrenade(System.Single,System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+                Launches a grenade that was previously held by a unit. Unparents the grenade, sets
+                its position and velocity, resets visual effects, and ensures a minimum fuse time of
+                0.7 seconds.
+            </summary>
+            <param name="XI">Horizontal throw velocity</param>
+            <param name="YI">Vertical throw velocity</param>
+            <param name="newX">Release X position</param>
+            <param name="newY">Release Y position</param>
+            <param name="_playerNum">Player number who threw the grenade</param>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:Grenade.ShouldTimeslice">
+            <summary>
+                Indicates that grenades should not participate in time-slicing optimization. Always
+                returns false to ensure grenades update every frame for accurate physics and timing.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Grenade.alreadyBouncedOffUnits">
+            <summary>
+                Tracks units this grenade has bounced off when bounceOffEnemiesMultiple is false.
+                Prevents the same unit from being hit multiple times. List is populated during
+                BounceOffEnemies calls.
+            </summary>
+        </member>
+        <member name="F:Grenade.angularFrictionM">
+            <summary>
+                Multiplier for angular velocity calculations when useAngularFriction is enabled.
+                Higher values create more spin from movement and impacts. Defaults to 1.0.
+            </summary>
+        </member>
+        <member name="F:Grenade.bounceOffEnemies">
+            <summary>
+                Enables the grenade to bounce off enemy units when falling from above. Checked each
+                frame during movement updates to trigger bounce detection.
+            </summary>
+        </member>
+        <member name="F:Grenade.bounceOffEnemiesMultiple">
+            <summary>
+                When true, allows bouncing off the same enemy multiple times. When false, uses
+                alreadyBouncedOffUnits list to track and prevent repeated bounces.
+            </summary>
+        </member>
+        <member name="F:Grenade.bounceYOffset">
+            <summary>
+                Vertical offset applied during enemy bounce detection. Adjusts the collision check
+                position relative to the grenade center. Defaults to 2 units upward.
+            </summary>
+        </member>
+        <member name="F:Grenade.fragileLayer">
+            <summary>
+                Layer mask for detecting breakable objects like glass during flight. Set to
+                "DirtyHippie" layer during initialization. Used by HitFragile method for collision
+                detection.
+            </summary>
+        </member>
+        <member name="F:Grenade.useAngularFriction">
+            <summary>
+                Enables realistic rotation physics when bouncing. When true, horizontal movement
+                creates rotation and impacts affect spin based on the angularFrictionM multiplier.
+            </summary>
+        </member>
+        <member name="F:Grenade.weight">
+            <summary>
+                Mass factor affecting physics calculations. Higher weight reduces knockback effects
+                and bounce height. Used in velocity calculations for both throwing and impact
+                responses. Defaults to 1.0.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:Grenade.CreateWarningEffect">
+            <summary>
+                Spawns a red warning diamond effect at the grenade's position. Creates either a
+                normal or large warning indicator based on the largeWarning flag setting.
+            </summary>
+        </member>
+        <member name="M:Grenade.MakeEffects">
+            <summary>
+                Creates explosion visual and audio effects when the grenade detonates. Spawns either
+                a huge or normal explosion based on the hugeExplosion flag, plays the death sound,
+                and damages nearby destructible doodads.
+            </summary>
+        </member>
+        <member name="M:Grenade.ResetTrail">
+            <summary>
+                Resets trail effect tracking to the current position. Prevents visual artifacts when
+                the grenade is teleported or initially thrown by clearing the trail history.
+            </summary>
+        </member>
+        <member name="M:Grenade.RunTrail">
+            <summary>
+                Updates the grenade's visual trail effect each frame. Supports two trail types:
+                FireTrail creates spark particles along the path, while ColorTrail creates a colored
+                line based on the throwing player's color and grenade velocity. Includes
+                optimization to prevent excessive trail length.
+            </summary>
+        </member>
+        <member name="M:Grenade.RunWarnings">
+            <summary>
+                Creates visual and audio warnings before explosion. Increases warning intensity as
+                the fuse burns down, with faster flickering and higher pitch beeps when life drops
+                below 0.5 seconds. Alternates grenade material and creates warning diamonds. Also
+                triggers AI unit panic reactions.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Fields -->
+        <member name="F:Grenade.createdTrail">
+            <summary>
+                Reference to the active ProjectileTrail effect instance. Created when the grenade
+                has sufficient velocity and destroyed when velocity drops too low. Used for
+                ColorTrail type.
+            </summary>
+        </member>
+        <member name="F:Grenade.dontMakeEffects">
+            <summary>
+                When true, skips creating visual explosion effects in the Death method. Used for
+                silent explosions or when effects are handled externally.
+            </summary>
+        </member>
+        <member name="F:Grenade.explosion">
+            <summary>
+                Standard explosion visual effect component. Assigned in Unity Inspector and likely
+                triggered during the Death method for normal-sized explosions.
+            </summary>
+        </member>
+        <member name="F:Grenade.explosionBig">
+            <summary>
+                Large explosion visual effect component. Assigned in Unity Inspector and likely
+                triggered for grenades with enhanced explosion visuals.
+            </summary>
+        </member>
+        <member name="F:Grenade.fire1">
+            <summary>
+                Visual fire effect component slot 1. Assigned in Unity Inspector for grenades with
+                burning or fire trail effects. Controlled by FlickerFader component behavior.
+            </summary>
+        </member>
+        <member name="F:Grenade.fire2">
+            <summary>
+                Visual fire effect component slot 2. Assigned in Unity Inspector for grenades with
+                burning or fire trail effects. Controlled by FlickerFader component behavior.
+            </summary>
+        </member>
+        <member name="F:Grenade.fire3">
+            <summary>
+                Visual fire effect component slot 3. Assigned in Unity Inspector for grenades with
+                burning or fire trail effects. Controlled by FlickerFader component behavior.
+            </summary>
+        </member>
+        <member name="F:Grenade.flickerCounter">
+            <summary>
+                Timer controlling the material swap rate for warning flashes. Increments each frame
+                and triggers flashes at 0.0667 second intervals when life is below 0.5 seconds, or
+                0.133 second intervals otherwise.
+            </summary>
+        </member>
+        <member name="F:Grenade.hasHeroTrail">
+            <summary>
+                Flag indicating this grenade should display a hero-colored trail. Currently unused
+                in base class but available for derived grenade types.
+            </summary>
+        </member>
+        <member name="F:Grenade.hugeExplosion">
+            <summary>
+                When true, creates an enhanced explosion effect with additional visual elements and
+                low-pass audio filtering. Used for special high-powered grenades.
+            </summary>
+        </member>
+        <member name="F:Grenade.hugeExplosionLowPassM">
+            <summary>
+                Audio low-pass filter multiplier applied to huge explosion sound effects. Lower
+                values create more muffled, bass-heavy explosion sounds. Used when hugeExplosion is
+                true. Defaults to 0.1 for deep, rumbling explosions.
+            </summary>
+        </member>
+        <member name="F:Grenade.largeWarning">
+            <summary>
+                When true, displays a larger warning diamond effect during countdown. Used for
+                grenades with larger blast radius or special importance. Standard grenades use the
+                normal size.
+            </summary>
+        </member>
+        <member name="F:Grenade.lastTrailAlphaM">
+            <summary>
+                Alpha transparency multiplier for trail effects. Set to 0.5 when trail is reset,
+                though current implementation doesn't actively use this value. Defaults to 0.1.
+                Reserved for future trail fading effects.
+            </summary>
+        </member>
+        <member name="F:Grenade.lastTrailX">
+            <summary>
+                Stores the X coordinate where the last trail segment was drawn. Used to calculate
+                distance between trail points and prevent excessive trail length. Updated
+                continuously during trail rendering.
+            </summary>
+        </member>
+        <member name="F:Grenade.lastTrailY">
+            <summary>
+                Stores the Y coordinate where the last trail segment was drawn. Works with
+                lastTrailX to track trail continuity and calculate segment distances for
+                optimization.
+            </summary>
+        </member>
+        <member name="F:Grenade.mainMaterial">
+            <summary>
+                The grenade's default visual material cached from the renderer at startup. Used for
+                material swapping during warning flashes before explosion.
+            </summary>
+        </member>
+        <member name="F:Grenade.mainMaterialShowing">
+            <summary>
+                Tracks which material is currently displayed during warning flashes. Toggles between
+                true (main material) and false (other material) to create the flickering countdown
+                effect before explosion. Defaults to true.
+            </summary>
+        </member>
+        <member name="F:Grenade.otherMaterial">
+            <summary>
+                Alternate material for visual warning effects. Swapped with mainMaterial during the
+                countdown phase to create a flashing warning effect before detonation.
+            </summary>
+        </member>
+        <member name="F:Grenade.pulseCount">
+            <summary>
+                Counts the number of warning flashes during countdown. Used to trigger warning
+                effects and beep sounds on odd-numbered pulses, creating a rhythmic warning pattern.
+            </summary>
+        </member>
+        <member name="F:Grenade.shrapnel">
+            <summary>
+                Reference to shrapnel projectile prefab. Assigned in Unity Inspector for grenades
+                that spawn shrapnel on explosion. Used by derived grenade types.
+            </summary>
+        </member>
+        <member name="F:Grenade.smoke1">
+            <summary>
+                Smoke visual effect component slot 1. Assigned in Unity Inspector for smoke trails
+                or explosion smoke. Likely triggered on explosion or during flight.
+            </summary>
+        </member>
+        <member name="F:Grenade.smoke2">
+            <summary>
+                Smoke visual effect component slot 2. Assigned in Unity Inspector for smoke trails
+                or explosion smoke. Likely triggered on explosion or during flight.
+            </summary>
+        </member>
+        <member name="F:Grenade.trailDrawDelay">
+            <summary>
+                Frame counter that delays trail drawing after launch. Set to 2 frames on launch to
+                prevent trail artifacts at spawn point. Decrements each frame until reaching 0.
+            </summary>
+        </member>
+        <member name="F:Grenade.trailRenderer">
+            <summary>
+                Line renderer component for drawing colored trails. Configured in SetupGrenade to
+                match the throwing player's color. Null for grenades without colored trails.
+            </summary>
+        </member>
+        <member name="F:Grenade.trailType">
+            <summary>
+                Determines the visual trail style for this grenade. FireTrail creates spark
+                particles along the flight path, while ColorTrail creates a colored line based on
+                the throwing player.
+            </summary>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:Grenade.PlayDeathSound">
+            <summary>
+                Plays the grenade explosion sound effect at the default volume of 0.7.
+            </summary>
+        </member>
+        <member name="M:Grenade.PlayDeathSound(System.Single)">
+            <summary>
+                Plays the grenade explosion sound effect at the specified volume level.
+            </summary>
+            <param name="v">Volume level for the explosion sound (0.0 to 1.0)</param>
+        </member>
+        <member name="M:Grenade.PlaySpecialSound(System.Single)">
+            <summary>
+                Plays special grenade sound effects positioned between the grenade and camera for
+                better audibility. Used for unique grenade effects like cluster bomb separations.
+            </summary>
+            <param name="v">Volume level for the special sound (0.0 to 1.0)</param>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:Grenade.maxVelocityBounceVolume">
+            <summary>
+                Impact velocity at which bounce sounds reach maximum volume. Used to scale volume
+                between minimum and maximum based on impact force. Defaults to 210 units per second.
+            </summary>
+        </member>
+        <member name="F:Grenade.minVelocityBounceSound">
+            <summary>
+                Minimum impact velocity required to play bounce sound effects. Prevents sounds from
+                playing on gentle contacts. Defaults to 33 units per second.
+            </summary>
+        </member>
+        <member name="F:Grenade.sound">
+            <summary>
+                Cached reference to the global Sound instance. Lazily initialized when first playing
+                death sounds to avoid repeated GetInstance() calls. Used for performance
+                optimization when playing explosion audio.
+            </summary>
+        </member>
+        <member name="F:Grenade.soundHolder">
+            <summary>
+                Container for all grenade-related sound effects including defend sounds (knockback),
+                hit sounds (bouncing), death sounds (explosion), special sounds, and greeting sounds
+                (countdown beeps). Central audio management for the grenade.
+            </summary>
+        </member>
+        <!-- Networking & RPC Methods -->
+        <member name="M:Grenade.PackState(UnityStream)">
+            <summary>
+                Serializes the grenade's network state for synchronization. Packs the X/Y position
+                and enabled state into the stream, then calls base packing for additional data.
+            </summary>
+            <param name="stream">The network stream to write state data to</param>
+            <returns>The stream with serialized grenade state</returns>
+        </member>
+        <member name="M:Grenade.UnpackState(UnityStream)">
+            <summary>
+                Deserializes the grenade's network state from a stream. Reads position and enabled
+                state, applies them to the grenade, then calls base unpacking for additional data.
+            </summary>
+            <param name="stream">The network stream to read state data from</param>
+            <returns>The stream after reading grenade state</returns>
+        </member>
+        <!-- Networking & RPC Properties -->
+        <member name="P:Grenade.FiredLocally">
+            <summary>
+                Determines if this grenade was fired by the local player rather than a remote
+                networked player. Uses lazy evaluation to check if the firedBy unit is owned
+                locally, falling back to the grenade's own ownership. Critical for preventing
+                duplicate damage calculations in multiplayer.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Grenade.RunUpdate">
+            <summary>
+                Allows external code to force an immediate update cycle. Simply calls the Update
+                method to process physics and effects outside the normal update loop.
+            </summary>
+        </member>
+        <member name="M:Grenade.Update">
+            <summary>
+                Main update loop called each frame. Processes base physics updates, runs warning
+                effects when the fuse is below 1 second, and updates the visual trail.
+            </summary>
+            <returns>Always returns true to continue updating</returns>
+        </member>
+    </members>
+</doc>
