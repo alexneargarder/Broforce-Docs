@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:SpriteSM.Awake">
+            <summary>
+                Unity Awake callback that initializes the sprite system. Creates normals, gets the
+                mesh renderer component, initializes the animations array if null, builds all UV
+                animations, and calls base initialization. This ensures all sprite components are
+                properly set up before Start is called.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.OnDrawGizmos">
+            <summary>
+                Unity editor callback that monitors sprite changes during edit mode. Creates and
+                maintains a SpriteMirror instance to detect property changes, automatically
+                reinitializing the sprite when modifications are detected to ensure real-time
+                preview updates in the editor.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.Start">
+            <summary>
+                Unity Start callback that plays the default animation if configured. Checks if
+                playAnimOnStart is true, defaultAnim is within the animations array bounds, and the
+                application is playing (not in editor mode). This allows sprites to automatically
+                start animating when the game begins.
+            </summary>
+        </member>
+        <!-- Sprite Management Methods -->
+        <member name="M:SpriteSM.Clear">
+            <summary>
+                Clears the sprite state by calling base clear functionality and stopping any current
+                animation. If an animation is playing, it pauses the animation and sets the current
+                animation reference to null. This effectively resets the sprite to its initial
+                non-animated state.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.Copy(SpriteBase)">
+            <summary>
+                Copies all settings from another SpriteSM instance. Copies base sprite properties,
+                lower left pixel, pixel dimensions, bleed compensation, and size settings. Also
+                duplicates the entire animations array and rebuilds all UV animations for this
+                sprite. This creates a complete duplicate of the source sprite's visual
+                configuration.
+            </summary>
+            <param name="s">The source sprite to copy settings from. Must be a SpriteSM instance.</param>
+        </member>
+        <member name="M:SpriteSM.SetTextureDefaults">
+            <summary>
+                Sets the sprite to use the full texture dimensions as defaults. Recalculates the
+                texture reference, sets the lower left pixel to (0, texture.height), sets the sprite
+                size to match the texture dimensions, updates pixel dimensions, calculates UVs, and
+                updates the mesh UVs. This is useful for initializing a sprite to display an entire
+                texture without manual configuration.
+            </summary>
+        </member>
+        <!-- Sprite Management Fields -->
+        <member name="F:SpriteSM.lockWidthAndHeight">
+            <summary>
+                When true, forces the sprite's world size to exactly match its pixel dimensions.
+                Overrides autoResize behavior and ensures 1:1 pixel-to-unit scaling regardless of
+                other size calculation settings.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.meshRender">
+            <summary>
+                Cached reference to the Renderer component on this GameObject. Used for accessing
+                the material and texture during trim operations and pixel sampling. Initialized
+                during Awake.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.mirror">
+            <summary>
+                SpriteMirror instance used exclusively in the editor to detect property changes.
+                Stores a snapshot of sprite properties and compares them each frame to automatically
+                reinitialize the sprite when modifications occur.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.refreshMeshNow">
+            <summary>
+                Editor flag that forces an immediate mesh update when set to true. Used in editor
+                scripts to trigger sprite recreation after property changes without waiting for the
+                next update cycle.
+            </summary>
+        </member>
+        <!-- UV Coordinate System Methods -->
+        <member name="M:SpriteSM.CalcUVs">
+            <summary>
+                Calculates the UV coordinates for the sprite based on pixel coordinates. Converts
+                the lower left pixel position to UV space and sets the UV rect's position. Then
+                converts pixel dimensions to UV space and sets the UV rect's size. This mapping
+                allows the sprite to display the correct portion of its texture.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.SetLowerLeftPixel(UnityEngine.Vector2)">
+            <summary>
+                Sets the lower left pixel coordinate of the sprite on the texture and recalculates
+                all UV mappings. Updates the UV rect position and size based on the new pixel
+                coordinates, applies bleed compensation, and optionally recalculates the sprite size
+                if auto-resize or pixel-perfect mode is enabled.
+            </summary>
+            <param name="lowerLeft">The pixel coordinates of the lower left corner on the texture.</param>
+        </member>
+        <member name="M:SpriteSM.SetLowerLeftPixel(System.Single,System.Single)">
+            <summary>
+                Sets the lower left pixel coordinate of the sprite on the texture using individual X
+                and Y values. This is a convenience overload that creates a Vector2 and calls the
+                main SetLowerLeftPixel method.
+            </summary>
+            <param name="x">The X pixel coordinate on the texture.</param>
+            <param name="y">The Y pixel coordinate on the texture.</param>
+        </member>
+        <member name="M:SpriteSM.SetLowerLeftPixel(UnityEngine.Vector2)">
+            <summary>
+                Sets the lower-left corner position of the sprite within the texture in pixel
+                coordinates. Recalculates UV coordinates, applies bleed compensation, and optionally
+                resizes the sprite based on autoResize or pixelPerfect settings.
+            </summary>
+            <param name="lowerLeft">The pixel coordinates of the lower-left corner in texture space.</param>
+        </member>
+        <member name="M:SpriteSM.SetLowerLeftPixel(System.Single,System.Single)">
+            <summary>
+                Sets the lower-left corner position of the sprite within the texture using
+                individual x and y pixel coordinates. Wrapper method that creates a Vector2 and
+                calls the main SetLowerLeftPixel method.
+            </summary>
+            <param name="x">The x pixel coordinate of the lower-left corner.</param>
+            <param name="y">The y pixel coordinate of the lower-left corner.</param>
+        </member>
+        <member name="M:SpriteSM.SetPixelDimensions(UnityEngine.Vector2)">
+            <summary>
+                Sets the pixel dimensions of the sprite on the texture and updates UV coordinates
+                accordingly. Converts pixel space to UV space, updates the UV rect size, applies
+                bleed compensation, and optionally recalculates sprite size for auto-resize or
+                pixel-perfect modes. If lockWidthAndHeight is true, also updates the sprite's world
+                size to match pixel dimensions.
+            </summary>
+            <param name="size">The width and height in pixels on the texture.</param>
+        </member>
+        <member name="M:SpriteSM.SetPixelDimensions(System.Int32,System.Int32)">
+            <summary>
+                Sets the pixel dimensions of the sprite on the texture using individual width and
+                height values. This is a convenience overload that creates a Vector2 and calls the
+                main SetPixelDimensions method.
+            </summary>
+            <param name="x">The width in pixels on the texture.</param>
+            <param name="y">The height in pixels on the texture.</param>
+        </member>
+        <member name="M:SpriteSM.SetPixelDimensions(UnityEngine.Vector2)">
+            <summary>
+                Sets the pixel dimensions of the sprite region within the texture. Updates UV
+                coordinates to match the new dimensions, applies bleed compensation, and optionally
+                updates the sprite's world size based on lockWidthAndHeight, autoResize, or
+                pixelPerfect settings.
+            </summary>
+            <param name="size">The width and height in pixels of the sprite region.</param>
+        </member>
+        <member name="M:SpriteSM.SetPixelDimensions(System.Int32,System.Int32)">
+            <summary>
+                Sets the pixel dimensions of the sprite region within the texture using integer
+                width and height values. Wrapper method that creates a Vector2 and calls the main
+                SetPixelDimensions method.
+            </summary>
+            <param name="x">The width in pixels of the sprite region.</param>
+            <param name="y">The height in pixels of the sprite region.</param>
+        </member>
+        <!-- UV Coordinate System Fields -->
+        <member name="F:SpriteSM.lowerLeftPixel">
+            <summary>
+                The pixel coordinates of the lower-left corner of this sprite's region within the
+                texture. Used as the starting point for UV coordinate calculations and determines
+                which part of the texture is displayed.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.pixelDimensions">
+            <summary>
+                The width and height in pixels of this sprite's region within the texture. Combined
+                with lowerLeftPixel to define the complete rectangular area of the texture that this
+                sprite displays.
+            </summary>
+        </member>
+        <!-- Trim Operations Methods -->
+        <member name="M:SpriteSM.ExpandDown">
+            <summary>
+                Expands the sprite area downward until no more non-transparent pixels are found.
+                Checks each row below the current area, testing all pixels in that row. If any pixel
+                has alpha greater than alphaBias, expands the area to include that row. Updates
+                pixel dimensions, lower left position, size, and UVs to reflect the expanded area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.ExpandLeft">
+            <summary>
+                Expands the sprite area to the left until no more non-transparent pixels are found.
+                Checks each column to the left of the current area, testing all pixels in that
+                column. If any pixel has alpha greater than alphaBias, expands the area to include
+                that column. Updates pixel dimensions, lower left position, size, and UVs to reflect
+                the expanded area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.ExpandRight">
+            <summary>
+                Expands the sprite area to the right until no more non-transparent pixels are found.
+                Checks each column to the right of the current area, testing all pixels in that
+                column. If any pixel has alpha greater than alphaBias, expands the area to include
+                that column. Updates pixel dimensions, size, and UVs to reflect the expanded area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.ExpandUp">
+            <summary>
+                Expands the sprite area upward until no more non-transparent pixels are found.
+                Checks each row above the current area, testing all pixels in that row. If any pixel
+                has alpha greater than alphaBias, expands the area to include that row. Updates
+                pixel dimensions, size, and UVs to reflect the expanded area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.Trim">
+            <summary>
+                Automatically trims transparent pixels from all sides of the sprite to create a
+                tight bounding box. Snaps the sprite position to 0.5 unit intervals, reduces the
+                sprite to a 2x2 pixel area at the center, then iteratively expands outward until
+                non-transparent pixels are found. Finally trims any remaining transparent edges.
+                This creates the smallest possible sprite that contains all visible pixels.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.TrimBottom">
+            <summary>
+                Trims transparent pixels from the bottom of the sprite. Iterates through rows from
+                bottom to top, checking all pixels in each row. Stops when a row contains any pixel
+                with alpha greater than alphaBias. Updates the sprite's size, dimensions, lower left
+                position, and UVs to exclude the trimmed area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.TrimRight">
+            <summary>
+                Trims transparent pixels from the right side of the sprite. Iterates through columns
+                from right to left, checking all pixels in each column. Stops when a column contains
+                any pixel with alpha greater than alphaBias. Updates the sprite's dimensions and UVs
+                to exclude the trimmed area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.TrimTop">
+            <summary>
+                Trims transparent pixels from the top of the sprite. Iterates through rows from top
+                to bottom, checking all pixels in each row. Stops when a row contains any pixel with
+                alpha greater than alphaBias. Updates the sprite's size, dimensions, and UVs to
+                exclude the trimmed area.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.Trimleft">
+            <summary>
+                Trims transparent pixels from the left side of the sprite. Iterates through columns
+                from left to right, checking all pixels in each column. Stops when a column contains
+                any pixel with alpha greater than alphaBias. Updates the sprite's position,
+                dimensions, and UVs to exclude the trimmed area.
+            </summary>
+        </member>
+        <!-- Trim Operations Fields -->
+        <member name="F:SpriteSM.alphaBias">
+            <summary>
+                Alpha threshold value (0.2) used during trim operations. Pixels with alpha values
+                below this threshold are considered transparent and will be trimmed. Higher values
+                result in more aggressive trimming.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.trim">
+            <summary>
+                Editor flag that enables automatic transparent pixel trimming. When true, the sprite
+                boundaries are automatically adjusted to exclude fully transparent edges, optimizing
+                the sprite size.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:SpriteSM.AddAnimation(UVAnimation_Multi)">
+            <summary>
+                Adds a new UV animation to the sprite's animation collection. Creates a new array
+                with one additional slot, copies all existing animations, and adds the new animation
+                at the end. This allows dynamic addition of animations at runtime.
+            </summary>
+            <param name="anim">The UV animation to add to the sprite.</param>
+        </member>
+        <member name="M:SpriteSM.GetAnim(System.String)">
+            <summary>
+                Retrieves an animation by name from the animations array. Searches through all
+                configured animations and returns the first match found.
+            </summary>
+            <param name="name">The name of the animation to retrieve.</param>
+            <returns>The UVAnimation_Multi with the specified name, or null if not found.</returns>
+        </member>
+        <member name="M:SpriteSM.GetCurAnim">
+            <summary>
+                Returns the currently playing animation. Used to check animation state or access
+                animation properties during playback.
+            </summary>
+            <returns>The current UVAnimation_Multi instance, or null if no animation is playing.</returns>
+        </member>
+        <member name="M:SpriteSM.PlayAnim(UVAnimation_Multi)">
+            <summary>
+                Starts playing the specified UV animation from the beginning. Resets the animation,
+                calculates frame timing based on the animation's framerate, and begins stepping
+                through frames. For single-frame animations, immediately triggers the completion
+                delegate. Adds the sprite to the animated list if it has multiple frames and isn't
+                already animating.
+            </summary>
+            <param name="anim">The animation to play.</param>
+        </member>
+        <member name="M:SpriteSM.PlayAnim(System.Int32)">
+            <summary>
+                Plays an animation by its index in the animations array. Validates the index is
+                within bounds before playing the animation at that position.
+            </summary>
+            <param name="index">The zero-based index of the animation to play.</param>
+        </member>
+        <member name="M:SpriteSM.PlayAnim(System.String)">
+            <summary>
+                Plays an animation by its name. Searches through all animations to find one with a
+                matching name and plays the first match found. Does nothing if no animation with the
+                specified name exists.
+            </summary>
+            <param name="name">The name of the animation to play.</param>
+        </member>
+        <member name="M:SpriteSM.PlayAnimInReverse(UVAnimation_Multi)">
+            <summary>
+                Starts playing the specified UV animation in reverse from the end. Resets the
+                animation, sets it to play in reverse mode, calculates frame timing, and begins
+                stepping backwards through frames. Handles single-frame animations and animation
+                list management the same as forward playback.
+            </summary>
+            <param name="anim">The animation to play in reverse.</param>
+        </member>
+        <member name="M:SpriteSM.PlayAnimInReverse(System.Int32)">
+            <summary>
+                Plays an animation in reverse by its index in the animations array. Validates the
+                index is within bounds before playing the animation at that position in reverse.
+            </summary>
+            <param name="index">The zero-based index of the animation to play in reverse.</param>
+        </member>
+        <member name="M:SpriteSM.PlayAnimInReverse(System.String)">
+            <summary>
+                Plays the animation with the specified name in reverse direction. Searches through
+                all animations in the animations array to find a match by name, then configures it
+                to play backwards with the same framerate and animation settings as normal playback.
+            </summary>
+            <param name="name">The name of the animation to play in reverse.</param>
+        </member>
+        <member name="M:SpriteSM.StepAnim(System.Single)">
+            <summary>
+                Advances the current animation by the specified time and updates the sprite's UV
+                coordinates. Calculates frames to advance based on elapsed time and frame rate.
+                Handles animation completion according to the animation's end action (do nothing,
+                revert to static, or play default). Triggers animation complete delegate when
+                appropriate. Updates bleed compensation and recalculates size if in auto-resize or
+                pixel-perfect mode.
+            </summary>
+            <param name="time">The time in seconds to advance the animation.</param>
+            <returns>True if the animation is still playing, false if it has completed.</returns>
+        </member>
+        <member name="M:SpriteSM.StopAnim">
+            <summary>
+                Stops the currently playing animation and reverts the sprite to its static state.
+                Removes the sprite from the animation update list, resets the current animation's
+                frame counter, and restores the original UV coordinates.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.UnpauseAnim">
+            <summary>
+                Resumes playback of a previously paused animation. If a current animation exists,
+                re-adds the sprite to the animated update list to continue frame stepping.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Fields -->
+        <member name="F:SpriteSM.animations">
+            <summary>
+                Array of all UV animations configured for this sprite. Each animation contains frame
+                data, timing, and playback settings. Animations are identified by name and can be
+                played, stopped, or reversed through the animation control methods.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.curAnim">
+            <summary>
+                The currently playing animation instance. Null when no animation is active. Used by
+                the animation system to track frame progression, handle animation events, and
+                determine when animations complete.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:SpriteSM.CheckReadbility">
+            <summary>
+                Placeholder method for checking texture readability. Currently has no implementation
+                but is called before pixel read operations. This may have been intended for runtime
+                texture readability validation.
+            </summary>
+        </member>
+        <member name="M:SpriteSM.GetPixel(System.Single,System.Single)">
+            <summary>
+                Gets the color of a pixel at the specified texture coordinates. Returns transparent
+                black if the material, texture, or coordinates are invalid. Checks texture
+                readability, validates coordinates are within texture bounds, and returns the pixel
+                color. Note that Y coordinates are flipped since Unity textures have origin at
+                bottom-left.
+            </summary>
+            <param name="x">The X coordinate on the texture in pixels.</param>
+            <param name="y">The Y coordinate on the texture in pixels (bottom-left origin).</param>
+            <returns>The color of the pixel at the specified coordinates, or transparent black if
+                invalid.</returns>
+        </member>
+        <member name="M:SpriteSM.Snap(System.Single)">
+            <summary>
+                Snaps a value to the nearest interval as defined by roundInterval. Divides the value
+                by the interval, rounds to the nearest integer, then multiplies back by the
+                interval. This is used for pixel-perfect positioning and sizing.
+            </summary>
+            <param name="value">The value to snap to the grid.</param>
+            <returns>The value snapped to the nearest interval.</returns>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:SpriteSM.round">
+            <summary>
+                Enables position rounding for pixel-perfect alignment. When true, sprite positions
+                are snapped to intervals defined by roundInterval to prevent sub-pixel rendering
+                artifacts.
+            </summary>
+        </member>
+        <member name="F:SpriteSM.roundInterval">
+            <summary>
+                The rounding interval in pixels used when round is enabled. Positions are snapped to
+                multiples of this value. Default value of 1 provides standard pixel-perfect
+                alignment.
+            </summary>
+        </member>
+    </members>
+</doc>

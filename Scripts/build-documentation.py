@@ -4,6 +4,8 @@ Broforce Documentation Build Script
 
 Combines individual class XML documentation files into a single Assembly-CSharp.xml
 file that's compatible with .NET tooling (Visual Studio, IntelliSense, etc.).
+Handles all XML tags including remarks while preserving special formatting for
+summary, param, returns, and value tags.
 
 Usage: python build-documentation.py
 """
@@ -11,9 +13,7 @@ Usage: python build-documentation.py
 import os
 import glob
 from xml.etree.ElementTree import Element, SubElement, tostring, parse, ParseError
-from xml.dom import minidom
 import sys
-import html
 
 def escape_xml_text(text):
     """Escape special XML characters in text content."""
@@ -67,8 +67,88 @@ def extract_members_from_file(filepath):
         print(f"Error reading {filepath}: {e}")
         return []
 
+def format_element_generic(element, indent_level=0):
+    """Format any XML element generically with proper indentation."""
+    indent = "    " * indent_level
+    lines = []
+    
+    # Special handling for known tags to match original formatting
+    if element.tag in ['summary', 'remarks']:
+        lines.append(f'{indent}<{element.tag}>')
+        if element.text and element.text.strip():
+            # Handle multi-line text
+            text = element.text.strip()
+            text_lines = text.split('\n')
+            for text_line in text_lines:
+                if text_line.strip():
+                    escaped_line = escape_xml_text(text_line.strip())
+                    lines.append(f'{indent}{escaped_line}')
+        lines.append(f'{indent}</{element.tag}>')
+        return lines
+    
+    elif element.tag == 'param':
+        param_name = element.get('name')
+        param_text = escape_xml_text(element.text.strip() if element.text else "")
+        lines.append(f'{indent}<param name="{param_name}">{param_text}</param>')
+        return lines
+    
+    elif element.tag == 'returns':
+        returns_text = escape_xml_text(element.text.strip() if element.text else "")
+        lines.append(f'{indent}<returns>{returns_text}</returns>')
+        return lines
+    
+    elif element.tag == 'value':
+        value_text = escape_xml_text(element.text.strip() if element.text else "")
+        lines.append(f'{indent}<value>{value_text}</value>')
+        return lines
+    
+    # Generic handling for all other tags (like remarks)
+    # Build opening tag with attributes
+    tag_parts = [element.tag]
+    for attr_name, attr_value in element.attrib.items():
+        tag_parts.append(f'{attr_name}="{attr_value}"')
+    opening_tag = f'{indent}<{" ".join(tag_parts)}>'
+    
+    # Check if element has children or text
+    has_children = len(element) > 0
+    has_text = element.text and element.text.strip()
+    
+    if not has_children and not has_text:
+        # Self-closing tag
+        lines.append(f'{indent}<{" ".join(tag_parts)} />')
+    elif has_text and not has_children:
+        # Simple element with text only
+        text = escape_xml_text(element.text.strip())
+        lines.append(f'{opening_tag}{text}</{element.tag}>')
+    else:
+        # Complex element
+        lines.append(opening_tag)
+        
+        # Add text if present
+        if has_text:
+            # Handle multi-line text
+            text_lines = element.text.strip().split('\n')
+            for text_line in text_lines:
+                if text_line.strip():
+                    escaped_line = escape_xml_text(text_line.strip())
+                    lines.append(f'{indent}    {escaped_line}')
+        
+        # Process child elements
+        for child in element:
+            child_lines = format_element_generic(child, indent_level + 1)
+            lines.extend(child_lines)
+        
+        # Closing tag
+        lines.append(f'{indent}</{element.tag}>')
+    
+    # Handle tail text (text after the element)
+    if element.tail and element.tail.strip():
+        lines.append(escape_xml_text(element.tail.strip()))
+    
+    return lines
+
 def format_xml_clean(root):
-    """Format XML with clean, minimal whitespace like the original."""
+    """Format XML with clean, minimal whitespace."""
     lines = ['<doc>']
     lines.append('    <assembly>')
     lines.append('        <name>Assembly-CSharp</name>')
@@ -77,40 +157,13 @@ def format_xml_clean(root):
     
     # Process each member element
     members = root.find('members')
-    for member in members:
-        # Add member opening tag
-        name_attr = member.get('name')
-        lines.append(f'        <member name="{name_attr}">')
+    for i, member in enumerate(members):
+        if i > 0:
+            lines.append('')  # Blank line between members
         
-        # Process child elements (summary, param, returns, value, etc.)
-        for child in member:
-            if child.tag == 'summary':
-                lines.append('            <summary>')
-                if child.text and child.text.strip():
-                    # Handle multi-line summaries
-                    summary_text = child.text.strip()
-                    summary_lines = summary_text.split('\n')
-                    for summary_line in summary_lines:
-                        if summary_line.strip():
-                            escaped_line = escape_xml_text(summary_line.strip())
-                            lines.append(f'            {escaped_line}')
-                lines.append('            </summary>')
-            
-            elif child.tag == 'param':
-                param_name = child.get('name')
-                param_text = escape_xml_text(child.text.strip() if child.text else "")
-                lines.append(f'            <param name="{param_name}">{param_text}</param>')
-            
-            elif child.tag == 'returns':
-                returns_text = escape_xml_text(child.text.strip() if child.text else "")
-                lines.append(f'            <returns>{returns_text}</returns>')
-            
-            elif child.tag == 'value':
-                value_text = escape_xml_text(child.text.strip() if child.text else "")
-                lines.append(f'            <value>{value_text}</value>')
-        
-        lines.append('        </member>')
-        lines.append('')  # Single blank line between members
+        # Format member element generically
+        member_lines = format_element_generic(member, 2)
+        lines.extend(member_lines)
     
     lines.append('    </members>')
     lines.append('</doc>')
@@ -143,16 +196,11 @@ def build_combined_xml():
         members = extract_members_from_file(filepath)
         
         if members:
-            # Add a comment separator for this class
-            class_name = os.path.basename(filepath).replace('-Documentation.xml', '')
-            comment_text = f" {class_name} Members "
-            comment = f"<!-- {comment_text} -->"
-            
-            # Add comment and members to the master document
-            # Note: We'll add comments manually in the final formatting
+            # Add members to the master document
             for member in members:
                 members_container.append(member)
             
+            class_name = os.path.basename(filepath).replace('-Documentation.xml', '')
             total_members += len(members)
             print(f"    Added {len(members)} members from {class_name}")
         else:
