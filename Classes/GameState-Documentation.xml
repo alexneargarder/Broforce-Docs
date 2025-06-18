@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Core Singleton & Instance Management Properties -->
+        <member name="P:GameState.Instance">
+            <summary>
+                Gets the singleton instance of the GameState class, creating it if it doesn't exist.
+                This singleton manages persistent game state across all scenes.
+            </summary>
+        </member>
+        <member name="P:GameState.sessionID">
+            <summary>
+                Gets or sets the current network session ID. Used to maintain session continuity
+                across scene transitions in multiplayer games.
+            </summary>
+        </member>
+        <!-- Core Singleton & Instance Management Fields -->
+        <member name="F:GameState.instance">
+            <summary>
+                Private static field holding the singleton instance of GameState. Accessed through
+                the Instance property.
+            </summary>
+        </member>
+        <member name="F:GameState.sessionID2">
+            <summary>
+                Private backing field for the sessionID property. Stores the network session
+                identifier. Defaults to byte.MaxValue.
+            </summary>
+        </member>
+        <!-- Campaign & Level Properties -->
+        <member name="P:GameState.campaignName">
+            <summary>
+                Gets or sets the name of the current campaign being played. Used to track which
+                campaign the player is in across level transitions.
+            </summary>
+        </member>
+        <!-- Campaign & Level Fields -->
+        <member name="F:GameState._campaignName">
+            <summary>
+                Public backing field for the campaignName property. Stores the current campaign
+                name.
+            </summary>
+        </member>
+        <member name="F:GameState.customLevelID">
+            <summary>
+                The unique identifier for custom levels. Used when loading user-created content from
+                Steam Workshop or Playtomic.
+            </summary>
+        </member>
+        <member name="F:GameState.levelNumber">
+            <summary>
+                The current level number within the campaign. Used to track progression and
+                determine which level to load.
+            </summary>
+        </member>
+        <member name="F:GameState.loadCustomCampaign">
+            <summary>
+                Flag indicating whether the game should load a custom campaign (user-created
+                content) rather than built-in campaigns.
+            </summary>
+        </member>
+        <!-- Core State Management Methods -->
+        <member name="M:GameState.Apply">
+            <summary>
+                Applies the current GameState values to their respective game systems. Sets the
+                static instance, updates network session ID, level editor state, checkpoint data,
+                and other persistent values. Called after loading to restore game state.
+            </summary>
+        </member>
+        <member name="M:GameState.ClearSuperCheckPointStatus">
+            <summary>
+                Clears all super checkpoint related data, resetting the load offsets and checkpoint
+                position. Called when starting fresh or when checkpoint data should be discarded.
+            </summary>
+        </member>
+        <member name="M:GameState.FullRefresh">
+            <summary>
+                Performs a complete refresh of the GameState by pulling current values from various
+                game systems. Updates session ID, scene name, level editor status, publish run data,
+                and checkpoint information. Used before scene transitions to ensure state
+                consistency.
+            </summary>
+        </member>
+        <member name="M:GameState.PickRandomSeed">
+            <summary>
+                Generates a new random seed based on the current time's millisecond value. Called
+                during GameState construction and when a new random seed is needed.
+            </summary>
+        </member>
+        <member name="M:GameState.ResetToDefault">
+            <summary>
+                Resets all GameState values to their default states. This includes clearing scene
+                data, campaign info, game modes, level editor status, and checkpoint data. Commonly
+                called when returning to main menu or starting a new game session.
+            </summary>
+        </member>
+        <member name="M:GameState.SelectiveRefresh">
+            <summary>
+                Performs a selective refresh of the GameState, updating only session ID, scene name,
+                level editor status, and publish run data. Does not update checkpoint-related data.
+                Used for lighter state updates.
+            </summary>
+        </member>
+        <member name="M:GameState.ToString">
+            <summary>
+                Returns a formatted string representation of all GameState values for debugging
+                purposes. Includes scene info, campaign data, session details, game modes,
+                checkpoint status, and other state information.
+            </summary>
+            <returns>A multi-line string containing all GameState values formatted for debug output.</returns>
+        </member>
+        <!-- Scene Transition Methods -->
+        <member name="M:GameState.FadeToNextScene(System.String)">
+            <summary>
+                Initiates a fade transition to the next scene. Blocks input during the fade, sets up
+                the scene to load, and triggers the fade effect. Disables audio low pass filter for
+                the transition.
+            </summary>
+            <param name="nextScene">Optional scene name to load. If empty, uses the scene stored in GameState.sceneToLoad.</param>
+        </member>
+        <member name="M:GameState.GoBackToFreshMainMenuFromAnywhere">
+            <summary>
+                Attempts to return to the main menu from any game screen or state. Handles different
+                scenarios including being in menus, world map, hero select, or during loading.
+                Returns false if unable to determine current state.
+            </summary>
+            <returns>True if successfully initiated return to main menu, false if current state couldn't be determined.</returns>
+        </member>
+        <member name="M:GameState.LoadLevel(System.String)">
+            <summary>
+                Loads the specified level or scene, handling all necessary setup including network
+                handshakes, scene type detection, and custom campaign loading. This is the main
+                method for transitioning between game scenes.
+            </summary>
+            <param name="nextScene">Optional scene name to load. If empty, uses the scene stored in GameState.sceneToLoad.</param>
+        </member>
+        <member name="M:GameState.OnCustomLevelLoad(Campaign)">
+            <summary>
+                Callback method invoked when a custom level finishes loading from Playtomic. Sets
+                the loaded campaign as current and initiates the scene transition.
+            </summary>
+            <param name="camp">The campaign data that was loaded from the online service.</param>
+        </member>
+        <!-- Scene Transition Properties -->
+        <member name="P:GameState.sceneToLoad">
+            <summary>
+                Gets or sets the name of the scene that should be loaded next. This property is used
+                to coordinate scene transitions throughout the game.
+            </summary>
+        </member>
+        <!-- Scene Transition Fields -->
+        <member name="F:GameState._blockInputForFade">
+            <summary>
+                Tracks whether input was blocked specifically for scene fade transitions. Used to
+                properly restore input state after fade operations complete.
+            </summary>
+        </member>
+        <member name="F:GameState._sceneToLoad">
+            <summary>
+                Private backing field for the sceneToLoad property. Stores the name of the next
+                scene to load.
+            </summary>
+        </member>
+        <!-- Level Editor Fields -->
+        <member name="F:GameState.gameMode">
+            <summary>
+                The current game mode (Campaign, ExplosionRun, DeathMatch, BroDown, SuicideHorde,
+                Cutscene, Race, or NotSet). Determines gameplay rules and objectives for the current
+                session.
+            </summary>
+        </member>
+        <member name="F:GameState.levelEditorActive">
+            <summary>
+                Indicates whether the level editor is currently active. Synchronized with
+                LevelEditorGUI.levelEditorActive during state refresh operations.
+            </summary>
+        </member>
+        <member name="F:GameState.loadMode">
+            <summary>
+                Specifies how the map should be loaded (Campaign, LoadFromMapdata, LoadFromFile,
+                Generated, or NotSet). This determines the loading strategy when transitioning to a
+                new level.
+            </summary>
+        </member>
+        <member name="F:GameState.publishRun">
+            <summary>
+                Indicates whether the current session is a publish run for testing a level before
+                uploading. Synchronized with GameModeController.publishRun during state refresh
+                operations.
+            </summary>
+        </member>
+        <member name="F:GameState.publishRunSuccessful">
+            <summary>
+                Indicates whether the publish run was completed successfully. Synchronized with
+                LevelEditorGUI.publishRunSuccessful during state refresh operations.
+            </summary>
+        </member>
+        <!-- World Map & Navigation Fields -->
+        <member name="F:GameState.immediatelyGoToCustomCampaign">
+            <summary>
+                Flag to bypass menus and immediately load a custom campaign. Used for quick-loading
+                user-created content from various menu screens.
+            </summary>
+        </member>
+        <member name="F:GameState.returnToWorldMap">
+            <summary>
+                Flag indicating whether the game should return to the world map after the current
+                level. Used to control navigation flow between levels and the campaign map.
+            </summary>
+        </member>
+        <member name="F:GameState.startNewWorldMapGame">
+            <summary>
+                Flag indicating whether to start a new world map campaign game. Used when initiating
+                a fresh campaign playthrough from the main menu.
+            </summary>
+        </member>
+        <!-- Checkpoint & Spawn Management Fields -->
+        <member name="F:GameState.nextXLoadOffset">
+            <summary>
+                The X-axis offset for the next map load position. Used with super checkpoints to
+                determine spawn location when continuing from a checkpoint.
+            </summary>
+        </member>
+        <member name="F:GameState.nextYLoadOffset">
+            <summary>
+                The Y-axis offset for the next map load position. Used with super checkpoints to
+                determine spawn location when continuing from a checkpoint.
+            </summary>
+        </member>
+        <member name="F:GameState.persistPastLevelLoad">
+            <summary>
+                Determines whether certain game elements should persist when loading a new level.
+                Used to maintain continuity for specific objects or state across level transitions.
+            </summary>
+        </member>
+        <member name="F:GameState.startFromSuperCheckPoint">
+            <summary>
+                Indicates whether the level should start from a super checkpoint position. When
+                true, uses superCheckpointStartPos to determine spawn location.
+            </summary>
+        </member>
+        <member name="F:GameState.superCheckpointStartPos">
+            <summary>
+                The grid position where players should spawn when starting from a super checkpoint.
+                Only used when startFromSuperCheckPoint is true.
+            </summary>
+        </member>
+        <!-- Save Game & Progress Properties -->
+        <member name="P:GameState.hardCoreMode">
+            <summary>
+                Gets whether the game is currently in hardcore mode (Iron Bro mode). This mode
+                features permanent death and is only available in world map campaigns.
+            </summary>
+        </member>
+        <member name="P:GameState.hardMode">
+            <summary>
+                Gets whether the game is currently in hard mode. Returns the world map hard mode
+                status if in a world map campaign, otherwise returns arcade hard mode status.
+            </summary>
+        </member>
+        <!-- Save Game & Progress Fields -->
+        <member name="F:GameState.arcadeHardMode">
+            <summary>
+                Hard mode setting for arcade (non-world map) game modes. Used when
+                currentWorldmapSave is null or not in a world map campaign.
+            </summary>
+        </member>
+        <member name="F:GameState.currentWorldmapSave">
+            <summary>
+                The current world map save slot data containing campaign progress. Holds information
+                about unlocked levels, collected items, and difficulty settings for the active
+                campaign.
+            </summary>
+        </member>
+        <!-- Map Generation Fields -->
+        <member name="F:GameState.mapGenSeed">
+            <summary>
+                The seed value used for procedural map generation when useRandomMapGenSeed is true.
+                Allows for reproducible randomly generated levels.
+            </summary>
+        </member>
+        <member name="F:GameState.randomSeed">
+            <summary>
+                The random seed used for level generation and other randomized game elements. Used
+                to ensure consistency in procedural generation.
+            </summary>
+        </member>
+        <member name="F:GameState.useRandomMapGenSeed">
+            <summary>
+                Determines whether to use a specific seed for map generation. When true, uses
+                mapGenSeed value; when false, uses default generation behavior.
+            </summary>
+        </member>
+    </members>
+</doc>

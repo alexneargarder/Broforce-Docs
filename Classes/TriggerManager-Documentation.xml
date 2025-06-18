@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:TriggerManager.Awake">
+            <summary>
+                Unity Awake callback that initializes the TriggerManager singleton. Sets up the
+                instance reference and initializes all collections including activeActions, triggers
+                dictionary, bombardments list, and trigger variables.
+            </summary>
+        </member>
+        <member name="M:TriggerManager.Update">
+            <summary>
+                Main update loop for the trigger system. Evaluates all enabled triggers, processes
+                active actions based on their time offsets, updates camera control states, and
+                manages repeating bombardments. Handles special timing for offscreen player
+                destruction and blocks unit movement when needed.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Properties -->
+        <member name="P:TriggerManager.Instance">
+            <summary>
+                Gets the singleton instance of the TriggerManager. Used to access the trigger system
+                from anywhere in the game.
+            </summary>
+        </member>
+        <!-- Trigger System Core Methods -->
+        <member name="M:TriggerManager.ActivateTrigger(System.String)">
+            <summary>
+                Activates a trigger by name, enabling it and resetting its state to allow it to be
+                triggered again. Searches through all triggers in the system for a case-insensitive
+                name match. Used by level scripts to dynamically enable triggers during gameplay.
+            </summary>
+            <param name="p">The name of the trigger to activate (case-insensitive)</param>
+        </member>
+        <member name="M:TriggerManager.CheckAndTriggerLevelEndTriggers">
+            <summary>
+                Checks for and executes any level completion triggers (success or failure) based on
+                the current game state. Iterates through all enabled triggers looking for LevelFail
+                or LevelSuccess types that match the current level result.
+            </summary>
+            <returns>True if a level end trigger was found and executed, false otherwise</returns>
+        </member>
+        <member name="M:TriggerManager.ClearAlreadyTriggeredTriggerOnceTriggers">
+            <summary>
+                Clears the list of triggers that have been marked as "trigger once" and already
+                fired. This allows one-time triggers to be reset, typically used when restarting
+                levels or resetting game state.
+            </summary>
+        </member>
+        <member name="M:TriggerManager.DeactivateTrigger(System.String)">
+            <summary>
+                Deactivates a trigger by name, preventing it from being evaluated or executed.
+                Searches through all triggers for a case-insensitive name match. Used to disable
+                triggers that should no longer fire based on game state or player actions.
+            </summary>
+            <param name="p">The name of the trigger to deactivate (case-insensitive)</param>
+        </member>
+        <member name="M:TriggerManager.ExecuteTrigger_Local(Trigger)">
+            <summary>
+                Executes a trigger locally on this client, marking it as triggered and activating
+                all its associated actions. For one-time triggers, adds them to the persistent
+                tracking list. Only adds spawn actions if this is the host client to prevent
+                duplicate spawns.
+            </summary>
+            <param name="trigger">The trigger to execute</param>
+        </member>
+        <member name="M:TriggerManager.ExecuteTrigger_Networked(Trigger)">
+            <summary>
+                Executes a trigger across all connected clients by sending an RPC to execute the
+                trigger locally on each client. This ensures synchronized trigger execution in
+                multiplayer games.
+            </summary>
+            <param name="trigger">The trigger to execute on all clients</param>
+        </member>
+        <member name="M:TriggerManager.GetDeterministicUniqueTriggerName(TriggerInfo)">
+            <summary>
+                Generates a unique identifier string for a trigger based on its properties. Combines
+                the trigger's name, type, and position data to create a deterministic key used for
+                tracking one-time trigger execution across game sessions.
+            </summary>
+            <param name="trig">The trigger information to generate a unique name for</param>
+            <returns>A unique string identifier combining trigger properties</returns>
+        </member>
+        <member name="M:TriggerManager.LoadTriggers(System.Collections.Generic.List{TriggerInfo})">
+            <summary>
+                Loads and initializes all triggers for the current level from trigger info data.
+                Clears existing triggers, creates new trigger instances with deterministic IDs, and
+                restores previously triggered states for one-time triggers. Also resets the
+                PauseCameraMovements flag.
+            </summary>
+            <param name="triggerInfos">List of trigger information objects defining the triggers to create for the level</param>
+        </member>
+        <member name="M:TriggerManager.RegisterEntityTrigger(TriggerInfo)">
+            <summary>
+                Registers a new entity-based trigger at runtime, typically used for dynamically
+                spawned objects that need trigger functionality. Allocates a deterministic network
+                ID and adds the trigger to the active triggers dictionary.
+            </summary>
+            <param name="info">The trigger information defining the trigger's properties and behavior</param>
+            <returns>The newly created and registered Trigger instance, or null if TriggerManager instance doesn't exist</returns>
+        </member>
+        <member name="M:TriggerManager.Reset">
+            <summary>
+                Resets all triggers in the current level by iterating through the triggers
+                dictionary and calling Reset() on each trigger. This prepares triggers to be
+                evaluated and fired again, typically used when restarting a level or checkpoint.
+            </summary>
+        </member>
+        <!-- Trigger System Core Fields -->
+        <member name="F:TriggerManager.alreadyTriggeredTriggerOnceTriggers">
+            <summary>
+                Static list tracking unique identifiers of one-time triggers that have already been
+                executed. Persists across level loads to prevent one-time triggers from firing
+                multiple times in offline mode.
+            </summary>
+        </member>
+        <member name="F:TriggerManager.instance">
+            <summary>
+                The singleton instance of TriggerManager. Set in Awake() and accessed through the
+                Instance property to provide global access to the trigger system.
+            </summary>
+        </member>
+        <!-- Scripted Events Methods -->
+        <member
+            name="M:TriggerManager.AddRepeatingBombardment(UnityEngine.Vector3,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+                Adds a repeating bombardment pattern that will continue firing projectiles at
+                intervals. Used to create ongoing artillery barrages or environmental hazards in
+                levels.
+            </summary>
+            <param name="pos">Target position for the repeating bombardment</param>
+            <param name="seed">Random seed for determining bombardment timing and spread</param>
+            <param name="fireBallDiagonal">True to use diagonal fireball projectiles</param>
+            <param name="fireBallVertical">True to use vertical fireball projectiles</param>
+            <returns>The BombardmentRepeat instance managing this repeating attack</returns>
+        </member>
+        <member
+            name="M:TriggerManager.CreateAlienSpawnAttack(GridPoint,DirectionEnum,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
+            <summary>
+                Spawns alien enemies from a specified direction attacking a target point. Handles
+                different alien types (facehuggers, melters, xenomorphs, mosquitoes) and spawn
+                behaviors based on direction. Can spawn enemies offscreen and set up their initial
+                AI behaviors.
+            </summary>
+            <param name="targetPoint">The grid point that spawned aliens should move toward</param>
+            <param name="direciton">Direction from which aliens spawn (Up, Down, Left, Right)</param>
+            <param name="faceHuggers">True to spawn facehugger aliens</param>
+            <param name="melters">True to spawn melter/baneling aliens</param>
+            <param name="xenomorphs">True to spawn xenomorph aliens</param>
+            <param name="mosquitoes">True to spawn mosquito aliens (default if others are false)</param>
+            <param name="seed">Random seed for spawn patterns (currently unused in implementation)</param>
+            <param name="spawnOffScreen">True to spawn aliens outside the visible screen area</param>
+        </member>
+        <member
+            name="M:TriggerManager.CreateScriptedBlock(GridPoint,GroundType,System.Boolean,NID)">
+            <summary>
+                Creates a new block at runtime with specified properties, useful for dynamic level
+                modifications. Can create the block in a disturbed state (falling/moving) and
+                handles special cases like parachuting crates or cages.
+            </summary>
+            <param name="gridPoint">The grid position where the block should be placed</param>
+            <param name="groundType">The type of block to create (e.g., brick, metal, cage)</param>
+            <param name="disturbed">Whether the block should start in a disturbed/falling state</param>
+            <param name="blockNID">Network ID to assign to the block for multiplayer synchronization</param>
+            <returns>The created Block instance</returns>
+        </member>
+        <member
+            name="M:TriggerManager.CreateScriptedBombardment(UnityEngine.Vector3,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
+            <summary>
+                Creates a bombardment projectile attack at the specified position. Can create
+                diagonal fireballs, vertical fireballs, or standard artillery shells. Optionally
+                sets up repeating bombardment.
+            </summary>
+            <param name="pos">Target position for the bombardment</param>
+            <param name="repeat">Whether this bombardment should repeat at intervals</param>
+            <param name="fireBallDiagonal">True to use diagonal fireball projectiles</param>
+            <param name="fireBallVertical">True to use vertical fireball projectiles</param>
+            <param name="seed">Random seed for repeating bombardment patterns</param>
+        </member>
+        <member name="M:TriggerManager.CreateScriptedBurn(UnityEngine.Vector3)">
+            <summary>
+                Sets a block on fire at the specified location by sending a Fire damage message to
+                the block. Used for scripted fire spreading or burning sequences in levels.
+            </summary>
+            <param name="location">World position where the fire should start</param>
+        </member>
+        <member name="M:TriggerManager.CreateScriptedCollapse(UnityEngine.Vector3)">
+            <summary>
+                Triggers a block collapse at the specified location by sending an InstaGib damage
+                RPC to the block at that position. Used to create scripted terrain destruction
+                sequences.
+            </summary>
+            <param name="location">World position where the block collapse should occur</param>
+        </member>
+        <member name="M:TriggerManager.CreateScriptedExplosion(UnityEngine.Vector3,System.Int32)">
+            <summary>
+                Creates an explosion at the specified location with customizable damage.
+                Instantiates a HiddenExplosives prefab and immediately triggers its explosion,
+                useful for scripted explosive sequences in levels.
+            </summary>
+            <param name="location">World position where the explosion should occur</param>
+            <param name="damage">The damage value for the explosion</param>
+        </member>
+        <!-- Scripted Events Fields -->
+        <member name="F:TriggerManager.bombardments">
+            <summary>
+                Static list of active repeating bombardment patterns. Each bombardment fires
+                projectiles at timed intervals when visible on screen. Updated in Update() to
+                countdown and spawn projectiles with random spread.
+            </summary>
+        </member>
+        <!-- Trigger Actions Methods -->
+        <member name="M:TriggerManager.AddCountdownAction(System.Single)">
+            <summary>
+                Adds a countdown timer action to the active actions queue. Creates a system action
+                that will start the level countdown after the specified delay.
+            </summary>
+            <param name="offset">Time in seconds to wait before starting the countdown</param>
+        </member>
+        <member name="M:TriggerManager.AddExplosionRunSwoopAction">
+            <summary>
+                Creates a dramatic camera sequence that starts at the nearest checkpoint then swoops
+                to the starting position. Used for explosion run game modes to show the level before
+                the action begins.
+            </summary>
+        </member>
+        <member name="M:TriggerManager.AddPlayerIntroAction(Player,System.Single)">
+            <summary>
+                Creates a player introduction sequence with camera movements and UI elements. Adds
+                multiple timed actions including camera zoom/pan to the player, player highlighting,
+                and hero name display. Each player gets staggered timing for multiplayer intros.
+            </summary>
+            <param name="player">The player to introduce</param>
+            <param name="timeOffset">Additional time offset to add to the introduction sequence timing</param>
+        </member>
+        <member name="M:TriggerManager.ClearActions">
+            <summary>
+                Clears all active trigger actions and releases camera control back to normal
+                gameplay. Called when actions need to be cancelled or when transitioning between
+                game states.
+            </summary>
+        </member>
+        <member name="M:TriggerManager.ClearActiveCameraActions">
+            <summary>
+                Marks all active camera movement actions as done without clearing other action
+                types. Used when camera control needs to be returned to the player while other
+                actions continue.
+            </summary>
+        </member>
+        <member name="M:TriggerManager.GetActiveActions(TriggerActionType)">
+            <summary>
+                Retrieves all currently active trigger actions of a specific type. Used to query
+                what actions are running, particularly for camera control and UI systems.
+            </summary>
+            <param name="type">The type of trigger actions to retrieve</param>
+            <returns>List of active actions matching the specified type, or null if no matches found</returns>
+        </member>
+        <member name="M:TriggerManager.StartActionRPC(TriggerAction)">
+            <summary>
+                Protected method that starts a trigger action if it's in the waiting state or set to
+                repeat. Called via RPC to ensure synchronized action execution across clients.
+            </summary>
+            <param name="action">The trigger action to start</param>
+        </member>
+        <member name="M:TriggerManager.StopTriggerAction(System.String)">
+            <summary>
+                Stops all active trigger actions with the specified name by marking them as done.
+                Only affects actions currently in the Busy state. Used to interrupt ongoing
+                sequences based on game events.
+            </summary>
+            <param name="action">The name of the action(s) to stop</param>
+        </member>
+        <!-- Trigger Actions Fields -->
+        <member name="F:TriggerManager.activeActions">
+            <summary>
+                List of all currently active or pending trigger actions. Updated each frame in
+                Update() to process waiting actions, execute busy actions, and remove completed
+                ones. Initialized in Awake().
+            </summary>
+        </member>
+        <!-- Trigger Variables Methods -->
+        <member name="M:TriggerManager.GetVariableValue(System.String)">
+            <summary>
+                Retrieves the current value of a named trigger variable used for level scripting
+                logic. Variables can track counts, states, or other numeric values that triggers can
+                evaluate.
+            </summary>
+            <param name="variableName">The name of the variable to retrieve</param>
+            <returns>The current value of the variable, or -1 if the variable doesn't exist</returns>
+        </member>
+        <member name="M:TriggerManager.HasVariable(System.String)">
+            <summary>
+                Checks whether a trigger variable exists in the system. Used by triggers and actions
+                to verify variable existence before attempting to read or modify values.
+            </summary>
+            <param name="variableName">The name of the variable to check for</param>
+            <returns>True if the variable exists in the trigger variables dictionary</returns>
+        </member>
+        <member name="M:TriggerManager.IncrementVariable(System.String,System.Single)">
+            <summary>
+                Increments a trigger variable by the specified amount, creating it if it doesn't
+                exist. Fires the OnTriggerVariableChanged event after modification to notify
+                listeners of the change.
+            </summary>
+            <param name="variableName">The name of the variable to increment</param>
+            <param name="amount">The amount to add to the variable's current value (can be negative)</param>
+        </member>
+        <member name="M:TriggerManager.SetVariable(System.String,System.Single)">
+            <summary>
+                Sets a trigger variable to a specific value, creating it if it doesn't exist. Fires
+                the OnTriggerVariableChanged event after modification to notify listeners of the
+                change.
+            </summary>
+            <param name="variableName">The name of the variable to set</param>
+            <param name="amount">The new value for the variable</param>
+        </member>
+        <!-- Trigger Variables Fields -->
+        <member name="F:TriggerManager.OnTriggerVariableChanged">
+            <summary>
+                Event delegate fired whenever a trigger variable is modified through SetVariable or
+                IncrementVariable. Allows systems to react to variable changes for UI updates or
+                game logic.
+            </summary>
+        </member>
+        <!-- Camera Control Properties -->
+        <member name="P:TriggerManager.PauseCameraMovements">
+            <summary>
+                Gets or sets whether camera movement actions should be paused. When true, prevents
+                camera move trigger actions from executing, allowing manual camera control during
+                cutscenes or special sequences.
+            </summary>
+        </member>
+        <!-- Player Management Properties -->
+        <member name="P:TriggerManager.DestroyOffscreenPlayers">
+            <summary>
+                Gets or sets whether players should be destroyed when they go offscreen. When set to
+                true, initiates a 0.1 second delay before the setting automatically reverts to
+                false. Used for special level sequences where offscreen players should be
+                eliminated.
+            </summary>
+        </member>
+        <!-- Player Management Fields -->
+        <member name="F:TriggerManager.blockingUnitMovement">
+            <summary>
+                Flag that temporarily blocks all unit movement when set to true. Reset to false at
+                the start of each Update() cycle. Used by trigger actions to freeze gameplay during
+                scripted sequences.
+            </summary>
+        </member>
+        <member name="F:TriggerManager.destroyOffscreenFlipDelay">
+            <summary>
+                Countdown timer for the destroy offscreen players feature. When
+                DestroyOffscreenPlayers is set to true, this timer counts down from 0.1 seconds
+                before automatically disabling the feature.
+            </summary>
+        </member>
+        <member name="F:TriggerManager.destroyOffscreenPlayers">
+            <summary>
+                Static backing field for the DestroyOffscreenPlayers property. When true, causes
+                offscreen players to be destroyed. Automatically reverts to false after the flip
+                delay expires.
+            </summary>
+        </member>
+    </members>
+</doc>

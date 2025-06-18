@@ -254,7 +254,8 @@
         <member name="F:Shrapnel.rI">
             <summary>
                 Rotation speed in degrees per second. Set during Launch based on horizontal velocity
-                direction and random factors. Gradually reduced by bouncing impacts when configured.
+                direction, a random value, and the rotationSpeedMultiplier. Gradually reduced by
+                bouncing impacts when configured.
             </summary>
         </member>
         <member name="F:Shrapnel.randomMotion">

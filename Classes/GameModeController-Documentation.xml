@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle Methods -->
+        <member name="M:GameModeController.Awake">
+            <summary>
+                Unity Awake lifecycle method that initializes the GameModeController singleton, sets
+                up player arrays, and configures initial game mode settings.
+            </summary>
+        </member>
+        <member name="M:GameModeController.Start">
+            <summary>
+                Unity Start lifecycle method that resets level state, adds mode-specific components
+                (like RaceModeController), and clears deathmatch statistics.
+            </summary>
+        </member>
+        <member name="M:GameModeController.Update">
+            <summary>
+                Unity Update lifecycle method that handles exhibition mode timeout, monitors level
+                completion conditions, manages victory timers, and processes input for debug
+                commands.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle Fields -->
+        <member name="F:GameModeController.forcePlayLevel">
+            <summary>
+                Forces the level to play normally even if level editor is active. Used for testing
+                levels in editor mode.
+            </summary>
+        </member>
+        <member name="F:GameModeController.instance">
+            <summary>
+                Singleton instance of the GameModeController. Provides global access to game mode
+                management.
+            </summary>
+        </member>
+        <member name="F:GameModeController.lastInputTimer">
+            <summary>
+                Timer tracking seconds since last player input in exhibition mode. Increments each
+                frame and resets on any key press. When exceeding 150 seconds, automatically returns
+                to join screen for exhibition builds.
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelEditor">
+            <summary>
+                Reference to the LevelEditorGUI component for managing level editing functionality.
+            </summary>
+        </member>
+        <member name="F:GameModeController.maxPlayersJoined">
+            <summary>
+                Tracks the maximum number of players that have joined the current level. Used to
+                determine if match should end when all players are eliminated in death match modes.
+                Prevents immediate match end if only one player ever joined.
+            </summary>
+        </member>
+        <!-- Game Mode Management Methods -->
+        <member name="M:GameModeController.GetLevelResult">
+            <summary>
+                Gets the final result of the current level.
+            </summary>
+            <returns>The level result (Success, Fail, ForcedFail, or Unknown if level is not finished or instance is null).</returns>
+        </member>
+        <member name="M:GameModeController.IsHelicopterVictory">
+            <summary>
+                Determines if the level ended with a helicopter victory (players successfully
+                evacuated).
+            </summary>
+            <returns>True if the level is finished and at least one player made it to the helicopter, false otherwise.</returns>
+        </member>
+        <member name="M:GameModeController.IsInHardMode">
+            <summary>
+                Determines if the game is currently in Hard Mode based on campaign type and game
+                state.
+            </summary>
+            <returns>True if the game is in hard mode, false otherwise. Hard mode can be enabled through world map campaign settings, custom campaign options, or forced by map data.</returns>
+        </member>
+        <member name="M:GameModeController.IsLevelFinished">
+            <summary>
+                Checks if the current level has been completed.
+            </summary>
+            <returns>True if the level is finished (victory or defeat has been determined), false if the level is still in progress.</returns>
+        </member>
+        <member name="M:GameModeController.ShowStandardHUDS">
+            <summary>
+                Determines whether standard HUD elements should be displayed based on the current
+                game mode.
+            </summary>
+            <returns>True if standard HUD should be shown (Campaign mode without brutality scoring), false for competitive modes or when showing brutality score.</returns>
+        </member>
+        <!-- Game Mode Management Properties -->
+        <member name="P:GameModeController.AllowPlayerDropIn">
+            <summary>
+                Indicates whether players can join mid-game in the current game mode and conditions.
+            </summary>
+        </member>
+        <member name="P:GameModeController.GameMode">
+            <summary>
+                Gets or sets the current game mode.
+            </summary>
+        </member>
+        <member name="P:GameModeController.Instance">
+            <summary>
+                Gets the singleton instance of GameModeController.
+            </summary>
+        </member>
+        <member name="P:GameModeController.IsDeathMatchMode">
+            <summary>
+                Gets whether the current game mode is Deathmatch.
+            </summary>
+        </member>
+        <member name="P:GameModeController.IsHardcoreMode">
+            <summary>
+                Gets whether the game is in Hardcore mode (permadeath campaign mode).
+            </summary>
+        </member>
+        <member name="P:GameModeController.SpawnBeforeCountdown">
+            <summary>
+                Determines whether players should spawn before the countdown starts based on the
+                current game mode.
+            </summary>
+        </member>
+        <member name="P:GameModeController.deathMatchLives">
+            <summary>
+                Gets the number of lives each player has in Deathmatch mode.
+            </summary>
+        </member>
+        <!-- Game Mode Management Fields -->
+        <member name="F:GameModeController.broPlayer">
+            <summary>
+                In Suicide Horde mode, indicates which player is currently playing as the Bro
+                (cycles through players).
+            </summary>
+        </member>
+        <member name="F:GameModeController.campaignBeforeBrodown">
+            <summary>
+                Stores the campaign reference that was active before entering a Bro-down, used to
+                restore campaign context after tiebreaker.
+            </summary>
+        </member>
+        <member name="F:GameModeController.cheatsEnabled">
+            <summary>
+                Static flag indicating whether cheat functionality is enabled. When true, allows
+                debug commands and special key combinations. Always returns true when running in
+                Unity editor regardless of this field's value.
+            </summary>
+        </member>
+        <member name="F:GameModeController.deathmatchHero">
+            <summary>
+                Stores the hero type selection for each player in Deathmatch mode. Initialized with
+                HeroType.None for all 4 players.
+            </summary>
+        </member>
+        <member name="F:GameModeController.forceDraw">
+            <summary>
+                Forces a draw/tie outcome during match end determination. When true, forces the
+                match to end in a tie regardless of actual player performance. Used for debugging or
+                special scenarios where a draw result is required.
+            </summary>
+        </member>
+        <member name="F:GameModeController.forceRestartOnDeathInHardcoreThisLevel">
+            <summary>
+                Forces a level restart on death in Hardcore mode for this specific level. Used by
+                boss fights like Satan that require full restart.
+            </summary>
+        </member>
+        <member name="F:GameModeController.gameModeBeforeBrodown">
+            <summary>
+                Stores the game mode that was active before entering a Bro-down tiebreaker, used to
+                restore proper mode after tiebreaker.
+            </summary>
+        </member>
+        <member name="F:GameModeController.isPlayerDoingBrodown">
+            <summary>
+                Tracks which players are participating in a Bro-down tiebreaker round. Used when
+                matches end in a draw.
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelNumBeforeBrodown">
+            <summary>
+                Stores the level number that was active before entering a Bro-down, used to restore
+                level progression after tiebreaker.
+            </summary>
+        </member>
+        <member name="F:GameModeController.publishRun">
+            <summary>
+                Indicates whether the current campaign run is for publishing. When true, the game
+                treats successful completion differently, redirecting back to level editor instead
+                of normal victory screens. Used when testing custom campaigns before publishing.
+            </summary>
+        </member>
+        <member name="F:GameModeController.switchSilently">
+            <summary>
+                Controls whether level transitions display the level over screen. When true,
+                suppresses the normal level completion UI and switches levels immediately. Used for
+                seamless transitions during cutscenes or special sequences.
+            </summary>
+        </member>
+        <!-- Level Flow & Transitions Methods -->
+        <member name="M:GameModeController.FinishCampaignFromCutscene(System.Boolean)">
+            <summary>
+                Completes the current campaign from a cutscene, determining the appropriate next
+                scene based on campaign type.
+            </summary>
+            <param name="forceWorldMap">If true, forces return to world map regardless of campaign type</param>
+            <returns>The name of the scene to load next</returns>
+            <remarks>
+                Called when campaigns end via cutscenes. If returning to world map or forceWorldMap
+                is true, finishes the campaign progress and returns the world map scene. Otherwise,
+                returns the victory scene and resets arcade progress. Also saves player progress
+                after completion.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.HasEveryBodyVotedToSkip">
+            <summary>
+                Checks if all active players have voted to skip the current level.
+            </summary>
+            <returns>True if all playing players have voted to skip, false if any active player hasn't voted or no players are active.</returns>
+        </member>
+        <member name="M:GameModeController.InSwitchingScenesPhase">
+            <summary>
+                Checks if the game is currently in the process of switching between levels or
+                scenes.
+            </summary>
+            <returns>True if currently switching levels, false otherwise</returns>
+            <remarks>
+                Used by other systems to prevent actions during level transitions. The
+                switchingLevel flag is set when DetermineLevelOutcome is called and cleared when the
+                new level loads.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.LevelFinish(LevelResult)">
+            <summary>
+                Initiates the level finish sequence with the specified result.
+            </summary>
+            <param name="result">The result of the level (Success, Fail, ForcedFail, or Unknown).</param>
+        </member>
+        <member name="M:GameModeController.LevelFinishRPC(System.Int32,LevelResult)">
+            <summary>
+                RPC method that finalizes the level completion across all clients.
+            </summary>
+            <param name="finishedLevelNum">The level number that finished (used to verify synchronization).</param>
+            <param name="result">The result of the level.</param>
+        </member>
+        <member name="M:GameModeController.LoadNextScene(GameState)">
+            <summary>
+                Loads the next scene immediately without transition effects. Used for quick scene
+                changes.
+            </summary>
+            <param name="sceneAndGameState">The GameState object containing scene and game configuration to apply</param>
+            <remarks>
+                Marked with [AllowedRPC] for network synchronization. Calls LoadSceneCore for the
+                loading logic but loads the level directly without fade effects. Used when immediate
+                transitions are needed.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.LoadNextSceneFade(GameState)">
+            <summary>
+                Loads the next scene with a fade transition effect. Used for smooth scene
+                transitions.
+            </summary>
+            <param name="sceneAndGameState">The GameState object containing scene and game configuration to apply</param>
+            <remarks>
+                Marked with [AllowedRPC] for network synchronization. Calls LoadSceneCore to handle
+                the actual loading logic, then triggers a fade-to-black transition for visual
+                smoothness. Commonly used for campaign level transitions and returning to menus.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.MakeFinishInstant">
+            <summary>
+                Forces the level to finish immediately by setting the win timer to near zero.
+            </summary>
+        </member>
+        <member name="M:GameModeController.OnDisable">
+            <summary>
+                Unity callback when the component is disabled. Currently empty but provides hook for
+                cleanup operations.
+            </summary>
+        </member>
+        <member name="M:GameModeController.RequestHostRestartLevel">
+            <summary>
+                Handles client requests to restart the level. Called via RPC when non-host players
+                request a restart.
+            </summary>
+            <remarks>
+                This method is marked with [AllowedRPC] to permit network calls. Sets the next scene
+                to the current active scene and initiates the level switch process. Only the host
+                can execute the actual restart.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.RestartLevel">
+            <summary>
+                Restarts the current level by reloading the active scene. Handles host/client logic
+                for multiplayer compatibility.
+            </summary>
+            <remarks>
+                If the player is the host, immediately switches to the current scene and clears
+                persistent blocks if enabled. If the player is a client, sends an RPC request to the
+                host to restart the level and displays a chat message. This is commonly used by the
+                pause menu restart option and when players fail in certain conditions.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.ReturnToWorldMap">
+            <summary>
+                Initiates a return to the world map scene, saving the scene transition in game
+                state.
+            </summary>
+        </member>
+        <member name="M:GameModeController.SendReady">
+            <summary>
+                Sends a ready signal from the local player to all other players, used for
+                vote-to-skip functionality.
+            </summary>
+        </member>
+        <member name="M:GameModeController.SetSwitchDelay(System.Single)">
+            <summary>
+                Sets the delay before switching to the next level, allowing UI elements time to
+                display.
+            </summary>
+            <param name="d">The delay in seconds before the level switch occurs</param>
+            <remarks>
+                Used by various game systems to control transition timing. Common values are 1.5-5
+                seconds depending on what needs to be shown (victory screens, score displays, etc.).
+            </remarks>
+        </member>
+        <member name="M:GameModeController.SwitchLevel">
+            <summary>
+                Switches to the next level or scene, handling all necessary game state updates and
+                synchronization.
+            </summary>
+            <remarks>
+                Only executed by the host. Performs the following operations: - Stops all controller
+                rumble effects - Updates GameState with new session ID, random seed, campaign info,
+                and level number - Sends the new game state to all other players via RPC - Loads the
+                next scene (stored in nextScene field) - Resets level-specific variables for the new
+                level This is the primary method for transitioning between levels in all game modes.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.VoteToSkipRPC(PID)">
+            <summary>
+                RPC method that registers a player's vote to skip the level.
+            </summary>
+            <param name="sender">The PID of the player voting to skip.</param>
+        </member>
+        <!-- Level Flow & Transitions Properties -->
+        <member name="P:GameModeController.CheatsEnabled">
+            <summary>
+                Gets or sets whether cheat codes are enabled. Always returns true in the Unity
+                editor.
+            </summary>
+            <remarks>
+                Controls access to debug features like instant level completion (Ctrl+F11) and
+                forced draws (Ctrl+F8). Automatically enabled in the Unity editor for testing
+                purposes.
+            </remarks>
+        </member>
+        <member name="P:GameModeController.LevelFinished">
+            <summary>
+                Gets or sets whether the current level has been completed. Used to track level
+                completion state.
+            </summary>
+            <remarks>
+                This property is checked by many systems to determine if gameplay should continue or
+                if transition sequences should begin. Set to true when victory/defeat conditions are
+                met.
+            </remarks>
+        </member>
+        <!-- Level Flow & Transitions Fields -->
+        <member name="F:GameModeController.deathMatchRewardCounter">
+            <summary>
+                Timer controlling ammo box spawn frequency during death match reward phase.
+                Increments each frame and spawns an ammo box every 2 seconds, then decrements by 3.5
+                to create periodic spawning. Only active when deathMatchRewarded is true.
+            </summary>
+        </member>
+        <member name="F:GameModeController.deathMatchRewarded">
+            <summary>
+                Indicates whether the death match winner is currently receiving reward ammo boxes.
+                When true, periodically spawns ammo boxes from the top of the screen. Becomes false
+                when the winning player dies.
+            </summary>
+        </member>
+        <member name="F:GameModeController.deathMatchWinnerPlayerNum">
+            <summary>
+                Player number (0-3) of the death match winner during reward phase. Set to -1 when no
+                winner is determined. Used to check if winner is still alive to continue receiving
+                rewards.
+            </summary>
+        </member>
+        <member name="F:GameModeController.nextScene">
+            <summary>
+                The name of the next scene to load when transitioning levels. Empty string by
+                default.
+            </summary>
+        </member>
+        <member name="F:GameModeController.playersVotedToSkip">
+            <summary>
+                Tracks which players have voted to skip the current level results screen. Reset on
+                each level.
+            </summary>
+        </member>
+        <member name="F:GameModeController.resetWinsOnLevelSwitch">
+            <summary>
+                Controls whether player round wins are reset when switching levels. When true, calls
+                ResetPlayerRoundWins() before switching to the next level. Used to start fresh
+                scoring in new matches.
+            </summary>
+        </member>
+        <member name="F:GameModeController.stillNeedToReady">
+            <summary>
+                Array tracking which players (0-3) still need to ready up before level transition.
+                Set for all playing players when waiting for ready state. Players signal ready
+                through vote-to-skip mechanism, clearing their flag.
+            </summary>
+        </member>
+        <member name="F:GameModeController.switchLevelDelay">
+            <summary>
+                Time delay in seconds before switching to the next level. Defaults to 1.5 seconds.
+            </summary>
+        </member>
+        <member name="F:GameModeController.switchingLevel">
+            <summary>
+                Indicates whether the game is currently in the process of switching levels/scenes.
+            </summary>
+        </member>
+        <member name="F:GameModeController.waitingForAllPlayersToReady">
+            <summary>
+                Indicates whether the game is waiting for all players to ready before switching
+                levels. When true, level transition is delayed until all players in stillNeedToReady
+                array have signaled ready.
+            </summary>
+        </member>
+        <!-- Player Score Management Methods -->
+        <member name="M:GameModeController.AddPoint(System.Int32)">
+            <summary>
+                Adds a round win point to the specified player's score.
+            </summary>
+            <param name="playernum">The player number (0-3) to award a point to</param>
+            <remarks>
+                Increments the player's round win counter. Used in competitive modes to track match
+                progress toward overall victory conditions.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.DoesPlayerNumDamage(System.Int32,System.Int32)">
+            <summary>
+                Determines if damage should be applied between two player numbers based on the
+                current game mode.
+            </summary>
+            <param name="fromNum">The player number dealing damage (negative values for enemies/environment)</param>
+            <param name="toNum">The player number receiving damage (negative values for enemies/environment)</param>
+            <returns>True if damage should be applied, false if it should be prevented</returns>
+            <remarks>
+                Implements friendly fire rules per game mode: - Campaign/ExplosionRun/Race: No
+                friendly fire between players (0-3), enemies (-1) damage players -
+                DeathMatch/BroDown/SuicideHorde: Full friendly fire enabled between all players -
+                Special case: -2 and -1 can damage each other (enemy vs enemy) - Values below -5
+                represent special damage sources that affect their designated targets Critical for
+                implementing proper damage rules in different game modes.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetBrodownBroCount">
+            <summary>
+                Gets the number of players currently participating in a Brodown tiebreaker round.
+            </summary>
+            <returns>The count of players marked for Brodown participation</returns>
+            <remarks>
+                Iterates through the isPlayerDoingBrodown array to count active participants. Used
+                to set up Brodown rounds when ties occur in competitive modes. Players who tied in
+                the previous round are marked for participation.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetExplosionRunFailM">
+            <summary>
+                Calculates the failure rate in Explosion Run mode as a ratio of fails to total
+                attempts.
+            </summary>
+            <returns>The failure rate as a decimal (0.0 to 1.0), or 0 if no attempts</returns>
+            <remarks>
+                Divides total failures by total attempts to provide a failure percentage. Used for
+                difficulty scaling and statistics tracking. Returns 0 if no attempts have been made
+                to avoid division by zero.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetExplosionRunLevelFails">
+            <summary>
+                Gets the number of consecutive failures in the current Explosion Run session.
+            </summary>
+            <returns>The count of recent consecutive failures</returns>
+            <remarks>
+                Tracks recent performance for difficulty adjustment. Reset to 0 on successful
+                completion. High failure counts may trigger encouragement messages or difficulty
+                adjustments.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetExplosionRunTotalAttempts">
+            <summary>
+                Gets the total number of Explosion Run attempts in the current session.
+            </summary>
+            <returns>The total attempt count as an integer</returns>
+            <remarks>
+                Incremented each time an Explosion Run level starts. Used for statistics and
+                calculating failure rates. Persists across level attempts within a session.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetExplosionRunWinsInARow">
+            <summary>
+                Gets the current win streak in Explosion Run mode.
+            </summary>
+            <returns>The number of consecutive Explosion Run victories</returns>
+            <remarks>
+                Tracks momentum in Explosion Run mode. Reset to 0 on any failure. Used for special
+                announcements and achievements when players maintain winning streaks.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.GetPlayerRoundWins(System.Int32)">
+            <summary>
+                Gets the number of round wins for a specific player.
+            </summary>
+            <param name="playerNum">The player number (0-3).</param>
+            <returns>The number of rounds won by the player, or 0 if invalid player number.</returns>
+        </member>
+        <member name="M:GameModeController.GetWinnerNum">
+            <summary>
+                Gets the player number of the current deathmatch round winner.
+            </summary>
+            <returns>The winning player number (0-3), or -1 if no winner</returns>
+            <remarks>
+                Set when a deathmatch round ends with a clear winner. Used during the reward phase
+                to identify who should receive visual feedback and score updates.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.IsMatchLeader(System.Int32)">
+            <summary>
+                Determines if a player is currently leading the match in round wins.
+            </summary>
+            <param name="playerNum">The player number (0-3) to check.</param>
+            <returns>True if the player has the most round wins (or is tied for most), false otherwise.</returns>
+        </member>
+        <member name="M:GameModeController.ResetPlayerRoundWins">
+            <summary>
+                Resets all players' round win counts to zero.
+            </summary>
+        </member>
+        <member name="M:GameModeController.ResetPlayerRoundWins(System.Int32)">
+            <summary>
+                Resets a specific player's round win count to zero.
+            </summary>
+            <param name="playerNum">The player number (0-3) to reset.</param>
+        </member>
+        <member name="M:GameModeController.SetupIntroActions">
+            <summary>
+                Sets up countdown timers and intro sequences based on the current game mode.
+            </summary>
+            <remarks>
+                Adds appropriate countdown actions via TriggerManager: - ExplosionRun: 2-second
+                offset if not in level editor - DeathMatch/Race/BroDown: Standard countdown with no
+                offset - SuicideHorde: Immediate countdown start Called during level initialization
+                to ensure proper intro timing for each mode.
+            </remarks>
+        </member>
+        <!-- Player Score Management Fields -->
+        <member name="F:GameModeController.campaignLevelFailCount">
+            <summary>
+                Tracks consecutive failures on the current campaign level. Used to trigger
+                celebration on eventual success after multiple failures.
+            </summary>
+        </member>
+        <member name="F:GameModeController.explosionRunFailCount">
+            <summary>
+                Static counter tracking consecutive failures in Explosion Run mode for the current
+                level. Increments on failure, resets to 0 on success. Used to calculate fail rate
+                statistics.
+            </summary>
+        </member>
+        <member name="F:GameModeController.explosionRunFailTotalFails">
+            <summary>
+                Static counter tracking total Explosion Run failures across all sessions. Increments
+                by 1 for each failure. Multiplied by 0.8 when attempts over 4 to decay old data.
+                Used with explosionRunTotalAttempts to calculate fail rate.
+            </summary>
+        </member>
+        <member name="F:GameModeController.explosionRunTotalAttempts">
+            <summary>
+                Static counter tracking total Explosion Run attempts across all sessions. Increments
+                by 1 for each attempt. Multiplied by 0.8 when over 4 attempts to decay old data.
+                Used to calculate overall success/fail ratio.
+            </summary>
+        </member>
+        <member name="F:GameModeController.explosionRunWinsInARow">
+            <summary>
+                Static counter tracking consecutive Explosion Run victories. Increments on win,
+                resets to 0 on failure. Displayed to players when reaching streaks of 3 or more
+                wins.
+            </summary>
+        </member>
+        <member name="F:GameModeController.lastPlayerToWin">
+            <summary>
+                The player number (0-3) of the last player to win a round. -1 if no winner yet.
+            </summary>
+        </member>
+        <member name="F:GameModeController.playerRoundWins">
+            <summary>
+                Array tracking the number of round wins for each player in multi-round game modes.
+            </summary>
+        </member>
+        <!-- Internal Game Flow Methods -->
+        <member name="M:GameModeController.DetermineLevelOutcome">
+            <summary>
+                Determines what happens after level completion based on game mode, player
+                performance, and level results.
+            </summary>
+            <remarks>
+                This is the core method that decides post-level flow: - For Campaign: Handles
+                success/failure, checkpoint logic, mission screens, and campaign completion - For
+                ExplosionRun/Race: Manages round wins, ties, and transitions to Brodown for ties -
+                For DeathMatch: Calculates winner based on kills minus suicides, handles ties with
+                Brodown - For BroDown: Returns to previous game mode with winner determination - For
+                SuicideHorde: Restarts with random level selection Sets the next scene, switch
+                delay, and handles all mode-specific victory/defeat logic.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.InRewardPhase">
+            <summary>
+                Checks if the game is currently in the deathmatch reward phase where ammo boxes drop
+                from the sky.
+            </summary>
+            <returns>True if in the reward phase, false otherwise</returns>
+            <remarks>
+                During this phase in deathmatch, ammo boxes periodically spawn and fall from above
+                as a reward for the round winner. Used to trigger special visual effects and prevent
+                premature level transitions.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.LoadSceneCore(GameState)">
+            <summary>
+                Core scene loading logic shared by LoadNextScene and LoadNextSceneFade. Handles game
+                state setup.
+            </summary>
+            <param name="sceneAndGameState">The GameState to apply before loading</param>
+            <remarks>
+                Performs essential pre-load operations: - Runs garbage collection in editor builds -
+                Clears join-through-friend-invite flag - Hides overlay messages - Clears map data -
+                Applies the new game state - Resets time scale to 1 - Manages persistent blocks for
+                optimization - Handles instant fade for certain transitions This centralized method
+                ensures consistent state management across all scene loads.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.ReceiveStatsFromMaster(System.Byte[])">
+            <summary>
+                Receives and applies synchronized statistics data from the host player.
+            </summary>
+            <param name="stats">Serialized statistics data from the host</param>
+            <remarks>
+                Marked with [AllowedRPC] for network calls. Deserializes the received stats data and
+                applies it to the local StatisticsController. Ensures all players have consistent
+                statistics for score screens and progression tracking.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.ResetForNextLevel">
+            <summary>
+                Resets internal timers and flags in preparation for the next level.
+            </summary>
+        </member>
+        <member name="M:GameModeController.SyncStats">
+            <summary>
+                Synchronizes statistics from the host to all other players in multiplayer sessions.
+            </summary>
+            <remarks>
+                Serializes the current statistics data and sends it to all other players via RPC.
+                Called when the level finishes to ensure all players have consistent stat tracking.
+                Only executed by the host to maintain authoritative stat management.
+            </remarks>
+        </member>
+        <member name="M:GameModeController.WaitForAllPlayersToReadyBeforeSwitch">
+            <summary>
+                Initiates waiting for all players to ready up before switching levels in multiplayer
+                modes.
+            </summary>
+            <remarks>
+                Sets waitingForAllPlayersToReady flag and marks all currently playing players as
+                needing to ready. Used in competitive modes (DeathMatch, Race) to ensure all players
+                are prepared for the next round. The Update method monitors the stillNeedToReady
+                array until all players are ready.
+            </remarks>
+        </member>
+        <!-- Internal Game Flow Fields -->
+        <member name="F:GameModeController.lastDebugLivesTime">
+            <summary>
+                Unused timer field likely intended for debug display of player lives. Currently not
+                referenced anywhere in the codebase.
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelFinished">
+            <summary>
+                Indicates whether the current level has been completed (win/loss determined).
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelHasStarted">
+            <summary>
+                Tracks whether the current level has officially started gameplay (after countdown
+                and initial setup).
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelResult">
+            <summary>
+                The outcome of the current level (Success, Fail, ForcedFail, or Unknown).
+            </summary>
+        </member>
+        <member name="F:GameModeController.levelStartCounter">
+            <summary>
+                Countdown timer at level start before gameplay begins. Defaults to 2 seconds.
+            </summary>
+        </member>
+        <member name="F:GameModeController.winTimer">
+            <summary>
+                Countdown timer after level completion before transitioning to next scene. Defaults
+                to 2 seconds.
+            </summary>
+        </member>
+    </members>
+</doc>
