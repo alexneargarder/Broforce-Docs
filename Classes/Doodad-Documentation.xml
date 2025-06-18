@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Doodad.Awake">
+            <summary>
+                Initializes the doodad's rotation based on configuration settings. If rotate90 is
+                enabled, rotates the doodad 90 degrees. If flipToClosestSurface is enabled, performs
+                raycasts to find the nearest surface and orients the doodad towards it, checking
+                both downward and upward directions to ensure proper surface attachment.
+            </summary>
+        </member>
+        <member name="M:Doodad.FlipXRandom">
+            <summary>
+                Applies alternating horizontal flipping to doodads for visual variety. Uses a static
+                counter to ensure each doodad flips differently, creating a pattern where every
+                other doodad is flipped horizontally.
+            </summary>
+        </member>
+        <member name="M:Doodad.OnDestroy">
+            <summary>
+                Cleanup method called when the doodad is destroyed. When in edit mode, recursively
+                destroys all connected doodads to ensure proper cleanup of multi-part doodad
+                structures. Calls base class OnDestroy for standard cleanup.
+            </summary>
+        </member>
+        <member name="M:Doodad.SetupFirstFrame">
+            <summary>
+                Called on the first Update frame to perform additional setup that requires the game
+                to be running. Primarily handles terrain attachment by calling AttachDoodadToGround
+                if attatchToTerrain is enabled.
+            </summary>
+        </member>
+        <member name="M:Doodad.Start">
+            <summary>
+                Performs initial setup including unparenting from other doodads, setting map grid
+                position, initializing sprite offsets, registering with various Map systems
+                (destroyable doodads, decal system, grass/blood effects), and applying random X
+                flipping if configured. Also stores initial position and sets up health values.
+            </summary>
+        </member>
+        <member name="M:Doodad.Update">
+            <summary>
+                Updates the doodad state each frame. Handles delayed collapse timing by counting
+                down collapseDelay and triggering Collapse when it reaches zero. On the first frame
+                after Start, calls SetupFirstFrame to perform additional initialization.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Doodad.firstFrame">
+            <summary>
+                Tracks whether the first frame setup has been completed. Used to delay
+                initialization tasks like terrain attachment until after Start() has finished and
+                the game is not in edit mode. Reset to false after SetupFirstFrame() is called.
+            </summary>
+        </member>
+        <member name="F:Doodad.flipCount">
+            <summary>
+                Static counter used with flipXRandom to determine flip state. Incremented for each
+                doodad that uses flipXRandom, with even values resulting in normal orientation and
+                odd values resulting in X-axis mirroring.
+            </summary>
+        </member>
+        <member name="F:Doodad.flipToClosestSurface">
+            <summary>
+                Automatically orients the doodad to the nearest surface during Awake. Performs
+                raycasts downward and if no ground is found within 16 units, flips 180 degrees and
+                tries again, ensuring the doodad points toward solid terrain.
+            </summary>
+        </member>
+        <member name="F:Doodad.flipXRandom">
+            <summary>
+                Randomly flips the doodad horizontally during Start initialization. Uses a static
+                counter to alternate between normal and flipped states, providing visual variety by
+                mirroring every other instance along the X-axis.
+            </summary>
+        </member>
+        <member name="F:Doodad.initialXY">
+            <summary>
+                Stores the doodad's starting position set during Start initialization. Preserves the
+                original X and Y coordinates before any movement or physics updates, useful for
+                reset functionality or position-based calculations.
+            </summary>
+        </member>
+        <member name="F:Doodad.rotate90">
+            <summary>
+                When enabled, rotates the doodad 90 degrees clockwise around the Z-axis during
+                Awake. Applied before any flipToClosestSurface calculations, useful for objects that
+                need to be oriented differently from their default rotation.
+            </summary>
+        </member>
+        <member name="F:Doodad.unparentSelf">
+            <summary>
+                Detaches this doodad from its parent during Start while maintaining connections.
+                When the parent is also a Doodad, adds both to each other's otherConnectedDoodads
+                lists before reparenting to the grandparent, preserving logical relationships while
+                changing hierarchy.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Doodad.Collapse">
+            <summary>
+                Triggers the collapse/destruction sequence for this doodad. Marks as collapsed,
+                notifies connected systems, triggers chain anchor collapse if present, drops gibs,
+                deactivates if configured, removes from map registries, propagates collapse to
+                connected doodads with delay, forces attached block collapse if configured, and arms
+                any attached tortured villagers. Synchronized across network.
+            </summary>
+        </member>
+        <member name="M:Doodad.CollapseDelayed(System.Single)">
+            <summary>
+                Schedules this doodad to collapse after a specified delay. Sets the internal
+                collapseDelay timer which is counted down in Update until collapse is triggered.
+                Used for chain reaction collapses between connected doodads.
+            </summary>
+            <param name="delay">Time in seconds before the collapse occurs</param>
+        </member>
+        <member name="M:Doodad.Damage(DamageObject)">
+            <summary>
+                Virtual method for applying damage to the doodad. Base implementation always returns
+                false, indicating damage was not processed. Derived classes should override to
+                implement specific damage behavior.
+            </summary>
+            <param name="damageObject">The damage information including force and damage amount</param>
+            <returns>Always returns false in base implementation</returns>
+        </member>
+        <member name="M:Doodad.DamageEffects(System.Single,System.Single)">
+            <summary>
+                Creates visual and audio effects when the doodad takes damage. Plays defend sounds
+                if available and creates leaf burst effects for tree/bush type doodads. The leaf
+                effects are influenced by the damage force parameters to create directional particle
+                movement.
+            </summary>
+            <param name="xForce">Horizontal force component from the damage source</param>
+            <param name="yForce">Vertical force component from the damage source</param>
+        </member>
+        <member name="M:Doodad.DamageOptional(DamageObject,System.Boolean@)">
+            <summary>
+                Handles damage application with visual state changes based on health thresholds.
+                Applies damage if sufficient time has passed since last damage, updates material to
+                show damage states (normal damage at &gt;50% health, greater damage at &lt;=50%),
+                triggers death when health depleted, and provides damage effects feedback. The ref
+                parameter indicates whether bullet hit effects should be shown.
+            </summary>
+            <param name="damageObject">The damage information including force and damage amount</param>
+            <param name="showBulletHit">Output parameter set to true when visual damage feedback should be shown</param>
+            <returns>True if the doodad was destroyed by this damage</returns>
+        </member>
+        <member name="M:Doodad.Death">
+            <summary>
+                Handles the complete destruction of the doodad. If skeleton material is available,
+                changes to skeleton appearance and removes from destroyable list. Otherwise triggers
+                collapse and optionally kills attached gibs based on alwaysDropGibs setting. Plays
+                death sounds and creates final visual effects for trees/bushes. Registers with death
+                tracking system.
+            </summary>
+        </member>
+        <member name="M:Doodad.DropGibs">
+            <summary>
+                Spawns gib particles and debris when the doodad is destroyed. Activates
+                pre-configured gib objects, creates dynamic gibs from gibHolderPrefab with physics
+                based on last damage force, handles special cases for grass/scorched states, and can
+                create a whole doodad gib if configured. Ensures gibs are only dropped once per
+                destruction.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Doodad.CanBeDamagedByMooks">
+            <summary>
+                Controls whether enemy units (mooks) can damage this doodad. When false, only player
+                attacks can damage it.
+            </summary>
+        </member>
+        <member name="F:Doodad.GibsHaveBeenDropped">
+            <summary>
+                Tracks whether gibs have already been spawned from this doodad to prevent duplicate
+                gib creation. Set to true in DropGibs() to ensure gibs are only dropped once, even
+                if multiple damage or death events occur.
+            </summary>
+        </member>
+        <member name="F:Doodad.alwaysDropGibs">
+            <summary>
+                Forces gibs to always spawn when the doodad dies, overriding the default behavior.
+                When false, non-skeleton deaths prevent gib array elements from spawning by calling
+                Death() on each gib piece instead of dropping them.
+            </summary>
+        </member>
+        <member name="F:Doodad.collapseDelay">
+            <summary>
+                Time in seconds before the doodad collapses after CollapseDelayed is called.
+                Decremented each Update frame and triggers Collapse when it reaches zero. Default -1
+                indicates no delayed collapse is scheduled.
+            </summary>
+        </member>
+        <member name="F:Doodad.createWholeGib">
+            <summary>
+                When true, spawns the entire gib holder prefab as a single entity rather than
+                individual pieces. Used for doodads that should break into one large chunk.
+            </summary>
+        </member>
+        <member name="F:Doodad.damageDelay">
+            <summary>
+                Minimum time in seconds between damage applications. Prevents rapid damage from
+                instantly destroying the doodad. Default is 0.33 seconds.
+            </summary>
+        </member>
+        <member name="F:Doodad.damageGreaterStateMaterial">
+            <summary>
+                Material applied when health drops to 50% or below. Provides visual feedback for
+                heavy damage. If null, damageStateMaterial is used for all damage levels.
+            </summary>
+        </member>
+        <member name="F:Doodad.damageStateMaterial">
+            <summary>
+                Material applied to the doodad when health drops below maximum but above 50%.
+                Provides visual feedback for light damage.
+            </summary>
+        </member>
+        <member name="F:Doodad.damageStateSpriteOffset">
+            <summary>
+                Sprite frame offset applied when the doodad enters a damaged state. Set to -1 to
+                disable sprite-based damage visualization.
+            </summary>
+        </member>
+        <member name="F:Doodad.disableOnDeath">
+            <summary>
+                Controls whether the GameObject is deactivated when the doodad collapses or dies.
+                When true (default), the doodad's GameObject is set to inactive after collapse. Set
+                to false for doodads that should remain visible after destruction.
+            </summary>
+        </member>
+        <member name="F:Doodad.explodeGibsFromHolder">
+            <summary>
+                When gibHolderIsChild is true, determines if gibs explode outward from the holder's
+                position. Uses ExplodeFromPoint on the gibHolderPrefab with current velocities,
+                otherwise uses CreateGibsFromNestedGibHolder for standard nested spawning.
+            </summary>
+        </member>
+        <member name="F:Doodad.gibHolderIsChild">
+            <summary>
+                Determines how gibHolderPrefab is spawned. When true, treats it as a nested child
+                holder and either explodes from position or creates nested gibs. When false, uses
+                standard EffectsController.CreateGibs spawning with applied forces.
+            </summary>
+        </member>
+        <member name="F:Doodad.gibHolderPrefab">
+            <summary>
+                Prefab containing additional gib pieces to spawn when the doodad is destroyed.
+                Spawned during DropGibs based on gibHolderIsChild and explodeGibsFromHolder
+                settings, with forces applied based on lastDamageObject if available.
+            </summary>
+        </member>
+        <member name="F:Doodad.gibs">
+            <summary>
+                Array of doodad pieces that are spawned when this doodad is destroyed. These pieces
+                become active and detach from the parent when the doodad collapses or dies.
+            </summary>
+        </member>
+        <member name="F:Doodad.gibsType">
+            <summary>
+                Defines the visual and audio type of gibs spawned when destroyed. Determines
+                particle effects, sounds, and visual appearance of debris (e.g., wood splinters,
+                metal shards, leaves).
+            </summary>
+        </member>
+        <member name="F:Doodad.immuneToHeroDamage">
+            <summary>
+                Makes the doodad immune to damage from player characters. Used for doodads that
+                should only be damaged by specific sources or events.
+            </summary>
+        </member>
+        <member name="F:Doodad.isDamageable">
+            <summary>
+                Determines if this doodad can take damage from attacks. When false, the doodad is
+                indestructible and ignores all damage events.
+            </summary>
+        </member>
+        <member name="F:Doodad.isDead">
+            <summary>
+                Tracks whether this doodad has been killed. Set to true by the Death method and
+                prevents multiple death processing. Also checked by SubMergesUnit to determine if
+                the doodad still provides visual obstruction for units.
+            </summary>
+        </member>
+        <member name="F:Doodad.lastDamageObject">
+            <summary>
+                Stores the most recent DamageObject that affected this doodad. Used to determine
+                force direction and magnitude for gib spawning, damage effects, and death
+                animations. Updated by DamageOptional method before processing damage.
+            </summary>
+        </member>
+        <member name="F:Doodad.lastDamageTime">
+            <summary>
+                Tracks the time of the last damage event for damage rate limiting. Compared against
+                Time.time with damageDelay to prevent damage from being applied too frequently.
+                Updated when damage is successfully applied in DamageOptional.
+            </summary>
+        </member>
+        <member name="F:Doodad.skeletonMaterial">
+            <summary>
+                Material applied upon death to show a skeletal or destroyed state. When set, the
+                doodad remains visible as a skeleton instead of collapsing.
+            </summary>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:Doodad.centerX">
+            <summary>
+                Gets the horizontal center position of this doodad in world coordinates. Calculated
+                as the base X position plus the sprite offset, providing the actual visual center of
+                the doodad for collision detection and positioning purposes.
+            </summary>
+        </member>
+        <member name="P:Doodad.centerY">
+            <summary>
+                Gets the vertical center position of this doodad in world coordinates. Calculated as
+                the base Y position plus the sprite offset, providing the actual visual center of
+                the doodad for collision detection and positioning purposes.
+            </summary>
+        </member>
+        <member name="P:Doodad.groundLayer">
+            <summary>
+                Gets the ground layer mask used for terrain collision detection. This protected
+                property provides access to Map.groundLayer, which is used for raycasting and
+                physics queries when attaching doodads to terrain.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Doodad.collumn">
+            <summary>
+                Grid column position of the doodad in the map's terrain system. Set during
+                initialization based on the doodad's world position.
+            </summary>
+        </member>
+        <member name="F:Doodad.height">
+            <summary>
+                Height of the doodad in world units, used for collision detection and effect
+                spawning. Default is 16 units (one grid cell).
+            </summary>
+        </member>
+        <member name="F:Doodad.isImpenetrable">
+            <summary>
+                Determines if units can pass through this doodad. When true, the doodad blocks
+                movement like solid terrain.
+            </summary>
+        </member>
+        <member name="F:Doodad.offsetX">
+            <summary>
+                Horizontal offset applied to the doodad's visual position relative to its transform
+                position. Used for precise visual alignment.
+            </summary>
+        </member>
+        <member name="F:Doodad.offsetY">
+            <summary>
+                Vertical offset applied to the doodad's visual position relative to its transform
+                position. Used for precise visual alignment.
+            </summary>
+        </member>
+        <member name="F:Doodad.row">
+            <summary>
+                Grid row position of the doodad in the map's terrain system. Set during
+                initialization based on the doodad's world position.
+            </summary>
+        </member>
+        <member name="F:Doodad.width">
+            <summary>
+                Width of the doodad in world units, used for collision detection and effect
+                spawning. Default is 16 units (one grid cell).
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:Doodad.ApplyForce(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Applies force effects to the doodad from a specific position. Base implementation
+                does nothing, allowing derived classes to implement custom force reactions.
+            </summary>
+            <param name="_x">X position where the force originates</param>
+            <param name="_y">Y position where the force originates</param>
+            <param name="_xI">Horizontal force intensity to apply</param>
+            <param name="_yI">Vertical force intensity to apply</param>
+        </member>
+        <member
+            name="M:Doodad.ApplyForce(System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Applies force effects with interpolation between the force origin and doodad
+                position. Used by grass doodads to create realistic force propagation effects.
+            </summary>
+            <param name="_x">X position where the force originates</param>
+            <param name="_y">Y position where the force originates</param>
+            <param name="_xI">Horizontal force intensity to apply</param>
+            <param name="_yI">Vertical force intensity to apply</param>
+            <param name="forceM">Force multiplier for interpolation between origin and doodad position (0-1)</param>
+        </member>
+        <member name="M:Doodad.ApplyForce(System.Single,System.Single,System.Single)">
+            <summary>
+                Applies directional force with a specific intensity multiplier. Commonly used for
+                wind and explosion effects on vegetation.
+            </summary>
+            <param name="_xI">Horizontal force direction component</param>
+            <param name="_yI">Vertical force direction component</param>
+            <param name="force">Force intensity multiplier applied to the direction vector</param>
+        </member>
+        <member name="M:Doodad.ApplyForce(System.Single)">
+            <summary>
+                Applies horizontal-only force effects. Used for simple sideways force applications
+                like wind effects.
+            </summary>
+            <param name="xI">Horizontal force intensity to apply</param>
+        </member>
+        <member name="M:Doodad.AttachDoodadToGround">
+            <summary>
+                Coordinates the attachment of this doodad to surrounding terrain. Based on
+                configuration, calls AttachSideways if attachToSides is enabled, AttachUpwards if
+                attachToTopAsWell is enabled, and always calls AttachDownwards for ground
+                attachment.
+            </summary>
+        </member>
+        <member name="M:Doodad.AttachDownwards">
+            <summary>
+                Attempts to attach this doodad to terrain below it. Uses either 48 units or infinite
+                distance based on attachToGroundNoMatterHowFarDownItIs setting. If a Block is found
+                below, stores the reference in attachedToBlock and calls its AttachMe method to
+                establish the connection.
+            </summary>
+        </member>
+        <member name="M:Doodad.AttachSideways">
+            <summary>
+                Attempts to attach this doodad to terrain on either side. Performs raycasts left and
+                right to find blocks within 14 units. If a Block component is found, directly calls
+                its AttachMe method and stores the reference in attachedToSideBlock. Otherwise sends
+                an "AttachMe" message to the collider for other attachable types.
+            </summary>
+        </member>
+        <member name="M:Doodad.AttachUpwards">
+            <summary>
+                Attempts to attach this doodad to terrain above it. Performs an upward raycast to
+                find ground within 14 units and sends an "AttachMe" message to any collider found,
+                establishing a connection with blocks or other attachable objects above.
+            </summary>
+        </member>
+        <member name="M:Doodad.IsPointInRange(System.Single,System.Single,System.Single)">
+            <summary>
+                Checks if a given point is within range of this doodad's bounds. Uses fast absolute
+                value comparisons to determine if the point falls within the doodad's width and
+                height extended by the specified range value. Used by Map systems for spatial
+                queries.
+            </summary>
+            <param name="x">The X coordinate of the point to check</param>
+            <param name="y">The Y coordinate of the point to check</param>
+            <param name="range">Additional range to extend the doodad's bounds for the check</param>
+            <returns>True if the point is within the extended bounds of the doodad</returns>
+        </member>
+        <member name="M:Doodad.ShakeEffects(System.Single,System.Single)">
+            <summary>
+                Creates shake-based visual effects without applying actual physics forces. Used by
+                grass doodads to spawn leaf particles during earthquakes or impacts.
+            </summary>
+            <param name="xI">Horizontal shake intensity for effect generation</param>
+            <param name="yI">Vertical shake intensity for effect generation</param>
+        </member>
+        <member name="M:Doodad.TouchGrass(System.Int32)">
+            <summary>
+                Handles interaction when a player touches grass-type doodads. Base implementation
+                does nothing, allowing grass doodads to implement custom reactions.
+            </summary>
+            <param name="playerNum">Player number (0-3) that touched the grass</param>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:Doodad.attachToGroundNoMatterHowFarDownItIs">
+            <summary>
+                When true, removes the maximum distance limit for downward terrain attachment
+                raycasts. Normal attachment is limited to 48 units, but this flag allows attachment
+                to ground at any distance below. Useful for hanging objects or decorations that need
+                to connect to terrain far below their spawn position.
+            </summary>
+        </member>
+        <member name="F:Doodad.attachToSides">
+            <summary>
+                When true, the doodad will attempt to attach to terrain blocks on its left and right
+                sides during first frame setup. Used in conjunction with attatchToTerrain to create
+                multi-directional terrain attachment. The attachment is performed via
+                AttachSideways() method.
+            </summary>
+        </member>
+        <member name="F:Doodad.attachToTopAsWell">
+            <summary>
+                When enabled along with attatchToTerrain, allows the doodad to attach to terrain
+                above it as well as below. Uses raycasting upward to find and attach to overhead
+                blocks, useful for hanging objects or ceiling-mounted doodads.
+            </summary>
+        </member>
+        <member name="F:Doodad.attachedToBlock">
+            <summary>
+                Reference to the terrain Block this doodad is attached to below. Set during the
+                AttachDownwards process when a ground block is found via raycasting. Used to
+                establish parent-child relationships and can trigger block collapse when
+                destroyAttachedBlockOnCollapse is enabled.
+            </summary>
+        </member>
+        <member name="F:Doodad.attachedToSideBlock">
+            <summary>
+                Reference to the terrain Block this doodad is attached to on either side. Set during
+                the AttachSideways process when a side block is found via left or right raycasting.
+                Maintains the sideways attachment relationship for wall-mounted doodads.
+            </summary>
+        </member>
+        <member name="F:Doodad.attatchToTerrain">
+            <summary>
+                Enables automatic terrain attachment during first frame setup. When true, the doodad
+                will attach itself to nearby terrain blocks in multiple directions based on other
+                attachment settings. Default is true. Note: Field name contains typo "attatch"
+                instead of "attach".
+            </summary>
+        </member>
+        <member name="F:Doodad.destroyAttachedBlockOnCollapse">
+            <summary>
+                When enabled, causes the attached terrain block to collapse when this doodad
+                collapses. If attachedToBlock is set, calls CollapseForced() on it during the
+                doodad's Collapse method, creating chain destruction effects.
+            </summary>
+        </member>
+        <member name="F:Doodad.groundHit">
+            <summary>
+                Stores the RaycastHit result from terrain attachment raycasts. Used by attachment
+                methods (AttachUpwards, AttachSideways, AttachDownwards) to get collision
+                information and send attachment messages to hit objects.
+            </summary>
+        </member>
+        <member name="F:Doodad.otherConnectedDoodads">
+            <summary>
+                List of other doodads that are connected to this one. When this doodad collapses or
+                is destroyed, connected doodads will also collapse after a delay, creating chain
+                reaction destruction effects. Populated during Start() when unparenting from parent
+                doodads.
+            </summary>
+        </member>
+        <!-- Status Effects Methods -->
+        <member name="M:Doodad.Bloody">
+            <summary>
+                Applies blood effects to the doodad if it's configured to show blood and hasn't
+                already been bloodied. Changes the material to bloodyMaterial, removes the doodad
+                from the decal system, and marks it as no longer able to receive blood effects.
+                Respects onlyBloodyFromGround setting.
+            </summary>
+        </member>
+        <member name="M:Doodad.Bloody(DecalInfo)">
+            <summary>
+                Applies blood effects based on ground decal information. Only processes blood if
+                onlyBloodyFromGround is true and the decal position falls within the doodad's
+                horizontal bounds. Changes material and updates blood state similar to the
+                parameterless Bloody method.
+            </summary>
+            <param name="decal">Information about the ground decal including its position</param>
+        </member>
+        <member name="M:Doodad.ForceBloody">
+            <summary>
+                Immediately applies blood effects to the doodad by changing its material to the
+                configured bloodyMaterial. Unlike Bloody(), this method bypasses all checks and
+                forces the blood effect regardless of configuration settings.
+            </summary>
+        </member>
+        <!-- Status Effects Fields -->
+        <member name="F:Doodad.bloodyMaterial">
+            <summary>
+                The material to apply when the doodad becomes bloodied. This material replaces the
+                current renderer's material when blood effects are applied through either the
+                Bloody() or ForceBloody() methods, giving the doodad a bloodied appearance.
+            </summary>
+        </member>
+        <member name="F:Doodad.canBloody">
+            <summary>
+                Controls whether blood effects can be applied to this doodad. When true, the doodad
+                can display blood splatter when units are killed nearby.
+            </summary>
+        </member>
+        <member name="F:Doodad.isScorched">
+            <summary>
+                Indicates whether the doodad has been scorched or burned. When true, prevents gib
+                spawning from gibHolderPrefab for DoodadGrass types in the DropGibs method,
+                representing destroyed vegetation that shouldn't produce normal debris.
+            </summary>
+        </member>
+        <member name="F:Doodad.onlyBloodyFromGround">
+            <summary>
+                Determines if blood effects can only be applied from ground-based decals. When true,
+                the doodad will only become bloody if a DecalInfo ground blood effect overlaps with
+                its horizontal bounds. When false, blood can be applied through the general Bloody()
+                method.
+            </summary>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:Doodad.soundHolder">
+            <summary>
+                Reference to a SoundHolder component containing audio clips for various doodad
+                events. Used to play defendSounds during damage effects and deathSounds when the
+                doodad is destroyed. Allows audio customization per doodad type.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Doodad.SubMergesUnit">
+            <summary>
+                Determines whether this doodad should submerge or obscure units that overlap with
+                it. Returns true if the doodad is not dead, allowing alive doodads to provide visual
+                cover or submersion effects for units.
+            </summary>
+            <returns>True if units can be submerged/obscured by this doodad, false if the doodad is dead</returns>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:Doodad.doodadType">
+            <summary>
+                Categorizes this doodad using the DoodadType enumeration. Used for type-specific
+                behavior like spawning leaf effects for Tree and TreeBushes types during damage and
+                death. Also used by map generation and editor systems for doodad classification.
+            </summary>
+        </member>
+        <member name="F:Doodad.isJiggly">
+            <summary>
+                Marks this doodad as a jiggly object (typically grass or vegetation) that responds
+                to forces and movements. When true, the doodad is registered with
+                Map.RegisterGrassAndBlood() during Start() and unregistered during Collapse(),
+                enabling physics-based animations.
+            </summary>
+        </member>
+        <member name="F:Doodad.unitsCanHideBehind">
+            <summary>
+                Indicates whether units can use this doodad for cover or hiding. While not actively
+                used in the codebase, this flag is intended to mark doodads that provide visual or
+                tactical cover for units.
+            </summary>
+        </member>
+    </members>
+</doc>

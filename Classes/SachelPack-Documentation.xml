@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:SachelPack.OnDestroy">
+            <summary>
+                Removes this satchel pack from the global registry when destroyed. Calls
+                Map.RemoveSachelPack to ensure the projectile is properly unregistered from game
+                systems before calling base OnDestroy for cleanup.
+            </summary>
+        </member>
+        <member name="M:SachelPack.Update">
+            <summary>
+                Frame update that applies gravity to non-stuck projectiles and handles rotation
+                updates. Checks if the satchel is stuck to any surface (up, left, or right) and only
+                applies gravity when not stuck. Calls base Update for standard projectile processing
+                and SetRotation to update visual orientation.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:SachelPack.Death">
+            <summary>
+                Handles satchel pack destruction by notifying any object that has swallowed it
+                before calling base death behavior. If this satchel has been swallowed by an object
+                (like a worm), sends an "ExplodeWithin" message to cause internal damage before
+                dying.
+            </summary>
+        </member>
+        <member name="M:SachelPack.HitFragile">
+            <summary>
+                Handles collisions with fragile/destructible objects like doors and crates. Performs
+                a raycast in the projectile's direction to detect fragile layer objects. For doors,
+                plays a hit sound and reverses velocity based on the surface normal. For other
+                fragile objects, applies damage that can destroy them.
+            </summary>
+        </member>
+        <member name="M:SachelPack.HitProjectiles">
+            <summary>
+                Processes projectile-on-projectile collisions that can trigger early detonation.
+                Manages a hit delay timer to prevent multiple hits in quick succession. When hit by
+                another projectile, reduces the satchel's remaining lifetime and adds upward
+                velocity. Multiple hits result in increasingly shorter fuse times (0.4s for first
+                hit, 0.2s for subsequent hits).
+            </summary>
+        </member>
+        <member name="M:SachelPack.HitUnits">
+            <summary>
+                Checks for unit collisions when the satchel pack impacts entities. Simply calls
+                TryStickToUnit to attempt sticking to any unit at the current position. Overrides
+                base behavior to enable the sticky mechanic instead of standard projectile damage.
+            </summary>
+        </member>
+        <member
+            name="M:SachelPack.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+                Creates the massive explosion effects when the satchel pack detonates. Generates
+                multiple layers of fire, smoke, and explosion effects distributed within the blast
+                radius, creates shrapnel, damages terrain and units, burns units in range, shakes
+                the camera, and disturbs wildlife. Only executes once per explosion.
+            </summary>
+            <param name="particles">Whether to create particle effects (not used in implementation)</param>
+            <param name="x">X coordinate of the explosion center</param>
+            <param name="y">Y coordinate of the explosion center</param>
+            <param name="useRayCast">Whether to use raycasting for effects (not used in implementation)</param>
+            <param name="hitNormal">Normal vector of the surface hit (not used in implementation)</param>
+            <param name="point">Point of impact (not used in implementation)</param>
+        </member>
+        <member name="M:SachelPack.RunDamageBackground(System.Single)">
+            <summary>
+                Overrides base projectile behavior to disable background damage. Satchel packs don't
+                damage background elements during flight - they only cause damage through their
+                explosion effect when detonating.
+            </summary>
+            <param name="t">Time delta (not used as method is empty)</param>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:SachelPack.blastForce">
+            <summary>
+                Base explosion force multiplier for physics impulses. Multiplied by 40 when applied
+                to create a final force of 800 units that launches units and debris away from the
+                explosion center. Affects how far enemies and objects are thrown by the blast.
+            </summary>
+        </member>
+        <member name="F:SachelPack.fire1">
+            <summary>
+                Primary fire effect prefab for explosion visuals. Creates flickering flame effects
+                distributed randomly within the blast radius. Multiple instances are spawned with
+                varying delays and velocities to create a dynamic fire spread effect.
+            </summary>
+        </member>
+        <member name="F:SachelPack.range">
+            <summary>
+                Explosion blast radius in world units. Determines the area of effect for damage,
+                burning, and visual effects when the satchel pack detonates. Default value of 28
+                units creates a medium-sized explosion suitable for clearing groups of enemies.
+            </summary>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:SachelPack.DetachFromUnit">
+            <summary>
+                Detaches the satchel pack from any unit it's stuck to and disables unit sticking.
+                Called via RPC when the stuck unit dies and is moving slowly enough that the satchel
+                should fall off. Clears the stuck unit reference and prevents re-sticking.
+            </summary>
+        </member>
+        <member name="M:SachelPack.NoLongerSwallowedByObject">
+            <summary>
+                Clears the swallowed state when the satchel pack is no longer inside another object.
+                Removes the reference to the swallowing object, preventing internal explosion damage
+                when the satchel detonates.
+            </summary>
+        </member>
+        <member name="M:SachelPack.StickToUnit(Unit,UnityEngine.Vector3)">
+            <summary>
+                Attaches the satchel pack to a unit at the specified local position. If the unit has
+                enemy AI, triggers panic behavior for alerted enemies or shows a question bubble for
+                unalerted ones. This method is called via RPC to synchronize sticking across all
+                clients.
+            </summary>
+            <param name="unit">The unit to stick to</param>
+            <param name="stucklocalPos">The local position on the unit where the satchel is attached</param>
+        </member>
+        <member name="M:SachelPack.SwallowedByObject(UnityEngine.GameObject)">
+            <summary>
+                Marks this satchel pack as being swallowed by another game object. Stores a
+                reference to the swallowing object so that it can be notified to "ExplodeWithin"
+                when the satchel detonates, causing internal damage to creatures that eat it.
+            </summary>
+            <param name="gO">The GameObject that has swallowed this satchel pack</param>
+        </member>
+        <member name="M:SachelPack.TryStickToUnit">
+            <summary>
+                Attempts to stick the satchel pack to any living unit at its current position. Only
+                executes if stickyToUnits is enabled, no unit is already stuck to, and this is the
+                local player's projectile. Uses Map.GetLivingUnit to find a valid target at the
+                current coordinates.
+            </summary>
+        </member>
+        <member name="M:SachelPack.TryStickToUnit(Unit,System.Boolean)">
+            <summary>
+                Attempts to stick the satchel pack to a specific unit with optional dead unit
+                sticking. If successful, plays the stuck sound effect, calculates the local
+                attachment position, and synchronizes the attachment across all clients via RPC.
+            </summary>
+            <param name="unit">The unit to attempt sticking to</param>
+            <param name="_stickToDeadUnit">Whether the satchel should remain stuck to units after they die</param>
+        </member>
+        <!-- Special Abilities Fields -->
+        <member name="F:SachelPack.objectThatHasSwallowedMe">
+            <summary>
+                Reference to a GameObject that has swallowed this satchel pack (like a worm enemy).
+                When the satchel detonates while swallowed, it sends an "ExplodeWithin" message to
+                cause internal damage to the creature that consumed it.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stickToDeadUnit">
+            <summary>
+                Controls whether the satchel remains attached to units after they die. When false
+                (default), the satchel detaches if the dead unit's velocity drops below 100 units
+                per second. When true, stays attached regardless of death state.
+            </summary>
+        </member>
+        <member name="F:SachelPack.sticky">
+            <summary>
+                Master toggle for all sticky behavior including wall and unit sticking. When true,
+                enables special spawn point checking that allows immediate wall attachment. When
+                false, the satchel behaves as a standard bouncing projectile.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stickyToUnits">
+            <summary>
+                Enables unit sticking mechanics for this satchel pack. When true, the satchel will
+                attempt to attach to any living unit it contacts. Automatically disabled when the
+                satchel hits walls or other surfaces to prevent re-sticking after bouncing.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stuckLeft">
+            <summary>
+                Indicates the satchel is stuck to a wall on its left side. When true, the satchel
+                maintains its position using raycasts to stay attached to the surface and stops all
+                movement. Cleared if the wall is destroyed or disappears.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stuckRight">
+            <summary>
+                Indicates the satchel is stuck to a wall on its right side. When true, position is
+                locked to the wall surface using raycasts and all velocity is zeroed. Can stick to
+                damage relays and boss blocks in addition to regular terrain.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stuckToUnit">
+            <summary>
+                Reference to the unit this satchel pack is currently attached to. When set, the
+                satchel follows the unit's position and inherits its velocity. Cleared when the unit
+                dies (unless stickToDeadUnit is true) or when manually detached.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stuckTolocalPos">
+            <summary>
+                Local position offset where the satchel is attached relative to the stuck unit's
+                transform. Used with TransformPoint to maintain consistent attachment position as
+                the unit moves and rotates, creating realistic sticky bomb behavior.
+            </summary>
+        </member>
+        <member name="F:SachelPack.stuckUp">
+            <summary>
+                Indicates the satchel is stuck to a ceiling or overhead surface. Maintains position
+                relative to the surface above using raycasts. Can stick to special surfaces like
+                damage relays and boss block pieces that regular projectiles would bounce off.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:SachelPack.ApplyGravity">
+            <summary>
+                Applies downward gravitational acceleration to the satchel pack's velocity.
+                Decreases Y velocity by 600 units per second squared, creating realistic falling
+                motion for thrown satchels that aren't stuck to surfaces.
+            </summary>
+        </member>
+        <member name="M:SachelPack.CheckSpawnPoint">
+            <summary>
+                Validates and adjusts the spawn position to handle initial wall sticking for sticky
+                satchels. For sticky satchels, checks for immediate wall collisions in the throw
+                direction and sticks to surfaces if found. For non-sticky satchels, uses base spawn
+                point checking. Also attempts to stick to units at spawn position.
+            </summary>
+        </member>
+        <member
+            name="M:SachelPack.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
+            <summary>
+                Initializes and launches the satchel pack projectile. Performs initial wall
+                collision check, calls base fire method for standard setup, then registers the
+                satchel as a fetchable object for pickup mechanics and adds it to the global satchel
+                pack registry for chain detonation systems.
+            </summary>
+            <param name="x">Starting X position</param>
+            <param name="y">Starting Y position</param>
+            <param name="xI">Initial X velocity</param>
+            <param name="yI">Initial Y velocity</param>
+            <param name="_zOffset">Z-axis offset for visual depth</param>
+            <param name="playerNum">Player number who fired this projectile</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile</param>
+        </member>
+        <member name="M:SachelPack.HitWalls">
+            <summary>
+                Comprehensive wall collision detection and response system. For stuck satchels,
+                maintains position relative to the stuck surface using raycasts. For flying
+                satchels, checks all four directions for collisions. Handles special cases like saw
+                blades (instant death), damage relays and boss blocks (sticking), and regular walls
+                (bouncing). Updates position and velocity based on collision type.
+            </summary>
+            <returns>True if wall processing should continue, false if stuck to a unit</returns>
+        </member>
+        <member name="M:SachelPack.MakeBounceEffect(DirectionEnum,UnityEngine.Vector3)">
+            <summary>
+                Creates visual and audio effects when the satchel pack bounces off a surface.
+                Override this method in derived classes to add bounce particles, sparks, or other
+                impact effects at the specified position.
+            </summary>
+            <param name="direction">The direction the satchel bounced from</param>
+            <param name="pos">The world position where the bounce occurred</param>
+        </member>
+        <member name="M:SachelPack.RunProjectile(System.Single)">
+            <summary>
+                Main projectile update method that processes movement and physics. Calls the base
+                implementation to handle standard projectile behavior including position updates,
+                collision detection, and lifetime management.
+            </summary>
+            <param name="t">Delta time for this frame</param>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:SachelPack.bounceXM">
+            <summary>
+                Horizontal bounce dampening multiplier applied when the satchel impacts vertical
+                walls. Default value of 0.7 means the satchel retains 70% of its horizontal speed
+                but reverses direction, creating a realistic ricochet effect off walls.
+            </summary>
+        </member>
+        <member name="F:SachelPack.bounceYM">
+            <summary>
+                Vertical bounce dampening multiplier applied when the satchel impacts horizontal
+                surfaces. Default value of 0.3 means the satchel retains 30% of its vertical
+                velocity after bouncing, creating realistic energy loss. Ceiling bounces use a
+                slightly higher value (0.4) for gameplay reasons.
+            </summary>
+        </member>
+        <member name="F:SachelPack.frictionM">
+            <summary>
+                Ground friction multiplier applied to horizontal velocity when the satchel bounces
+                on floors. Default value of 0.4 means horizontal speed is reduced to 40% on each
+                ground contact, causing the satchel to gradually slow down and stop rolling.
+            </summary>
+        </member>
+        <member name="F:SachelPack.heightOffGround">
+            <summary>
+                Offset distance in world units between the satchel's position and surfaces it sticks
+                to. Default value of 2 units prevents the satchel from clipping into walls or
+                floors, maintaining visual separation while appearing attached to the surface.
+            </summary>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:SachelPack.PlayBounceSound(System.Single)">
+            <summary>
+                Plays impact sound effects when the satchel pack bounces off surfaces. Sound volume
+                is calculated based on total velocity, with a minimum threshold of 33 units/second
+                required to play. Volume scales quadratically with impact speed up to a maximum,
+                then multiplied by the bounceVolumeM modifier.
+            </summary>
+            <param name="velocity">The velocity component used for the bounce (not directly used, total velocity is calculated instead)</param>
+        </member>
+        <member name="M:SachelPack.PlayStuckSound(System.Single)">
+            <summary>
+                Plays the attachment sound effect when the satchel pack sticks to a surface or unit.
+                Uses the special attack sound from the sound holder at the specified volume with 3D
+                positioning at the satchel's current location.
+            </summary>
+            <param name="v">Volume level for the sound effect (typically 0.7f)</param>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:SachelPack.bounceVolumeM">
+            <summary>
+                Master volume multiplier for bounce sound effects. Scales the calculated impact
+                volume based on velocity, allowing different satchel types to have louder or quieter
+                bounce sounds. Default value of 1.0 uses normal volume scaling.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields (continued) Fields -->
+        <member name="F:SachelPack.explosion">
+            <summary>
+                Main explosion puff effect prefab. Currently not used in the implementation but
+                available for creating primary explosion visuals. The code uses shader explosions
+                instead for the main blast effect.
+            </summary>
+        </member>
+        <member name="F:SachelPack.explosionSmall">
+            <summary>
+                Small explosion puff effect prefab. Currently not used in the implementation but
+                available for creating secondary explosion effects. The code uses shader explosions
+                of varying sizes instead.
+            </summary>
+        </member>
+        <member name="F:SachelPack.fire2">
+            <summary>
+                Secondary fire effect prefab for explosion visuals. Creates additional flickering
+                flame effects that spawn alongside fire1 and fire3 to build dense fire coverage.
+                Multiple instances spawn with random positions within the blast radius and varying
+                delays between 0.1-0.7 seconds.
+            </summary>
+        </member>
+        <member name="F:SachelPack.fire3">
+            <summary>
+                Tertiary fire effect prefab for explosion visuals. Works with fire1 and fire2 to
+                create layered flame effects. Spawns once with randomized position and delay,
+                contributing to the overall fire spread pattern during detonation.
+            </summary>
+        </member>
+        <member name="F:SachelPack.hitProjectileDelay">
+            <summary>
+                Cooldown timer between projectile hit detections in seconds. Prevents multiple hits
+                from being registered in rapid succession. Resets to 0.204s after each hit and
+                counts down each frame until another hit can be detected.
+            </summary>
+        </member>
+        <member name="F:SachelPack.projectileHitCount">
+            <summary>
+                Tracks how many times this satchel has been hit by other projectiles. Used to
+                progressively shorten the fuse time with each hit - first hit reduces life to 0.4s,
+                subsequent hits reduce it to 0.2s, encouraging chain reactions.
+            </summary>
+        </member>
+        <member name="F:SachelPack.smoke1">
+            <summary>
+                Primary smoke puff effect for explosion atmosphere. Creates a single smoke cloud
+                positioned randomly within 60% of the blast radius with a short delay (0-0.2s) and
+                spreads outward at 3x the explosion range for dramatic smoke coverage.
+            </summary>
+        </member>
+        <member name="F:SachelPack.smoke2">
+            <summary>
+                Secondary smoke puff effect for explosion atmosphere. Spawns with longer delay
+                (0-0.5s) than smoke1 and uses directional velocity to spread in a specific
+                direction, creating asymmetric smoke patterns for visual variety.
+            </summary>
+        </member>
+    </members>
+</doc>

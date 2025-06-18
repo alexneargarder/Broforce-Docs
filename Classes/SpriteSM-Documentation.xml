@@ -403,8 +403,7 @@
             </summary>
             <param name="x">The X coordinate on the texture in pixels.</param>
             <param name="y">The Y coordinate on the texture in pixels (bottom-left origin).</param>
-            <returns>The color of the pixel at the specified coordinates, or transparent black if
-                invalid.</returns>
+            <returns>The color of the pixel at the specified coordinates, or transparent black if invalid.</returns>
         </member>
         <member name="M:SpriteSM.Snap(System.Single)">
             <summary>

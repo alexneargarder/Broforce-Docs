@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <doc>
     <assembly>
         <name>Assembly-CSharp</name>
@@ -53,8 +53,7 @@
             </summary>
             <param name="xI">The horizontal force applied at death.</param>
             <param name="yI">The vertical force applied at death.</param>
-            <param name="damage">The damage object containing information about what killed the
-                unit.</param>
+            <param name="damage">The damage object containing information about what killed the unit.</param>
         </member>
         <member name="M:Unit.DeathRPC(System.Single,System.Single,System.Single,System.Single)">
             <summary>
@@ -382,8 +381,7 @@
                 Negative values face left (X scale -1), positive values face right (X scale 1), and
                 zero does nothing.
             </summary>
-            <param name="direction">The direction to face (-1 for left, 1 for right, 0 for no
-                change).</param>
+            <param name="direction">The direction to face (-1 for left, 1 for right, 0 for no change).</param>
         </member>
         <member name="M:Unit.FrontSomersault">
             <summary>
@@ -1005,8 +1003,7 @@
                 returns false. Override in revivable units to implement revival mechanics.
             </summary>
             <param name="playerNum">The player number who will control the revived unit.</param>
-            <param name="isUnderPlayerControl">Whether the revived unit will be under player
-                control.</param>
+            <param name="isUnderPlayerControl">Whether the revived unit will be under player control.</param>
             <param name="reviveSource">The unit performing the revival.</param>
             <returns>True if revival was successful, false otherwise.</returns>
         </member>
@@ -1016,8 +1013,7 @@
                 local Revive method with the provided parameters.
             </summary>
             <param name="playerNum">The player number who will control the revived unit.</param>
-            <param name="isUnderPlayerControl">Whether the revived unit will be under player
-                control.</param>
+            <param name="isUnderPlayerControl">Whether the revived unit will be under player control.</param>
             <param name="reviveSource">The unit performing the revival.</param>
         </member>
         <member name="M:Unit.SetCanParachute">

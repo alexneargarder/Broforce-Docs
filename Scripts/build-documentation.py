@@ -14,6 +14,14 @@ import os
 import glob
 from xml.etree.ElementTree import Element, SubElement, tostring, parse, ParseError
 import sys
+from pathlib import Path
+
+# Add Scripts directory to path for imports
+import importlib.util
+spec = importlib.util.spec_from_file_location("format_xml", Path(__file__).parent / "format-xml.py")
+format_xml = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(format_xml)
+format_xml_file = format_xml.format_xml_file
 
 def escape_xml_text(text):
     """Escape special XML characters in text content."""
@@ -217,6 +225,13 @@ def build_combined_xml():
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write('<?xml version="1.0"?>\n')
             f.write(formatted_xml)
+        
+        # Format the XML file
+        try:
+            format_xml_file(output_file)
+        except Exception as e:
+            print(f"❌ ERROR: Failed to format XML file: {e}")
+            return False
         
         print(f"\nSuccessfully built {output_file}")
         print(f"Total members documented: {total_members}")

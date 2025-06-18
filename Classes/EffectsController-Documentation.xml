@@ -177,8 +177,7 @@
             <param name="color">The blood color type for the effect</param>
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
-            <param name="direction">Direction of spray: negative = left, positive = right, 0 =
-                upward</param>
+            <param name="direction">Direction of spray: negative = left, positive = right, 0 = upward</param>
         </member>
         <member
             name="M:EffectsController.CreateBloodExplosionSmall(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,Vector3)">
@@ -1417,8 +1416,7 @@
             <param name="xI">The initial x-velocity component</param>
             <param name="yI">The initial y-velocity component</param>
             <param name="lifeM">Life duration multiplier for the particle</param>
-            <param name="sizeM">Size multiplier (less than 2 uses small plumes, 2+ uses large
-                plumes)</param>
+            <param name="sizeM">Size multiplier (less than 2 uses small plumes, 2+ uses large plumes)</param>
         </member>
         <member
             name="M:EffectsController.CreatePlumes(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
@@ -1731,8 +1729,7 @@
                 (LargeNoWhite). All particle systems respect the delay parameter for synchronized
                 effects.
             </summary>
-            <param name="size">The explosion size enum (Tiny, Small, Medium, Large, Massive,
-                LargeNoWhite)</param>
+            <param name="size">The explosion size enum (Tiny, Small, Medium, Large, Massive, LargeNoWhite)</param>
             <param name="position">The world position for the explosion center</param>
             <param name="delay">The delay in seconds before particles start emitting</param>
         </member>
@@ -1844,8 +1841,7 @@
             <param name="count">The number of star effects to create</param>
             <param name="xI">The initial x-velocity component</param>
             <param name="yI">The initial y-velocity component</param>
-            <param name="unitTransform">The transform to parent the stars to (usually the stunned
-                unit)</param>
+            <param name="unitTransform">The transform to parent the stars to (usually the stunned unit)</param>
         </member>
         <member
             name="M:EffectsController.CreateShrapnelCircle(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
@@ -2120,8 +2116,7 @@
             <param name="xI">The initial x-velocity added to all sparks</param>
             <param name="yI">The initial y-velocity added to all sparks</param>
             <param name="redM">The red color multiplier (0=yellow, 1=red)</param>
-            <param name="particlesFloatM">The ratio of floating particles (0=all shower, 1=all
-                float)</param>
+            <param name="particlesFloatM">The ratio of floating particles (0=all shower, 1=all float)</param>
         </member>
         <member
             name="M:EffectsController.CreateStoneShrapnel(System.Single,System.Single,System.Single,System.Single)">
@@ -2311,8 +2306,7 @@
             </summary>
             <param name="position">The 2D position where the explosion should occur.</param>
             <param name="size">The size or intensity of the explosion effect.</param>
-            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or
-                secondary explosions.</param>
+            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
         </member>
         <member
             name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean)">
@@ -2322,8 +2316,7 @@
             </summary>
             <param name="position">The 3D position where the explosion should occur.</param>
             <param name="size">The size or intensity of the explosion effect.</param>
-            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or
-                secondary explosions.</param>
+            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
         </member>
         <member
             name="M:EffectsController.SpawnExplosion(UnityEngine.Vector2,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
@@ -2333,12 +2326,9 @@
             </summary>
             <param name="position">The 2D position where the explosion should occur.</param>
             <param name="size">The size or intensity of the explosion effect.</param>
-            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or
-                secondary explosions.</param>
-            <param name="positions">Output array containing the positions of all explosion
-                components created.</param>
-            <param name="sizes">Output array containing the sizes of all explosion components
-                created.</param>
+            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
+            <param name="positions">Output array containing the positions of all explosion components created.</param>
+            <param name="sizes">Output array containing the sizes of all explosion components created.</param>
         </member>
         <member
             name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
@@ -2348,12 +2338,9 @@
             </summary>
             <param name="position">The 3D position where the explosion should occur.</param>
             <param name="size">The size or intensity of the explosion effect.</param>
-            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or
-                secondary explosions.</param>
-            <param name="positions">Output array containing the positions of all explosion
-                components created.</param>
-            <param name="sizes">Output array containing the sizes of all explosion components
-                created.</param>
+            <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
+            <param name="positions">Output array containing the positions of all explosion components created.</param>
+            <param name="sizes">Output array containing the sizes of all explosion components created.</param>
         </member>
         <member
             name="M:EffectsController.SprayBlood(BloodColor,System.Int32,System.Single,System.Single,System.Single)">
@@ -3130,8 +3117,7 @@
             </summary>
             <param name="x">The x-coordinate where the dash effect appears</param>
             <param name="y">The y-coordinate where the dash effect appears</param>
-            <param name="direction">The facing direction (-1 for left, 1 for right) that determines
-                effect orientation</param>
+            <param name="direction">The facing direction (-1 for left, 1 for right) that determines effect orientation</param>
         </member>
         <member
             name="M:EffectsController.CreateDashPoofEffect_Networked(System.Single,System.Single,System.Int32)">
@@ -3143,8 +3129,7 @@
             </summary>
             <param name="x">The x-coordinate where the dash effect appears</param>
             <param name="y">The y-coordinate where the dash effect appears</param>
-            <param name="direction">The facing direction (-1 for left, 1 for right) that determines
-                effect orientation</param>
+            <param name="direction">The facing direction (-1 for left, 1 for right) that determines effect orientation</param>
         </member>
         <member
             name="M:EffectsController.CreateFallPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
@@ -3431,8 +3416,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="z">The z-coordinate in world space</param>
             <param name="delay">The delay before the puff starts (converted to xScale if not 0)</param>
-            <param name="velocity">The initial velocity (y component used as yScale if delay is not
-                0)</param>
+            <param name="velocity">The initial velocity (y component used as yScale if delay is not 0)</param>
             <param name="bloodColor">The blood color for tinting the effect</param>
             <returns>The created Puff component</returns>
         </member>
@@ -3500,8 +3484,7 @@
                 Creates an air flex effect that follows the specified transform. This visual effect
                 indicates air/wind-based status from muscle temple power-ups.
             </summary>
-            <param name="followTransform">The transform that the flex effect should follow and be
-                parented to.</param>
+            <param name="followTransform">The transform that the flex effect should follow and be parented to.</param>
             <returns>The created MuscleTempleFlexEffect instance attached to the transform.</returns>
         </member>
         <member name="M:EffectsController.CreateFlexEffectGolden(UnityEngine.Transform)">
@@ -3509,8 +3492,7 @@
                 Creates a golden flex effect that follows the specified transform. This visual
                 effect indicates golden/powered-up status from muscle temple power-ups.
             </summary>
-            <param name="followTransform">The transform that the flex effect should follow and be
-                parented to.</param>
+            <param name="followTransform">The transform that the flex effect should follow and be parented to.</param>
             <returns>The created MuscleTempleFlexEffect instance attached to the transform.</returns>
         </member>
         <member name="M:EffectsController.CreateFlexEffectInvulnerable(UnityEngine.Transform)">
@@ -3518,8 +3500,7 @@
                 Creates an invulnerability flex effect that follows the specified transform. This
                 visual effect indicates invulnerability status from muscle temple power-ups.
             </summary>
-            <param name="followTransform">The transform that the flex effect should follow and be
-                parented to.</param>
+            <param name="followTransform">The transform that the flex effect should follow and be parented to.</param>
             <returns>The created MuscleTempleFlexEffect instance attached to the transform.</returns>
         </member>
         <member
@@ -3563,8 +3544,7 @@
                 direction.
             </summary>
             <param name="position">The position where the sparkle puff originates.</param>
-            <param name="speed">The speed at which the sparkle particles move outward in random
-                directions.</param>
+            <param name="speed">The speed at which the sparkle particles move outward in random directions.</param>
         </member>
         <!-- Animation & Sprite Systems Fields -->
         <member name="F:EffectsController.boomerangWindPrefab">
@@ -3707,8 +3687,7 @@
             <param name="xI">The initial x-velocity component</param>
             <param name="yI">The initial y-velocity component</param>
             <param name="lifeM">Life duration multiplier for the particle</param>
-            <param name="sizeM">Size multiplier (less than 2 uses small variants, 2+ uses large
-                variants)</param>
+            <param name="sizeM">Size multiplier (less than 2 uses small variants, 2+ uses large variants)</param>
         </member>
         <member
             name="M:EffectsController.CreateEvilFloatParticle(System.Single,System.Single,System.Single,System.Single,System.Single)">
@@ -3754,8 +3733,7 @@
                 indicator is colored based on the unit's player number and follows the unit's
                 position.
             </summary>
-            <param name="unit">The unit to attach the hero indicator to. The indicator will be
-                parented to this unit's transform.</param>
+            <param name="unit">The unit to attach the hero indicator to. The indicator will be parented to this unit's transform.</param>
         </member>
         <member name="M:EffectsController.CreateKickPlayerBubble(System.Single,System.Single)">
             <summary>
@@ -3869,8 +3847,7 @@
             <param name="xI">The initial x-velocity component</param>
             <param name="yI">The initial y-velocity component</param>
             <param name="lifeM">Life duration multiplier for the particle</param>
-            <param name="sizeM">Size multiplier (less than 2 uses small variants, 2+ uses large
-                variants)</param>
+            <param name="sizeM">Size multiplier (less than 2 uses small variants, 2+ uses large variants)</param>
         </member>
         <member name="M:EffectsController.CreateWaterDrip">
             <summary>
@@ -4133,10 +4110,8 @@
             <param name="damage">The damage value or intensity of the slime cover to apply.</param>
             <param name="x">The X coordinate of the center position for slime coverage.</param>
             <param name="y">The Y coordinate of the center position for slime coverage.</param>
-            <param name="radius">The radius from the center point to check for surfaces to cover
-                with slime.</param>
-            <param name="onlyDownward">If true, only applies slime to surfaces below the center Y
-                position. Default is false.</param>
+            <param name="radius">The radius from the center point to check for surfaces to cover with slime.</param>
+            <param name="onlyDownward">If true, only applies slime to surfaces below the center Y position. Default is false.</param>
         </member>
         <member name="M:EffectsController.DeregisterTickingBillboard(OilAccidentTicker)">
             <summary>
@@ -4617,8 +4592,7 @@
             </summary>
             <param name="x">The x-coordinate of the freeze effect</param>
             <param name="y">The y-coordinate of the freeze effect</param>
-            <param name="parentTransform">Optional transform to parent the effect to (null for world
-                space)</param>
+            <param name="parentTransform">Optional transform to parent the effect to (null for world space)</param>
         </member>
         <member
             name="M:EffectsController.CreateNinjaSmokeEffect(System.Single,System.Single,System.Single,System.Single)">

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <doc>
     <assembly>
         <name>Assembly-CSharp</name>
@@ -35,10 +35,8 @@
             <param name="firedBy">The MonoBehaviour that threw this grenade.</param>
             <param name="x">The X position to spawn the grenade.</param>
             <param name="y">The Y position to spawn the grenade.</param>
-            <param name="radius">The explosion radius of the grenade (passed to SetupGrenade but
-                actual usage depends on grenade type).</param>
-            <param name="force">The explosion force of the grenade (passed to SetupGrenade but
-                actual usage depends on grenade type).</param>
+            <param name="radius">The explosion radius of the grenade (passed to SetupGrenade but actual usage depends on grenade type).</param>
+            <param name="force">The explosion force of the grenade (passed to SetupGrenade but actual usage depends on grenade type).</param>
             <param name="xI">The initial X velocity of the grenade.</param>
             <param name="yI">The initial Y velocity of the grenade.</param>
             <param name="playerNum">The player number who owns this grenade.</param>
@@ -61,8 +59,7 @@
             <param name="xI">The initial X velocity of the grenade.</param>
             <param name="yI">The initial Y velocity of the grenade.</param>
             <param name="playerNum">The player number who owns this grenade.</param>
-            <param name="lifeM">Life multiplier for the grenade. Values less than 1 reduce the
-                grenade's fuse time.</param>
+            <param name="lifeM">Life multiplier for the grenade. Values less than 1 reduce the grenade's fuse time.</param>
             <returns>The spawned Grenade instance.</returns>
         </member>
         <member
@@ -107,8 +104,7 @@
                 overload for local projectile creation.
             </summary>
             <param name="projectilePrefab">The projectile prefab to instantiate.</param>
-            <param name="FiredBy">The MonoBehaviour that fired this projectile (usually the
-                character or weapon).</param>
+            <param name="FiredBy">The MonoBehaviour that fired this projectile (usually the character or weapon).</param>
             <param name="x">The X position to spawn the projectile.</param>
             <param name="y">The Y position to spawn the projectile.</param>
             <param name="xI">The initial X velocity of the projectile.</param>
@@ -166,13 +162,10 @@
             <param name="y">The Y position to spawn the projectile.</param>
             <param name="xI">The initial X velocity of the projectile.</param>
             <param name="yI">The initial Y velocity of the projectile.</param>
-            <param name="synced">Whether to enable continuous network synchronization for this
-                projectile.</param>
+            <param name="synced">Whether to enable continuous network synchronization for this projectile.</param>
             <param name="playerNum">The player number who owns this projectile.</param>
-            <param name="AddTemporaryPlayerTarget">Whether to add this projectile as a temporary
-                target for the specified player.</param>
-            <param name="executeImmediately">Whether to execute the network commands immediately or
-                queue them.</param>
+            <param name="AddTemporaryPlayerTarget">Whether to add this projectile as a temporary target for the specified player.</param>
+            <param name="executeImmediately">Whether to execute the network commands immediately or queue them.</param>
             <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
             <returns>The spawned Projectile instance.</returns>
         </member>
@@ -185,8 +178,7 @@
             </summary>
             <param name="portalPrefab">The warlock portal prefab to instantiate.</param>
             <param name="seenPlayerNum">The player number associated with this portal.</param>
-            <param name="spawnPos">The position to spawn the portal. Portal is not created if this
-                is Vector2.zero.</param>
+            <param name="spawnPos">The position to spawn the portal. Portal is not created if this is Vector2.zero.</param>
             <param name="delay">Delay in seconds before the portal activates.</param>
         </member>
         <!-- Projectile Return System Methods -->
@@ -199,12 +191,9 @@
             </summary>
             <param name="x">The X position to check.</param>
             <param name="y">The Y position to check.</param>
-            <param name="playerNum">The current player number of the projectile. Updated to the
-                zone's player number if a zone is found.</param>
-            <param name="returnZone">Output parameter that receives the ProjectileReturnZone if one
-                is found at the position.</param>
-            <param name="zoneFiredBy">Output parameter that receives the MonoBehaviour that created
-                the return zone.</param>
+            <param name="playerNum">The current player number of the projectile. Updated to the zone's player number if a zone is found.</param>
+            <param name="returnZone">Output parameter that receives the ProjectileReturnZone if one is found at the position.</param>
+            <param name="zoneFiredBy">Output parameter that receives the MonoBehaviour that created the return zone.</param>
             <returns>True if a return zone was found at the position, false otherwise.</returns>
         </member>
         <member name="M:ProjectileController.RegisterReturnZone(ProjectileReturnZone)">

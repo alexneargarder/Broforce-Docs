@@ -1,0 +1,1334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:PlayerHUD.Awake">
+            <summary>
+                Initializes core HUD components before Start. Stores original avatar sprite
+                properties for later restoration after special animations, initializes fuel gauge
+                dimensions if present, and hides the face hugger indicator. Called once when the
+                GameObject is created.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.Hide">
+            <summary>
+                Hides the entire HUD by deactivating its GameObject. Sets the hidden flag to true to
+                track visibility state. Used when HUD should be completely invisible, such as during
+                cutscenes or when the player is not active.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.LateUpdate">
+            <summary>
+                Updates HUD state and positioning every frame after all Update calls. Monitors
+                screen resolution changes and camera orthographic size to reposition HUD elements,
+                handles F12 key press to hide HUD, manages HUD visibility based on game state and
+                map editing mode, updates avatar state when player character dies, sets player name
+                if not already set, manages special frame animations and timing, updates damage
+                multiplier display for procedural generation mode, refreshes controller information,
+                and updates flex power icon display based on current power-up type.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.Setup(System.Int32,System.Int32)">
+            <summary>
+                Configures the complete HUD for a specific player. Positions HUD in the appropriate
+                screen corner based on player number (0-3), sets up avatar facing direction,
+                initializes grenade/special icons, configures player-specific text displays
+                (lives/wins), sets player color frame, handles flex power icon visibility, manages
+                online/offline name display differences, and establishes proper UI hierarchy under
+                the UI camera.
+            </summary>
+            <param name="lives">Initial number of lives to display (used in Campaign mode)</param>
+            <param name="playerNum">Player index (0-3) determining HUD position: 0=bottom-left, 1=bottom-right, 2=top-left, 3=top-right</param>
+        </member>
+        <member name="M:PlayerHUD.SetupFuelGuage">
+            <summary>
+                Configures the fuel gauge sprite anchor and size based on HUD direction. Left-facing
+                HUDs (-1) anchor the fuel gauge to the middle-right so it grows leftward.
+                Right-facing HUDs (1) anchor to middle-left so it grows rightward. Sets the gauge to
+                its defined width and height, then hides it initially since most bros use grenades
+                instead of fuel.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.SetupIcons(SpriteSM[],System.Int32,System.Boolean)">
+            <summary>
+                Positions an array of icons (typically grenade icons) in a horizontal row. Icons are
+                spaced 10 units apart with an 18-unit offset from the avatar. For double avatar
+                mode, adds an additional 6-unit offset in the direction. All icons are positioned at
+                z=2 with y=-0.1. Direction determines whether icons extend left (-1) or right (1)
+                from the avatar.
+            </summary>
+            <param name="icons">Array of sprite icons to position</param>
+            <param name="direction">-1 for left-facing HUD, 1 for right-facing HUD</param>
+            <param name="doubleAvatar">True if showing two avatars, adds extra spacing</param>
+        </member>
+        <member name="M:PlayerHUD.Show">
+            <summary>
+                Shows the HUD by activating its GameObject. Clears the hidden flag to indicate the
+                HUD is visible. Used to restore HUD visibility after it has been hidden.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.Start">
+            <summary>
+                Completes HUD initialization after Awake. Sets up the fuel gauge display, clears
+                name text field, configures seed display for procedural generation test builds, and
+                deactivates unused UI elements. Called after all Awake methods have been called.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:PlayerHUD.currentCameraOrthographicSize">
+            <summary>
+                Cached orthographic size of the UI camera. Defaults to 128 which is the standard UI
+                camera size. Updated by SetPosition() when HUD is repositioned. Compared against
+                current UI camera orthographic size in LateUpdate() to detect camera zoom changes
+                that require HUD repositioning. Ensures HUD scales properly with camera adjustments.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.currentScreenHeight">
+            <summary>
+                Cached screen height in pixels used to detect resolution changes. Updated by
+                SetPosition() method when HUD repositioning occurs. Compared against Screen.height
+                in LateUpdate() to determine when screen resolution has changed and HUD elements
+                need to be repositioned. Works with currentScreenWidth to ensure HUD remains
+                properly positioned across different display resolutions.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.currentScreenWidth">
+            <summary>
+                Cached screen width in pixels used to detect resolution changes. Updated by
+                SetPosition() method when HUD repositioning occurs. Compared against Screen.width in
+                LateUpdate() to determine when screen resolution has changed and HUD elements need
+                to be repositioned. Part of the resolution change detection system along with
+                currentScreenHeight and currentCameraOrthographicSize.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.hidden">
+            <summary>
+                Indicates whether the HUD is currently hidden. Set to true when F12 is pressed or
+                when in map editing mode. When true, prevents grenade count updates and other HUD
+                operations. Restored to false when HUD display conditions are met again.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.player">
+            <summary>
+                Reference to the Player object that owns this HUD. Set during Setup() by accessing
+                HeroController.players array at playerNum index. Used to check player-specific
+                states like flex powers and online ownership. May be null if player disconnects or
+                before Setup() is called. Primary link between HUD display and actual player game
+                state for real-time updates.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.playerBorderPadding">
+            <summary>
+                Padding in pixels added to the player frame border when displayed. Applied to both
+                width and height when sizing the player frame around name/no-name backgrounds.
+                Default value: 10 pixels.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.playerNum">
+            <summary>
+                Index identifying which player (0-3) this HUD belongs to. Initialized to -1
+                indicating unassigned. Set during Setup() method and determines HUD positioning:
+                0=bottom-left, 1=bottom-right, 2=top-left, 3=top-right. Used throughout the class to
+                access player-specific data from HeroController arrays and determine UI layout
+                direction (even numbers face right, odd numbers face left).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.wasMoving">
+            <summary>
+                Tracks whether the HUD was repositioning in the previous frame due to screen size
+                changes or camera orthographic size changes. Used to optimize SetPosition() calls by
+                only updating when transitioning from moving to stationary state.
+            </summary>
+        </member>
+        <!-- Player State Display Methods -->
+        <member name="M:PlayerHUD.GoToDoubleAvatarMode(UnityEngine.Material,UnityEngine.Material)">
+            <summary>
+                Switches the HUD to display two avatars side by side for two-player bros like
+                BoondockBros. Returns immediately if avatar sprites are null. Sets materials for
+                both avatars, activates and positions the second avatar 12 units to the side and 2
+                units down from the first, configures second avatar size and facing direction, and
+                updates UI spacing to accommodate both avatars.
+            </summary>
+            <param name="avatar1">Material for the first/primary avatar</param>
+            <param name="avatar2">Material for the second avatar</param>
+        </member>
+        <member name="M:PlayerHUD.HideFaceHugger">
+            <summary>
+                Hides the face hugger overlay from the avatar display. Sets the showFaceHugger flag
+                to false, resets the avatar sprite to show the normal face position (y=64), and
+                deactivates the face hugger sprite GameObject.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.SetAvatar(UnityEngine.Material)">
+            <summary>
+                Changes the avatar display to show a different character. Hides any face hugger
+                overlay, updates the renderer's material, recalculates texture coordinates for the
+                new sprite sheet, resets sprite properties to original values, maintains proper
+                facing direction, and triggers a 1-second flash effect. Also ensures the secondary
+                avatar is hidden for single-character bros.
+            </summary>
+            <param name="avatarMaterial">The material containing the character's avatar sprite sheet</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarAngry(bool)">
+            <summary>
+                Sets the avatar sprite to display the angry/shouting expression frame (x=32). Only
+                updates if not currently showing a special animation frame. Preserves the current Y
+                coordinate of the sprite's lower left pixel.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarBounceDown(bool)">
+            <summary>
+                Sets the avatar sprite to display one pixel lower than normal (y=63) to create a
+                bounce down effect. Preserves the current X coordinate of the sprite. If face hugger
+                is shown, also moves the face hugger sprite down by the same amount to maintain
+                alignment.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarBounceUp(bool)">
+            <summary>
+                Restores the avatar sprite to normal height position (y=64) after a bounce.
+                Preserves the current X coordinate of the sprite. If face hugger is shown, also
+                restores the face hugger sprite position to maintain alignment with the avatar.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarCalm(bool)">
+            <summary>
+                Sets the avatar sprite to display the calm/neutral expression frame (x=0). Only
+                updates if not currently showing a special animation frame. Also clears the
+                SetToDead flag when called. Preserves the current Y coordinate of the sprite's lower
+                left pixel.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarDead(bool)">
+            <summary>
+                Sets the avatar sprite to display the dead/unconscious expression frame (x=96). If
+                currently showing a special animation, stops it first. Sets the SetToDead flag to
+                true and updates the specified avatar's sprite position. Preserves the current Y
+                coordinate.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarFire(bool)">
+            <summary>
+                Sets the avatar sprite to display the firing/action expression frame (x=64). Only
+                updates if not currently showing a special animation frame. Preserves the current Y
+                coordinate of the sprite's lower left pixel.
+            </summary>
+            <param name="useFirstAvatar">True to update the primary avatar, false for secondary avatar</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarFireFrame(System.Int32)">
+            <summary>
+                Sets the avatar to display a specific animation frame, typically used for firing
+                animations. Only updates the primary avatar and only if not currently showing a
+                special animation frame. Frame position is calculated as frame number * 32 pixels
+                horizontally.
+            </summary>
+            <param name="frame">The frame index to display (0-based)</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarFrame(System.Int32)">
+            <summary>
+                Sets the avatar to display a specific frame by index. Handles both normal frames
+                (32-pixel wide) and special animation frames (64-pixel wide). For normal frames, x
+                position is avatarFrame * 32; for special frames, x position is 128 + avatarFrame *
+                64. Always sets y position to 64. Only affects the primary avatar sprite.
+            </summary>
+            <param name="avatarFrame">The frame index to display</param>
+        </member>
+        <member name="M:PlayerHUD.SetAvatarSpecialFrame(System.Single)">
+            <summary>
+                Starts a special avatar animation sequence using a 64-pixel wide sprite frame.
+                Triggers grenade icon disappearance flash, schedules icon restoration after the
+                animation time plus 0.33 seconds, switches avatar to use special frame at x=128 with
+                double width (64 pixels), adjusts sprite offset by 16 pixels in facing direction,
+                sets special animation flags and resets frame counter.
+            </summary>
+            <param name="time">Duration in seconds for the special animation</param>
+        </member>
+        <member name="M:PlayerHUD.SetChevBroliosHeartGrenadeMaterials">
+            <summary>
+                Sets all grenade icons to display ChevBrolios' special heart-shaped grenade icon.
+                Used when ChevBrolios performs specific actions that transform his standard grenades
+                into heart grenades.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.SetFuel(System.Single,System.Boolean)">
+            <summary>
+                Updates the fuel gauge display to show current fuel level. Hides all grenade icons
+                when showing fuel, sets the fuel sprite width based on fuel percentage and avatar
+                facing direction, handles fuel warning by flashing red color for 0.25 seconds when
+                red parameter is true, and activates the fuel gauge sprite. Only updates sprite size
+                if fuel value has changed from previous state.
+            </summary>
+            <param name="fuelM">Fuel level as a multiplier (0.0 to 1.0 representing empty to full)</param>
+            <param name="red">True to trigger red warning flash, typically when fuel is critically low</param>
+        </member>
+        <member name="M:PlayerHUD.SetGrenadeMaterials(PockettedSpecialAmmoType)">
+            <summary>
+                Updates grenade icons to display special ammo type icons instead of standard
+                grenades. Resets grenade offset to 0 and sets appropriate icon material based on the
+                special ammo type: Airstrike uses brodellWalkerIcon, Timeslow uses timebroIcon,
+                RemoteControlCar uses bronnarIcon, MechDrop uses mechDropIcon, AlienPheromones uses
+                alienPheromones icon, and Steroids uses steroids icon.
+            </summary>
+            <param name="type">The special ammo type to display icons for</param>
+        </member>
+        <member name="M:PlayerHUD.SetGrenadeMaterials(HeroType)">
+            <summary>
+                Updates all grenade icon materials to match the specified hero type. Each bro has
+                unique grenade/special icons that match their theme. Handles special cases like
+                AshBrolliams requiring a 4-pixel offset, DoubleBroSeven using unique icons for each
+                grenade slot, editor override for testing specific bros, and defaults to rambroIcon
+                for unspecified hero types. Also handles TankBroTank as a special case.
+            </summary>
+            <param name="type">The hero type whose grenade icons should be displayed</param>
+        </member>
+        <member name="M:PlayerHUD.SetGrenades(System.Int32)">
+            <summary>
+                Updates the grenade count display by showing/hiding grenade icons. Only updates if
+                the count has changed and the HUD is not hidden. Hides the fuel gauge when showing
+                grenades and triggers the normal icon display refresh. Resets fuel gauge value to -1
+                to indicate grenades are active.
+            </summary>
+            <param name="grenades">Current number of grenades to display (0-6 typically)</param>
+        </member>
+        <member name="M:PlayerHUD.SetGrenadesOriginalCount(System.Int32)">
+            <summary>
+                Stores the original grenade count for the current character. This value is used when
+                flashing grenade icons to show the maximum capacity versus current count.
+            </summary>
+            <param name="grenades">The character's maximum grenade capacity</param>
+        </member>
+        <member name="M:PlayerHUD.SetLives(System.Int32)">
+            <summary>
+                Updates the lives text display with localized formatting. Uses the localization
+                manager to get the appropriate "LIVES" text in the current language, then formats it
+                with the lives count. Falls back to hardcoded "LIVES" text if localization manager
+                is not available.
+            </summary>
+            <param name="lives">Number of lives to display</param>
+        </member>
+        <member name="M:PlayerHUD.SetTags(System.Int32)">
+            <summary>
+                Updates the kill count text display showing player tags/kills. Only updates if the
+                killCountText component exists. Displays in format "TAGS [number]" without
+                localization support.
+            </summary>
+            <param name="tags">Number of tags/kills to display</param>
+        </member>
+        <member name="M:PlayerHUD.SetWins(System.Int32)">
+            <summary>
+                Updates the wins text display with localized formatting. Uses the same text field as
+                lives but shows "WINS" instead for competitive game modes. Retrieves localized
+                "WINS" text if available, otherwise uses hardcoded English text.
+            </summary>
+            <param name="wins">Number of round wins to display</param>
+        </member>
+        <member name="M:PlayerHUD.ShowFaceHugger">
+            <summary>
+                Shows the face hugger indicator on the player's avatar. Currently empty
+                implementation - the actual face hugger display logic appears to be handled
+                elsewhere in the codebase.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.ShowFreeLife">
+            <summary>
+                Displays the free life notification bubble and flashes the primary avatar for 1
+                second. Called when the player receives an extra life pickup. The bubble animation
+                is restarted if already showing.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.StopUsingSpecialFrame">
+            <summary>
+                Stops the special avatar animation and returns to normal 32-pixel wide frames. Only
+                executes if currently in special frame mode and avatar exists. Resets sprite
+                position to x=0, restores standard 32-pixel width, removes the 16-pixel offset,
+                restores original avatar size with proper facing direction, and clears the special
+                frame flag.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.SwitchAvatarAndGrenadeMaterial(HeroType)">
+            <summary>
+                Updates both the avatar and grenade icons when switching to a different bro. Hides
+                secondary avatar for single-character bros, updates avatar material using
+                HeroController's material database, recalculates texture coordinates and sprite
+                dimensions, maintains proper facing direction, updates spacing for double-avatar
+                bros if needed, and updates grenade icons to match the new character type.
+            </summary>
+            <param name="type">The hero type to switch the display to</param>
+        </member>
+        <!-- Player State Display Fields -->
+        <member name="F:PlayerHUD.AvatarOffsetAngry">
+            <summary>
+                Sprite sheet Y-offset for angry avatar state. Value: 32 pixels (second row).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarOffsetCalm">
+            <summary>
+                Sprite sheet Y-offset for calm avatar state. Value: 0 pixels (first row).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarOffsetDead">
+            <summary>
+                Sprite sheet Y-offset for dead avatar state. Value: 96 pixels (fourth row).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarOffsetFire">
+            <summary>
+                Sprite sheet Y-offset for firing avatar state. Value: 64 pixels (third row).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarOffsetSpecial">
+            <summary>
+                Sprite sheet Y-offset for special ability avatar frames. Value: 128 pixels (fifth
+                row). These frames use larger sprite dimensions (64x64 instead of 32x32).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarSize">
+            <summary>
+                Standard width and height in pixels for regular avatar sprites. Value: 32 pixels.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.AvatarSpecialSize">
+            <summary>
+                Width and height in pixels for special avatar frames (such as special abilities).
+                Value: 64 pixels.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.SetToDead">
+            <summary>
+                Tracks whether the avatar is currently displaying the dead state. When true, the
+                avatar shows the death sprite. Set by SetAvatarDead() and cleared by SetAvatar()
+                methods.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.alienPheromones">
+            <summary>
+                Material containing the special ammo icon for Alien Pheromones. Applied when special
+                ammo type is AlienPheromones via SetGrenadeMaterials() in SetPockettedSpecialAmmo().
+                Displays an alien attraction-themed icon for this special ammunition type that
+                affects alien behavior.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.ashIcon">
+            <summary>
+                Material for Ash Brolliams' special ability icon. Used to display the boomstick
+                special icon in the HUD when playing as Ash Brolliams. Assigned to grenade icon
+                slots when SetGrenadeMaterials is called with HeroType.AshBrolliams. Uses a 4-pixel
+                offset for proper display.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.avatar">
+            <summary>
+                Primary sprite component displaying the current bro's face/avatar. Supports multiple
+                expression frames: calm (x=0), angry (x=32), firing (x=64), dead (x=96), and special
+                animations (x=128+). Material is swapped when changing characters. Size and facing
+                direction adjusted based on HUD position. Can display bounce animations and color
+                flashing effects.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.avatarFacingDirection">
+            <summary>
+                Direction multiplier for avatar sprite facing and UI element growth direction. Value
+                of 1 faces right (players 0 and 2), value of -1 faces left (players 1 and 3). Set
+                during Setup() to match the direction field. Applied to avatar width, fuel gauge
+                width, and special animation offsets to ensure all visual elements face the correct
+                direction based on HUD corner position.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.avatarWidth">
+            <summary>
+                Base width of the avatar sprite in pixels. Defaults to 32.1 pixels which is slightly
+                larger than the standard 32-pixel sprite to avoid edge artifacts. Captured from
+                avatar.width during Setup() and used as the base width for avatar display.
+                Multiplied by avatarFacingDirection to flip the sprite horizontally. Doubled to 64
+                pixels during special frame animations.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.babroracusIcon">
+            <summary>
+                Material containing the grenade icon sprite for B.A. Broracus. Applied when hero
+                type is BaBroracus via SetGrenadeMaterials(). Features grenade artwork matching the
+                A-Team inspired character's style.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.bladeIcon">
+            <summary>
+                Material containing the grenade icon sprite for Broblade. Applied when hero type is
+                Blade via SetGrenadeMaterials(). Features unique grenade artwork matching the
+                vampire hunter character's arsenal, likely styled as stakes or special
+                vampire-hunting grenades.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.boondockIcon">
+            <summary>
+                Material for The Boondock Bros' special ability icon. Used to display the dual
+                pistols special icon in the HUD when playing as The Boondock Bros. Assigned to
+                grenade icon slots when SetGrenadeMaterials is called with HeroType.BoondockBros.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broDreddIcon">
+            <summary>
+                Material for Bro Dredd's special ability icon. Used to display the lawgiver special
+                icon in the HUD when playing as Bro Dredd. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.BroDredd.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broGummerIcon">
+            <summary>
+                Material containing the grenade icon sprite for Bro Gummer. Applied when hero type
+                is BroGummer via SetGrenadeMaterials(). Shows survivalist or underground
+                creature-themed explosive icon matching the Tremors-inspired character's monster
+                hunting background.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broHardIcon">
+            <summary>
+                Material for Bro Hard's special ability icon. Used to display the zipline special
+                icon in the HUD when playing as Bro Hard. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.BroHard.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broHeartIcon">
+            <summary>
+                Material containing the grenade icon sprite for Brove Heart. Applied when hero type
+                is BroveHeart via SetGrenadeMaterials(). Features medieval-themed explosive icon
+                matching the Braveheart-inspired character's historical Scottish warrior aesthetic.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broInBlackIcon">
+            <summary>
+                Material for Brononymous (Bro In Black)'s special ability icon. Used to display the
+                neuralyzer special icon in the HUD when playing as Brononymous. Assigned to grenade
+                icon slots when SetGrenadeMaterials is called with HeroType.Brononymous.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broLeeIcon">
+            <summary>
+                Material containing the grenade icon sprite for Bro Lee. Applied when hero type is
+                BroLee via SetGrenadeMaterials(). Shows martial arts-themed explosive icon matching
+                the Bruce Lee-inspired character's kung fu fighting style.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broMaxIcon">
+            <summary>
+                Material containing the grenade icon sprite for Bro Max. While defined in the class,
+                this icon is not currently mapped to any hero type in the switch statement. Intended
+                for the Mad Max-inspired character's grenade display when implemented.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brobocopIcon">
+            <summary>
+                Material for Brobocop's special ability icon. Used to display the targeting system
+                special icon in the HUD when playing as Brobocop. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.Brobocop.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brocIcon">
+            <summary>
+                Material for Broc's special ability icon. Used to display the steroid rage special
+                icon in the HUD when playing as Broc. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.Broc.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brocheteIcon">
+            <summary>
+                Material for Brochete's special ability icon. Used to display the machete special
+                icon in the HUD when playing as Brochete. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.Brochete.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brocketeerIcon">
+            <summary>
+                Material containing the grenade icon sprite for The Brocketeer. Applied when hero
+                type is TheBrocketeer via SetGrenadeMaterials(). Shows rocket or jetpack-themed
+                explosive icon matching the Rocketeer-inspired character's aerial capabilities.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brodellWalkerIcon">
+            <summary>
+                Material containing the grenade icon sprite for Brodell Walker. Applied for both the
+                BrodellWalker hero type and the Airstrike special ammo type. Contains airstrike
+                beacon or flare-themed icon matching the Chuck Norris-inspired character's special
+                ability.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brodenIcon">
+            <summary>
+                Material containing the grenade icon sprite for Broden. Applied when hero type is
+                Broden via SetGrenadeMaterials(). Features explosive icon themed around the
+                Odin-inspired character's Norse mythology and godly powers.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broffyIcon">
+            <summary>
+                Material containing the grenade icon sprite for Broffy. Applied when hero type is
+                Broffy via SetGrenadeMaterials(). Shows vampire-themed explosive icon matching the
+                Buffy the Vampire Slayer-inspired character's supernatural hunting theme.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brominatorIcon">
+            <summary>
+                Material for The Brominator's special ability icon. Used to display the time travel
+                special icon in the HUD when playing as The Brominator. Assigned to grenade icon
+                slots when SetGrenadeMaterials is called with HeroType.Brominator.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brommandoIcon">
+            <summary>
+                Material containing the grenade icon sprite for Brommando. Applied when hero type is
+                Brommando via SetGrenadeMaterials(). Contains unique grenade artwork matching the
+                Commando-inspired character's military theme.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.bronanIcon">
+            <summary>
+                Material for Bronan the Brobarian's special ability icon. Used to display the sword
+                throw special icon in the HUD when playing as Bronan. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.BronanTheBrobarian.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.brondleFlyIcon">
+            <summary>
+                Material containing the grenade icon sprite for Brondle Fly. Applied when hero type
+                is BrondleFly via SetGrenadeMaterials(). Shows insect or mutation-themed explosive
+                icon matching The Fly-inspired character's grotesque transformation abilities.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broneyRossIcon">
+            <summary>
+                Material for Broney Ross' special ability icon. Used to display the cluster grenade
+                special icon in the HUD when playing as Broney Ross. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.BroneyRoss.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.broniversalIcon">
+            <summary>
+                Material for Broniversal Soldier's special ability icon. Used to display the
+                resurrection special icon in the HUD when playing as Broniversal Soldier. Assigned
+                to grenade icon slots when SetGrenadeMaterials is called with
+                HeroType.BroniversalSoldier.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.bronnarIcon">
+            <summary>
+                Material for Bronnar Jensen's special ability icon. Used to display the minigun
+                special icon in the HUD when playing as Bronnar Jensen. Assigned to grenade icon
+                slots when SetGrenadeMaterials is called with HeroType.BronnarJensen.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.caseyBrobackIcon">
+            <summary>
+                Material containing the grenade icon sprite for Casey Broback. Applied when hero
+                type is CaseyBroback via SetGrenadeMaterials(). Features chef or kitchen-themed
+                explosive icon matching the Under Siege-inspired character's cook background.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.cherryIcon">
+            <summary>
+                Material for Cherry Broling's special ability icon. Used to display the homing
+                projectile special icon in the HUD when playing as Cherry Broling. Assigned to
+                grenade icon slots when SetGrenadeMaterials is called with HeroType.CherryBroling.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.chevBroliosHeartIcon">
+            <summary>
+                Material containing the special heart-themed grenade icon for Chev Brolios. Applied
+                via SetChevBroliosHeartGrenadeMaterials() method, typically when the character is in
+                a special powered-up state. Shows a heart-shaped explosive representing his unique
+                cardiac condition.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.chevBroliosIcon">
+            <summary>
+                Material containing the standard grenade icon sprite for Chev Brolios. Applied when
+                hero type is ChevBrolios via SetGrenadeMaterials(). Features high-voltage or
+                adrenaline-themed explosive icon matching the Crank-inspired character's
+                electrically charged nature.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.colJamesIcon">
+            <summary>
+                Material for Colonel James Broddock's special ability icon. Used to display the
+                airstrike special icon in the HUD when playing as Col. James Broddock. Assigned to
+                grenade icon slots when SetGrenadeMaterials is called with
+                HeroType.ColJamesBroddock.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.controllerContainer">
+            <summary>
+                Container GameObject for controller visual indicators. Positioned based on HUD side
+                with offsets relative to center position. Even-numbered players (0,2) position at
+                positive X offset (90 + avatar offset), odd-numbered players (1,3) at negative X
+                offset (-90 - avatar offset). Y position fixed at -9.5. Made inactive during Setup()
+                and may be activated to show controller connection status or input indicators.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.controllerSecondColorSprites">
+            <summary>
+                Secondary array of sprites for controller indicators, used for two-color or layered
+                controller visualizations. Provides additional visual elements that can be overlaid
+                or alternated with controllerSprites for more complex controller state displays.
+                Currently unused but maintained for future controller indicator implementations.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.controllerSprites">
+            <summary>
+                Array of sprites for displaying controller input or connection indicators. Primary
+                sprite set that can show various controller states or button prompts. Each sprite in
+                the array can represent different controller elements or states. Currently unused in
+                implementation but preserved for potential controller visualization features. Works
+                in conjunction with controllerSecondColorSprites for two-tone displays.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.damageMultiplierText">
+            <summary>
+                Text mesh showing the current damage multiplier percentage in procedural generation
+                mode. Displays the modified BroDamage value from player 0's ValueOrchestrator as a
+                percentage (e.g., "150%"). Updated every frame in LateUpdate when
+                ProcGenGameMode.UseProcGenRules is true. Empty in standard game modes.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.demolitionBroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Demolition Bro. Applied when hero
+                type is DemolitionBro via SetGrenadeMaterials(). Features construction or
+                demolition-themed explosive icon matching the character's expertise in controlled
+                explosions.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.desperabroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Desperabro. Applied when hero type
+                is Desperabro via SetGrenadeMaterials(). Features mariachi or Mexican-themed
+                explosive icon matching the Desperado-inspired character's style.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.direction">
+            <summary>
+                Determines the HUD layout direction and element facing. Value of 1 positions HUD
+                elements extending rightward (players 0 and 2), value of -1 positions elements
+                extending leftward (players 1 and 3). Affects avatar facing, text alignment, icon
+                positioning, fuel gauge growth direction, and overall HUD layout.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.dirtyHarryIcon">
+            <summary>
+                Material containing the grenade icon sprite for Dirty Harriette. Applied when hero
+                type is DirtyHarry via SetGrenadeMaterials(). Features .44 Magnum or police-themed
+                explosive icon matching the Dirty Harry-inspired character's law enforcement
+                background.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.doubleBroGrenades">
+            <summary>
+                Array of material textures for displaying multiple grenade types when playing as
+                DoubleBro Seven. Each material represents a different grenade icon that can be shown
+                in the HUD. Used in conjunction with SetupDoubleBroGrenades() to display the
+                appropriate grenade type icons. Materials are applied to grenadeIcons array elements
+                based on the current grenade selection.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.ellenIcon">
+            <summary>
+                Material for Ellen Ripbro's special ability icon. Used to display the mech loader
+                special icon in the HUD when playing as Ellen Ripbro. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.EllenRipbro.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.faceHugger1">
+            <summary>
+                Sprite overlay showing alien face hugger attached to the player's avatar. Currently
+                has incomplete implementation - ShowFaceHugger() is empty while HideFaceHugger()
+                exists. Moves vertically with avatar during bounce animations. Lower left pixel
+                position used to control visibility state. Hidden by default in Awake().
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.faceHugger2">
+            <summary>
+                Secondary face hugger sprite, likely intended for two-player bros or additional face
+                hugger effects. Currently unused in the codebase - no methods reference this sprite.
+                Exists as infrastructure for potential face hugger mechanics on secondary avatars.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.flexPowerIcon">
+            <summary>
+                Sprite icon indicating active flex power (special ability from flexercise pickups).
+                Shows different icon frames based on power type: Air Jump (x=64), Invulnerability
+                (x=32), Golden Light (x=0), Teleport (x=96). Visibility toggled based on
+                player.HasFlexPower(). Position flipped based on HUD direction. Updated every frame
+                in LateUpdate.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.freeLifeText">
+            <summary>
+                ReactionBubble component that displays "FREE LIFE!" notification when collecting
+                extra lives. Position is configured during Setup() based on player number with
+                different X offsets and vertical directions. Triggered by ShowFreeLife() method
+                which also flashes the avatar. Setup positions: P0(36,1), P1(-36,1), P2(36,-1),
+                P3(-36,-1).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.fuelM">
+            <summary>
+                Normalized fuel amount (0.0 to 1.0) for fuel-based weapons like flamethrowers. Value
+                of -1 indicates fuel display is not active. Updated by SetFuel() method and used to
+                scale the fuel gauge sprite width. When fuel is displayed, grenade icons are hidden
+                and this value determines the visual fill level of the fuel bar. Multiplied by
+                fuelSpriteWidth and avatarFacingDirection to calculate actual display width.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.fuelSprite">
+            <summary>
+                Sprite component for the fuel gauge bar displayed for fuel-based weapons. Initially
+                configured in SetupFuelGuage() with anchor point based on HUD direction. Width is
+                dynamically adjusted based on fuelM value to show remaining fuel. Color changes to
+                red during fuel warning state. Hidden when player uses grenades instead of
+                fuel-based weapons.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.fuelSpriteHeight">
+            <summary>
+                Height of the fuel gauge sprite in pixels. Defaults to 10 pixels and can be
+                overridden by the actual sprite height during Awake() if fuelSprite is assigned.
+                Remains constant during gameplay while width varies with fuel level. Used in
+                SetupFuelGuage() and SetFuel() to maintain consistent gauge dimensions.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.fuelSpriteWidth">
+            <summary>
+                Base width of the fuel gauge sprite in pixels. Captured from fuelSprite.width during
+                Awake() initialization. Used as the maximum width when calculating fuel gauge
+                display size. Multiplied by fuelM (0-1) to show current fuel level, creating a
+                visual bar that shrinks as fuel depletes.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.fuelWarningTime">
+            <summary>
+                Timestamp when the fuel warning state was triggered, indicating low fuel. Used to
+                control the duration of the red fuel gauge warning effect. When fuel runs low and
+                the red parameter is true in SetFuel(), this is set to current time. The gauge
+                flashes red for 0.25 seconds after this timestamp before returning to normal white
+                color.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.grenadeCount">
+            <summary>
+                Current number of grenades the player has remaining. Initialized to -1 to indicate
+                unset state. Updated by SetGrenades() method and used by FlashSpecialIconsNormal()
+                to determine which grenade icons to display. When set to 0, typically indicates the
+                player is using fuel-based weapons instead of grenades. Controls visibility of
+                grenade icon sprites in the HUD.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.grenadeIcons">
+            <summary>
+                Array of sprites displaying available grenades or special ammo. Icons are
+                shown/hidden based on current grenade count. Materials are swapped to match current
+                bro's grenade type. Supports flashing effects for warnings. Hidden when fuel gauge
+                is active. Positioned in a horizontal row with 10-unit spacing, starting 18 units
+                from avatar (24 for double avatar mode).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.grenadeOriginalCount">
+            <summary>
+                The initial number of grenades when starting a level or respawning. Defaults to 3,
+                which is the standard grenade count for most bros. This value is used as a reference
+                for resetting grenade counts and may be modified for specific characters or game
+                modes that start with different grenade amounts.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.haleIcon">
+            <summary>
+                Material for Hale The Bro's special ability icon. Used to display the shield special
+                icon in the HUD when playing as Hale Caesar. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.HaleTheBro.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.heroType">
+            <summary>
+                Stores the current hero type being displayed in the HUD. Updated by
+                SwitchAvatarAndGrenadeMaterial() when changing characters. Used to track which bro's
+                avatar and grenade icons are currently shown. Important for maintaining HUD state
+                when switching between different playable characters.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.indianaBronesIcon">
+            <summary>
+                Material for Indiana Brones' special ability icon. Used to display the whip special
+                icon in the HUD when playing as Indiana Brones. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.IndianaBrones.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.killCountText">
+            <summary>
+                Text mesh component for displaying player kill count or tags in certain game modes.
+                Updated by the SetTags() method to show "TAGS [number]" format. May be null if the
+                HUD variant doesn't include kill tracking. Positioned relative to the main HUD based
+                on direction.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.leeBroxIcon">
+            <summary>
+                Material for Lee Broxmas' special ability icon. Used to display the kick special
+                icon in the HUD when playing as Lee Broxmas. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.LeeBroxmas.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.livesText">
+            <summary>
+                Text mesh component displaying the player's remaining lives in campaign mode or
+                round wins in competitive modes. Updated by SetLives() and SetWins() methods with
+                localized text. Position and alignment are adjusted based on HUD direction and
+                avatar mode.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.mcBroverIcon">
+            <summary>
+                Material for McBrover's special ability icon. Used to display the turkey special
+                icon in the HUD when playing as McBrover. Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.McBrover.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.mechDropIcon">
+            <summary>
+                Material containing a mech drop beacon icon. While defined in the class, this icon
+                is not currently used in any hero or special ammo type switch statements. Likely
+                intended for a mech-summoning special ability or power-up that was not fully
+                implemented.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.nameBackground">
+            <summary>
+                Sprite background for the player name display in online multiplayer modes. Wider
+                than noNameBackground to accommodate player names. Only visible when not in offline
+                mode. Position is flipped for odd-numbered players to maintain consistent corner
+                layouts. Used to calculate spacing offsets for other UI elements.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.nameText">
+            <summary>
+                Text mesh displaying the player's name in uppercase for online multiplayer. Hidden
+                in offline mode. Text alignment and anchor point depend on HUD direction:
+                left-aligned for right-side players, right-aligned for left-side players. Updated in
+                LateUpdate if empty. Position adjusted for double avatar mode with extra spacing.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.nebroIcon">
+            <summary>
+                Material for Nebro's special ability icon. Used to display the sword special icon in
+                the HUD when playing as Nebro (The Matrix). Assigned to grenade icon slots when
+                SetGrenadeMaterials is called with HeroType.Nebro.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.noNameBackground">
+            <summary>
+                Sprite background used when player names are not displayed (offline mode). Smaller
+                than nameBackground since it doesn't need to accommodate text. Position is flipped
+                for odd-numbered players. Used as the reference size for the player color frame
+                overlay. Always visible in offline modes.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.originalLowerLeftPixel">
+            <summary>
+                Stores the original lower left pixel coordinates of the avatar sprite. Used to
+                restore the avatar to its default sprite sheet position after temporary
+                modifications (such as face hugger overlay or special frames).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.originalPixelDimensions">
+            <summary>
+                Stores the original pixel dimensions of the avatar sprite. Used to restore the
+                avatar to its default size after temporary modifications (such as special frames
+                that use different sprite sizes).
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.pipContainer">
+            <summary>
+                Container GameObject for "pip" indicators, likely used for showing player input
+                device or connection status dots. Positioned with slight offset from controller
+                container: X at ±99.5 (based on HUD side), Y at -8.5, Z at -2. Deactivated during
+                Setup() and intended for showing small indicator elements. The term "pip" typically
+                refers to small dots or markers in UI design.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.pipSprites">
+            <summary>
+                Array of small indicator sprites (pips) for displaying connection or device status.
+                Each sprite can represent different states through visibility or color changes.
+                Contained within pipContainer and positioned as a group. Currently unused in
+                implementation but structure suggests use for showing multiple state indicators in a
+                row, such as controller connection lights.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.playerFrame">
+            <summary>
+                Colored frame overlay that surrounds the player's HUD background. Tinted with the
+                player's assigned color (set via SetColor) to visually distinguish between players.
+                Sized to be slightly larger than the background sprite with playerBorderPadding
+                added. Positioned to match either nameBackground or noNameBackground depending on
+                online/offline mode.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.plusText">
+            <summary>
+                Plus1Text component for displaying pickup notifications and score bonuses. Setup
+                called during HUD initialization. Position varies based on HUD direction: x=36 for
+                right-facing HUDs, x=-13 for left-facing HUDs. Always positioned at y=12.7, z=-4 to
+                appear above other HUD elements.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.predabroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Predabro. Applied when hero type is
+                Predabro via SetGrenadeMaterials(). Features alien technology-themed explosive icon
+                matching the Predator-inspired character's advanced weaponry aesthetic.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.rambroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Rambro. Used as the default grenade
+                icon material when hero type is not specifically handled. Applied to all grenade
+                icon sprites via SetGrenadeMaterials(). Contains the standard grenade sprite used by
+                the original Rambo-inspired character.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.scorpionBroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Scorpion Bro. Applied when hero type
+                is ScorpionBro via SetGrenadeMaterials(). Features ninja or hellfire-themed
+                explosive icon matching the Mortal Kombat-inspired character's supernatural
+                abilities.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.secondAvatar">
+            <summary>
+                Secondary avatar sprite used for two-player bros like the Boondock Bros. Hidden by
+                default and only activated via GoToDoubleAvatarMode(). Positioned 12 units
+                horizontally and 2 units below the primary avatar. Supports same expression states
+                as primary avatar. Deactivated when switching to single-character bros.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.seedText">
+            <summary>
+                Text mesh displaying the procedural generation seed in test builds. Shows "Seed:
+                [number]" format when ProcGenGameMode.ProcGenTestBuild is true. Hidden and
+                deactivated in non-test builds. Used for debugging and reproducing specific
+                procedurally generated levels during development.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.showFaceHugger">
+            <summary>
+                Controls whether the face hugger overlay sprite is displayed on the avatar. When
+                true, an additional sprite is rendered over the avatar. Set to false by
+                HideFaceHugger() and SetAvatar() methods.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.snakeIcon">
+            <summary>
+                Material for Snake Broskin's special ability icon. Used to display the cardboard box
+                special icon in the HUD when playing as Snake Broskin. Assigned to grenade icon
+                slots when SetGrenadeMaterials is called with HeroType.SnakeBroSkin.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.steroids">
+            <summary>
+                Material containing the special ammo icon for Steroids. Applied when special ammo
+                type is Steroids via SetGrenadeMaterials() in SetPockettedSpecialAmmo(). Shows a
+                strength-enhancing themed icon for this power-up ammunition that boosts character
+                abilities.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.tankBroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Tank Bro. Applied when hero type is
+                TankBro via SetGrenadeMaterials(). Features military tank-themed explosive icon for
+                the vehicle-based character's standard grenade form.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.tankBroTankIcon">
+            <summary>
+                Material containing the grenade icon sprite for Tank Bro's tank form. Applied when
+                hero type is TankBroTank via SetGrenadeMaterials(). Shows heavy ordnance or tank
+                shell icon representing the transformed state's more powerful explosive capability.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.textBackground">
+            <summary>
+                Background sprite for the lives/wins text display area. Width is flipped negative
+                for left-facing HUDs to mirror the sprite. Positioned at x=32 (right-facing) or
+                x=-32 (left-facing) from avatar. Provides contrast background for lives and name
+                text. Size remains constant but orientation changes based on HUD direction.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.theBrodeIcon">
+            <summary>
+                Material containing the grenade icon sprite for The Brode. Applied when hero type is
+                TheBrode via SetGrenadeMaterials(). Features unique grenade artwork themed to match
+                The Dude character from The Big Lebowski, typically showing bowling-themed explosive
+                imagery.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.theBrofessionalIcon">
+            <summary>
+                Material containing the grenade icon sprite for The Brofessional. Applied when hero
+                type is TheBrofessional via SetGrenadeMaterials(). Contains precise,
+                professional-looking explosive icon matching the Leon/The Professional-inspired
+                character's methodical style.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.theBrolanderIcon">
+            <summary>
+                Material containing the grenade icon sprite for The Brolander. Applied when hero
+                type is TheBrolander via SetGrenadeMaterials(). Contains immortal-themed explosive
+                icon matching the Highlander-inspired character's eternal warrior nature.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.timebroIcon">
+            <summary>
+                Material for Time Bro's special ability icon. Used to display the time slow special
+                icon in the HUD when playing as Time Bro Van Damme. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.TimeBroVanDamme.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.tollBroadIcon">
+            <summary>
+                Material for Toll Broad's special ability icon. Used to display the explosive
+                special icon in the HUD when playing as Toll Broad. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.TollBroad.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.trentIcon">
+            <summary>
+                Material for Trent Broser's special ability icon. Used to display the knife throw
+                special icon in the HUD when playing as Trent Broser. Assigned to grenade icon slots
+                when SetGrenadeMaterials is called with HeroType.TrentBroser.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.xebroIcon">
+            <summary>
+                Material containing the grenade icon sprite for Xebro. Applied when hero type is
+                Xebro via SetGrenadeMaterials(). Shows alien-themed explosive icon matching the
+                xenomorph-inspired character's extraterrestrial nature.
+            </summary>
+        </member>
+        <!-- Perk System Methods -->
+        <member name="M:PlayerHUD.AddPerkToHUD(Assets.Scripts.Rogueforce.PerkSystem.BasePerk)">
+            <summary>
+                Adds a perk icon to the HUD display or increments the counter if the perk already
+                exists. For duplicate perks, shows multiplier text (x2, x3, etc.). For active perks,
+                displays kill progress (e.g., "2/5"). Creates new perk UI element from prefab, sets
+                the appropriate icon material, adds to perk list, and refreshes the display ordering
+                to ensure active perks appear first.
+            </summary>
+            <param name="perkData">The perk data containing name, icon material, and type information</param>
+            <returns>The GameObject representing the perk in the HUD (either newly created or existing)</returns>
+        </member>
+        <member name="M:PlayerHUD.DoesPerkAlreadyExistOnHUD(System.String)">
+            <summary>
+                Searches the current perk UI items list to find if a perk with the specified name
+                already exists in the HUD. Used to prevent duplicate perk icons and instead
+                increment counters on existing ones.
+            </summary>
+            <param name="name">The name of the perk to search for</param>
+            <returns>The GameObject of the existing perk if found, null if not present in HUD</returns>
+        </member>
+        <member name="M:PlayerHUD.RefreshPerkOrdering">
+            <summary>
+                Reorganizes perk icons in the HUD to maintain consistent ordering. Active perks
+                (those showing kill progress with "/" in their text) are moved to the front of the
+                display. Updates local positions of all perk icons with appropriate spacing, with
+                active perks getting additional negative X offset (-12) to visually distinguish them
+                from passive perks.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.RemovePerkFromHUD(Assets.Scripts.Rogueforce.PerkSystem.BasePerk)">
+            <summary>
+                Removes a perk from the HUD display or decrements its counter if multiple instances
+                exist. For single instances or active perks, completely removes the icon and
+                destroys the GameObject. For stacked perks showing multipliers, decrements the
+                counter (x3 becomes x2, x2 becomes empty text). Refreshes perk ordering after
+                removal to maintain proper layout.
+            </summary>
+            <param name="perk">The perk to remove, must have its iconObject field set to the HUD GameObject</param>
+        </member>
+        <!-- Perk System Fields -->
+        <member name="F:PlayerHUD.distBetweenPerks">
+            <summary>
+                Horizontal spacing distance between perk icons in the HUD display. Used by
+                RefreshPerkOrdering() to position perks in a row. Active perks (showing kill
+                progress) get an additional -12 unit offset. Multiplied by the child index to create
+                evenly spaced perk icon layout.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.perkHUDParent">
+            <summary>
+                Transform serving as the parent container for all perk icon GameObjects in the HUD.
+                Child perk objects are instantiated under this transform by AddPerkToHUD(). Used for
+                organizing the perk display hierarchy and managing perk icon positioning through
+                RefreshPerkOrdering().
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.perkHUDPrefab">
+            <summary>
+                Prefab template for creating perk icon displays in the HUD. Instantiated by
+                AddPerkToHUD() for each unique perk. Contains MeshRenderer for the perk icon
+                material and TextMesh for showing stack counts (x2, x3) or kill progress (2/5).
+                Cloned instances are named after their perk type.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.perkUIItems">
+            <summary>
+                Dynamic list of GameObjects representing active perk icons displayed in the HUD.
+                Each GameObject contains the perk icon sprite and optional counter text for
+                kill-based perks. Items are added by AddPerkToHUD() when perks are acquired and
+                removed by RemoveKillBasedPerkFromHUD() when perks expire or are used. List is
+                reordered by RefreshPerkOrdering() to prioritize active perks with counters.
+                Initialized as empty list to avoid null reference issues.
+            </summary>
+        </member>
+        <!-- Special Effects & Feedback Methods -->
+        <member name="M:PlayerHUD.FlashAvatar(System.Single,System.Boolean)">
+            <summary>
+                Starts a coroutine to flash the avatar sprite with alternating tint colors. Only
+                executes if the HUD GameObject is active in the hierarchy. Typically used for visual
+                feedback when gaining extra lives or taking damage.
+            </summary>
+            <param name="flashTime">Duration in seconds for the flashing effect</param>
+            <param name="primaryAvatar">True to flash the main avatar, false to flash the secondary avatar (for two-player bros)</param>
+        </member>
+        <member name="M:PlayerHUD.FlashAvatarCoroutine(System.Single,System.Boolean)">
+            <summary>
+                Coroutine that performs the avatar flashing effect by cycling through different tint
+                colors on the avatar's material. Alternates between dark grey (0.33), medium grey
+                (default), light grey (0.7), and back to medium grey in 0.033-second intervals
+                (roughly 30 FPS). Continues cycling until the specified flash time expires.
+            </summary>
+            <param name="flashTime">Total duration to flash the avatar in seconds</param>
+            <param name="primaryAvatar">True to flash the main avatar renderer, false for secondary avatar</param>
+            <returns>IEnumerator for coroutine execution</returns>
+        </member>
+        <member name="M:PlayerHUD.FlashSpecialIcons">
+            <summary>
+                Initiates a timed sequence to flash the grenade/special icons as a visual warning or
+                feedback effect. Uses Invoke to schedule a pattern of red and normal color states
+                over 1.1 seconds: red at 0.001s, normal at 0.2s, red at 0.4s, normal at 0.6s, red at
+                0.8s, and finally normal at 1.0s and 1.1s. Commonly used when special ammo is
+                depleted or unavailable.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.FlashSpecialIconsDisappear">
+            <summary>
+                Immediately hides all grenade icons by deactivating their GameObjects. Used as part
+                of special move animations or when transitioning between different special ammo
+                types.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.FlashSpecialIconsNormal">
+            <summary>
+                Restores grenade icons to their normal display state based on current grenade count.
+                Shows icons for available grenades in white color and hides icons for used grenades.
+                Ensures all icons are properly colored white whether visible or hidden.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.FlashSpecialIconsRed">
+            <summary>
+                Sets all grenade icons to red color as part of the flashing sequence. In procedural
+                generation mode, shows up to 6 icons; otherwise shows icons up to the original
+                grenade count. Hides any icons beyond the limit and ensures hidden icons are reset
+                to white color for future use.
+            </summary>
+        </member>
+        <!-- Special Effects & Feedback Fields -->
+        <member name="F:PlayerHUD.isUsingSpecialFrame">
+            <summary>
+                Flag indicating whether a special avatar animation is currently playing. Set to true
+                by UseSpecialAvatarFrame() when starting victory animations or other special
+                sequences. When true, LateUpdate() handles animation frame progression and timing.
+                Set to false by StopUsingSpecialFrame() when animation completes or is interrupted.
+                Controls which sprite sheet region is used for avatar display.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.specialCounter">
+            <summary>
+                Frame timing accumulator for special avatar animations. Incremented by deltaTime
+                each frame while special animation plays. When it exceeds 0.033 seconds
+                (approximately 30 FPS), advances to the next animation frame and resets the counter.
+                Ensures special animations play at consistent speed regardless of actual game
+                framerate. Only used when isUsingSpecialFrame is true and specialFrame is less than
+                5.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.specialFrame">
+            <summary>
+                Current frame index (0-5) in the special avatar animation sequence. Reset to 0 when
+                starting a new special animation via UseSpecialAvatarFrame(). Incremented in
+                LateUpdate() based on specialCounter timing. Passed to SetAvatarFrame() to update
+                the sprite's texture coordinates. Animation stops advancing after reaching frame 5,
+                holding on the final frame until specialFrameTime expires.
+            </summary>
+        </member>
+        <member name="F:PlayerHUD.specialFrameTime">
+            <summary>
+                Duration in seconds for special avatar animations like victory poses. Set when
+                UseSpecialAvatarFrame() is called to trigger a special animation sequence.
+                Decremented each frame in LateUpdate() while animation plays. When it reaches zero
+                or below, StopUsingSpecialFrame() is called to restore the normal avatar display.
+                Public to allow external systems to trigger timed avatar animations.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:PlayerHUD.SetGrenadeMaterials(UnityEngine.Material)">
+            <summary>
+                Sets all grenade icon sprites to use the same material. Applies the material to the
+                renderer component of each grenade icon in the array. Used internally by the public
+                SetGrenadeMaterials methods to apply the chosen icon material to all grenade slots.
+            </summary>
+            <param name="mat">The material to apply to all grenade icons</param>
+        </member>
+        <member name="M:PlayerHUD.SetGrenadeOffset(System.Single)">
+            <summary>
+                Applies a horizontal offset to all grenade icons, used for certain characters whose
+                grenade icons need special positioning. Even-numbered players apply positive offset,
+                odd-numbered players apply negative offset to maintain visual consistency with their
+                HUD side. The offset is applied to all grenade icons in the doubleBroGrenades array
+                length.
+            </summary>
+            <param name="offset">Pixel offset to apply (positive moves right, negative moves left)</param>
+        </member>
+        <member name="M:PlayerHUD.SetPosition">
+            <summary>
+                Calculates and sets the HUD position based on current screen dimensions and camera
+                settings. Positions are determined by player number: player 0 at bottom-left, player
+                1 at bottom-right, player 2 at top-left, player 3 at top-right. Takes into account
+                camera rect height, screen aspect ratio, level title offset for bottom HUDs, and
+                updates the direction field to control sprite facing (-1 for right side players).
+                Caches current screen and camera values to detect when repositioning is needed.
+            </summary>
+        </member>
+        <member name="M:PlayerHUD.SetSpacing(System.Boolean)">
+            <summary>
+                Adjusts UI element spacing and alignment based on avatar mode and HUD direction. In
+                online mode, accounts for wider name background. For right-facing HUDs: positions
+                elements to the right with left alignment. For left-facing HUDs: positions elements
+                to the left with right alignment and flips background sprite. Double avatar mode
+                adds extra spacing to text elements. Updates positions for text background, lives
+                text, name text, controller indicator, pip container, plus text, and grenade icons.
+            </summary>
+            <param name="doubleAvatar">True when displaying two avatars, increases spacing between elements</param>
+        </member>
+        <member name="M:PlayerHUD.UpdateControllerInfo">
+            <summary>
+                Updates controller-related information for the HUD. Currently only checks if the
+                player ID belongs to the local player before performing any updates. Implementation
+                appears incomplete as the method returns immediately after the ownership check.
+            </summary>
+        </member>
+    </members>
+</doc>

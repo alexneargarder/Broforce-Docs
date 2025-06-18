@@ -1,0 +1,1198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:PolymorphicAI.Awake">
+            <summary>
+                Unity Awake initialization. Caches references to the Unit, Mook, and PathAgent
+                components. Calculates the block offset for grid-to-world position conversions using
+                Map.GetUnitXOffset().
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.InitialSetup">
+            <summary>
+                Performs initial AI setup including grid point calculation and special state
+                initialization.
+            </summary>
+            <remarks>
+                Converts the unit's world position to grid coordinates, sets up available patrol
+                grid points, and checks if mooks should hide in grass at their spawn position. This
+                method is typically called once when the AI is first activated.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.LateUpdate">
+            <summary>
+                Unity's LateUpdate handling action queue execution and network synchronization.
+            </summary>
+            <remarks>
+                Shows debug info if enabled, runs the action queue processing, and handles network
+                synchronization of AI state. Only syncs when the action queue has changed and the
+                unit owns the AI. Sends the entire action queue, mental state, position, seen enemy
+                number, and action state to other players.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.SetDeltaTime">
+            <summary>
+                Calculates and sets the delta time multiplier for AI updates. In normal mode,
+                multiplies Time.deltaTime by 2.5 for faster AI processing. In hard mode, uses
+                unmodified Time.deltaTime for standard speed AI.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.UnitCanSetup">
+            <summary>
+                Determines if the unit is in a valid state to perform initial setup. By default,
+                requires the unit to be on ground.
+            </summary>
+            <returns>True if the unit is on ground and can be set up, false otherwise</returns>
+            <remarks>
+                This method is typically checked before InitialSetup is called to ensure the unit is
+                in a stable state.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.Update">
+            <summary>
+                Unity Update loop that drives AI behavior. Skips processing if editing, dead, or
+                idle units are off-screen. On first frame, calls InitialSetup. Adjusts time delta
+                for hard mode (2.5x speed). Calls Think_Networked when ready to think and not being
+                controlled by triggers.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:PolymorphicAI.firstFrame">
+            <summary>
+                Flag indicating if this is the first frame of execution. Set to false after the
+                first Update cycle to handle one-time initialization logic.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:PolymorphicAI.ForceFacingDirection(System.Int32)">
+            <summary>
+                Forces the controlled unit to face a specific direction by calling the unit's
+                ForceFaceDirection method. This immediately changes the unit's orientation.
+            </summary>
+            <param name="direction">The direction to face (1 for right, -1 for left)</param>
+        </member>
+        <member name="M:PolymorphicAI.GetTargetPosition">
+            <summary>
+                Gets the target position for this AI to move towards. Virtual method that derived
+                classes must implement to provide specific targeting behavior.
+            </summary>
+            <returns>The world position coordinates of the current target. Base implementation throws NotImplementedException.</returns>
+        </member>
+        <member name="M:PolymorphicAI.GetTargetX(GridPoint)">
+            <summary>
+                Converts a grid column coordinate to world X position by multiplying the column by
+                16 and adding the block offset. Used for pathfinding and movement calculations.
+            </summary>
+            <param name="target">The grid point containing the column coordinate</param>
+            <returns>The world X position corresponding to the grid column</returns>
+        </member>
+        <member name="M:PolymorphicAI.GetTargetY(GridPoint)">
+            <summary>
+                Converts a grid row coordinate to world Y position by multiplying the row by 16 and
+                adding 12 units. This positions units slightly above the ground level of the grid
+                cell.
+            </summary>
+            <param name="target">The grid point containing the row coordinate</param>
+            <returns>The world Y position corresponding to the grid row</returns>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:PolymorphicAI.FacingDirection">
+            <summary>
+                Gets the current facing direction of the unit this AI controls. For tank units,
+                returns the tank's facingDirection field. For all other units, returns the sign of
+                the transform's local scale X component (1 for right, -1 for left).
+            </summary>
+            <returns>The facing direction as an integer (1 for right, -1 for left)</returns>
+        </member>
+        <member name="P:PolymorphicAI.UnitHalfWidth">
+            <summary>
+                Gets half the width of the controlled unit, used for movement calculations and
+                collision checks. Returns the mook's HalfWidth property if available, otherwise
+                defaults to 4.0 units.
+            </summary>
+            <returns>Half the width of the unit in world units</returns>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:PolymorphicAI.blockOffset">
+            <summary>
+                X-axis offset used when converting grid positions to world coordinates. Initialized
+                from Map.GetUnitXOffset() to ensure proper alignment with the game's grid system.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.lastCollumn">
+            <summary>
+                The column position of the AI from the previous frame. Used with lastRow to detect
+                if the AI is stuck in the same position, triggering timeout behavior after 2
+                seconds.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.lastRow">
+            <summary>
+                The row position of the AI from the previous frame. Used with lastCollumn to detect
+                if the AI is stuck in the same position, triggering timeout behavior after 2
+                seconds.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.walkDirection">
+            <summary>
+                The current horizontal movement direction of the AI. -1 for left, 1 for right. Used
+                for movement, facing direction, and sight checks. Updated when the AI changes
+                direction or sees enemies. Default is -1.
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:PolymorphicAI.AddLaughAction">
+            <summary>
+                Adds a sequence of actions to make the AI laugh at a dead player. Includes staggered
+                timing based on laugh index, laugh animation, waiting, and looking around to ensure
+                other threats aren't present.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.GetActionGridPoint">
+            <summary>
+                Returns the target grid point of the current action, or (-1, -1) if no action is
+                active.
+            </summary>
+            <returns>The GridPoint associated with the current action, or a GridPoint with coordinates (-1, -1) if CurrentAction is null</returns>
+        </member>
+        <member name="M:PolymorphicAI.GetActionType">
+            <summary>
+                Returns the type of the current action being executed by the AI, or Wait if no
+                action is active.
+            </summary>
+            <returns>The EnemyActionType of the current action, or EnemyActionType.Wait if CurrentAction is null</returns>
+        </member>
+        <member name="M:PolymorphicAI.HideInGrass">
+            <summary>
+                Makes the AI hide in grass or foliage. Clears the action queue, adds a wait action
+                with random duration (1-2 seconds), and sets mental state to Hiding.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.JumpOutOfHiding">
+            <summary>
+                Makes the AI jump out of hiding dramatically when alerted. Adds a short jump action
+                followed by a 1-1.1 second wait to create a surprise emergence effect.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.Panic(System.Int32,System.Boolean)">
+            <summary>
+                Makes the AI panic and flee in a specified direction. Clears actions if changing
+                direction, plays panic sound, sets Panicking state, and optionally forgets the
+                player. Returns true if panic was initiated.
+            </summary>
+            <param name="direction">The direction to panic in (-1 for left, 1 for right)</param>
+            <param name="forgetPlayer">Whether to forget the currently tracked player</param>
+            <returns>True if the AI started panicking, false if already panicking</returns>
+        </member>
+        <member name="M:PolymorphicAI.StopBeingBlind">
+            <summary>
+                Stops the AI from being blinded and returns to normal behavior. If alerted, adds
+                BecomeIdle action; if panicking, calls StopPanicking to return to normal state.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.StopPanicking">
+            <summary>
+                Stops the AI from panicking and returns to appropriate state. Calls Reassess, clears
+                actions, and switches to Idle if no player is tracked or Alerted if still tracking a
+                player.
+            </summary>
+        </member>
+        <!-- Character State & Effects Properties -->
+        <member name="P:PolymorphicAI.CurrentAction">
+            <summary>
+                Gets the action currently being executed from the action queue. Returns the first
+                action in the queue if any exist, otherwise returns null. This represents what the
+                AI is actively doing.
+            </summary>
+            <returns>The current ActionObject being executed, or null if the queue is empty</returns>
+        </member>
+        <member name="P:PolymorphicAI.ReadyToThink">
+            <summary>
+                Gets whether the AI is ready to make new decisions. By default, returns true when
+                the action queue is empty, indicating no actions are pending execution. Can be
+                overridden for custom thinking conditions.
+            </summary>
+            <returns>True if ready to think and plan new actions, false otherwise</returns>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:PolymorphicAI.attackTime">
+            <summary>
+                Duration in seconds for the Fire action when attacking. Default value is 0.06
+                seconds.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.delayBetweenFiring">
+            <summary>
+                Wait time in seconds between consecutive firing actions. Default value is 0.55
+                seconds. Added as a Wait action after movement during alerted state.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.sightDelay">
+            <summary>
+                Delay in seconds before reacting to seeing an enemy. Default value is 0.55 seconds.
+                Currently not actively used in the base implementation.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:PolymorphicAI.CheckJumpOverStep">
+            <summary>
+                Virtual method stub for checking if the AI should jump over an obstacle. The base
+                implementation is empty, allowing derived classes to implement specific
+                jump-over-step logic.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.FetchObject(UnityEngine.Transform)">
+            <summary>
+                Virtual method stub for object fetching behavior. The base implementation is empty,
+                allowing derived classes to implement specific object fetching logic.
+            </summary>
+            <param name="obj">The transform of the object to fetch (unused in base implementation)</param>
+        </member>
+        <member name="M:PolymorphicAI.GetNewGridPoint">
+            <summary>
+                Selects a new grid point from available patrol points, avoiding the current position
+                when possible.
+            </summary>
+            <returns>A randomly selected GridPoint from availableGridPoints that differs from the current position, or the current position if no alternatives exist</returns>
+            <remarks>
+                Attempts up to 3 times the number of available points to find a position different
+                from the current one. Falls back to iterating through all points if random selection
+                fails. Returns current position if only one point is available.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.IsBlockedForward">
+            <summary>
+                Checks if the AI's forward movement is blocked by terrain using raycasting. Casts a
+                ray from slightly behind the unit's position in the walk direction to detect ground
+                or fragile layer obstacles within the unit's width plus a small buffer.
+            </summary>
+            <returns>True if forward movement is blocked by terrain, false if the path is clear or if the unit is not a mook</returns>
+        </member>
+        <member name="M:PolymorphicAI.IsGridPointAvailable(System.Int32,System.Int32)">
+            <summary>
+                Checks if a grid position is available for the AI to move to. Always returns true
+                when panicking (ignoring patrol boundaries). Otherwise checks if the coordinates
+                exist in the availableGridPoints list established during setup.
+            </summary>
+            <param name="c">The column coordinate to check</param>
+            <param name="r">The row coordinate to check</param>
+            <returns>True if the position is available for movement, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.RandomFurthestGridPoint(GridPoint)">
+            <summary>
+                Selects a random grid point that is far from the specified position, preferring
+                points at least 2 columns away.
+            </summary>
+            <param name="currentGridPoint">The grid point to move away from</param>
+            <returns>A GridPoint that is preferably far from currentGridPoint, or a random point if no distant points exist</returns>
+            <remarks>
+                Tries up to 2 times the number of available points to find a point at least 2
+                columns away. If that fails but there are 3+ points, it looks for any point in a
+                different column. Falls back to random selection if no better option is found.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.SetupAvailableGridPoints">
+            <summary>
+                Populates the available grid points list based on patrol radius and terrain
+                walkability.
+            </summary>
+            <remarks>
+                Scans left and right from the unit's current position up to patrolBlocksRadius
+                blocks away. Only includes points that have solid ground below and open space above
+                (unless willClimbThroughVents is true). Points to the left are inserted at the
+                beginning of the list while points to the right are appended.
+            </remarks>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:PolymorphicAI.availableGridPoints">
+            <summary>
+                List of grid points that are available for movement. Used when calculating patrol
+                routes or finding valid movement destinations.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.patrolBlocksRadius">
+            <summary>
+                Controls how far the AI can patrol from its current position in blocks. Used in
+                CheckPatrolBlocks to determine available grid points. Values range from 1-5, with
+                larger values allowing the AI to patrol further. Default is 2.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.willClimbThroughVents">
+            <summary>
+                Determines whether the AI can climb through vents when calculating available patrol
+                points. When true, the AI can move through positions that have blocks above them
+                (vents), otherwise it avoids such positions.
+            </summary>
+        </member>
+        <!-- AI Awareness Methods -->
+        <member name="M:PolymorphicAI.Alert(System.Single,System.Single,System.Boolean)">
+            <summary>
+                Method stub that throws NotImplementedException. Appears to be an unimplemented
+                alert system that would have taken position coordinates and an instant bubble
+                display flag.
+            </summary>
+            <param name="alertX">X coordinate of the alert position (unused)</param>
+            <param name="alertY">Y coordinate of the alert position (unused)</param>
+            <param name="showBubbleInstantly">Whether to show the alert bubble immediately (unused)</param>
+        </member>
+        <member name="M:PolymorphicAI.Attract(System.Single,System.Single)">
+            <summary>
+                Attracts the AI to a specific world position, typically used for distractions. Sets
+                the attraction point, clears current actions, forgets any tracked player, adds a
+                random wait, and switches to Attracted mental state.
+            </summary>
+            <param name="xTarget">The X world coordinate to be attracted to</param>
+            <param name="yTarget">The Y world coordinate to be attracted to</param>
+        </member>
+        <member name="M:PolymorphicAI.Blind">
+            <summary>
+                Blinds the AI for a random duration between 1-1.85 seconds. Clears the action queue,
+                forgets any seen enemy, adds a wait action, and sets mental state to Alerted.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.Blind(System.Single)">
+            <summary>
+                Blinds the AI for a specific duration. Clears the action queue, forgets any seen
+                enemy, adds a wait action for the specified time, and sets mental state to Alerted.
+            </summary>
+            <param name="time">The duration in seconds to remain blinded</param>
+        </member>
+        <member name="M:PolymorphicAI.CanSeeEnemyThisWay(System.Int32)">
+            <summary>
+                Checks if the AI can see an enemy in the specified direction. First attempts to
+                detect players using HeroController visibility checks, then checks for NPC enemy
+                units using Map visibility checks. Updates the seenEnemyNum field when an enemy is
+                detected.
+            </summary>
+            <param name="direction">The direction to check for enemies (-1 for left, 1 for right)</param>
+            <returns>True if an enemy is visible in the specified direction, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.FaceDirectionWhileAlerted(System.Single,System.Single)">
+            <summary>
+                Makes the AI face toward a specific position while in an alerted state. Sets walk
+                direction toward the target and adds actions to face the point and wait briefly
+                before continuing.
+            </summary>
+            <param name="alertX">The X world coordinate to face toward</param>
+            <param name="alertY">The Y world coordinate to face toward</param>
+        </member>
+        <member name="M:PolymorphicAI.ForceFullyAlert">
+            <summary>
+                Forces the AI to become fully alerted to the nearest player within range. Searches
+                for players within 256 units and calls FullyAlert with the nearest player's position
+                if found.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.ForgetPlayer">
+            <summary>
+                Makes the AI forget the currently tracked player. Sets seenEnemyNum to -10 (no
+                player) and adds a BecomeIdle action if currently in Alerted state.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.FullyAlert(System.Single,System.Single,System.Int32)">
+            <summary>
+                Fully alerts the AI to a player's presence at a specific position. If hiding, jumps
+                out dramatically; otherwise shows greeting reaction, faces the player, and enters
+                Alerted state with appropriate reaction time delay.
+            </summary>
+            <param name="x">The X world coordinate of the detected player</param>
+            <param name="y">The Y world coordinate of the detected player</param>
+            <param name="playerNum">The player number that was detected</param>
+        </member>
+        <member name="M:PolymorphicAI.GetPlayerRange(System.Single@,System.Single@)">
+            <summary>
+                Calculates the distance to the currently tracked enemy player if one exists. Sets
+                the horizontal distance (absolute value) and vertical distance (can be negative)
+                from the mook to the tracked player.
+            </summary>
+            <param name="xRange">Output parameter for horizontal distance to the player</param>
+            <param name="yRange">Output parameter for vertical distance to the player (positive if player is above)</param>
+            <returns>True if a player is being tracked and range was calculated, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.GetSeenPlayerNum">
+            <summary>
+                Gets the player number of the enemy unit currently being tracked by this AI. Returns
+                -10 if no enemy is currently seen or tracked. Used for targeting and alert state
+                management.
+            </summary>
+            <returns>The player number of the seen enemy, or -10 if no enemy is tracked</returns>
+        </member>
+        <member name="M:PolymorphicAI.GreetPlayer">
+            <summary>
+                Makes the AI unit greet the player when first spotting them. If the mook can speak,
+                plays a greeting sound and displays an exclamation bubble. Part of the alert
+                behavior when transitioning from unaware to alerted state.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.HearSilencedSound">
+            <summary>
+                Responds to hearing a silenced weapon sound. If not already alerted and no question
+                mark is queued, clears actions and adds a question mark reaction with wait times to
+                simulate investigation behavior.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.HearSound(System.Single,System.Single)">
+            <summary>
+                Responds to hearing a loud sound at a specific position. Behavior varies by mental
+                state: when hiding, shows a question mark; when idle, becomes suspicious and faces
+                the sound source; when already suspicious/alerted, may turn to face if sound is
+                behind them.
+            </summary>
+            <param name="alertX">The X world coordinate of the sound source</param>
+            <param name="alertY">The Y world coordinate of the sound source</param>
+        </member>
+        <member name="M:PolymorphicAI.HideSpeachBubbles">
+            <summary>
+                Hides both the exclamation mark and question mark speech bubbles by deactivating
+                their game objects. Used to clear visual indicators when they are no longer needed.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.IncrementLastAlertedTime">
+            <summary>
+                Ensures the last alerted time is set to at least 1 second. Used to maintain a
+                minimum alert duration when the AI becomes aware of threats.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.LaughAtPlayer">
+            <summary>
+                Makes the AI unit laugh at the player, typically when the player dies. Only executes
+                if the mook can both speak and laugh. Plays a laughter sound and displays an
+                exclamation bubble.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.LookForEnemy">
+            <summary>
+                Actively searches for enemies based on the AI's current mental state. When not
+                hiding, checks for players and NPC enemies in the facing direction within sight
+                range and calls FullyAlert if found. When hiding, searches for nearby players within
+                a limited range and alerts if found. Updates seenEnemyNum when enemies are detected.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.RestartExclamationBubble_Networked">
+            <summary>
+                Restarts the exclamation mark bubble animation and synchronizes it across the
+                network. If this is the local instance, sends an RPC to other clients to restart
+                their bubbles as well.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.RestartQuestionBubble_Networked">
+            <summary>
+                Restarts the question mark bubble animation and synchronizes it across the network.
+                If this is the local instance, sends an RPC to other clients to restart their
+                bubbles as well.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.ShowQuestionBubble">
+            <summary>
+                Displays a question mark bubble above the AI unit and plays appropriate sound
+                effects based on the current mental state. For Attracted state, has a 70% chance to
+                play attracted sound, otherwise plays confused sound. For Hiding state, performs a
+                hear sound animation. Only executes if the unit is alive and not incapacitated.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.TryForgetPlayer(System.Int32)">
+            <summary>
+                Attempts to make the AI forget a specific player if they were tracking them. If the
+                specified player was being tracked, adds a BecomeIdle action to the queue.
+            </summary>
+            <param name="deadPayerNum">The player number to potentially forget</param>
+        </member>
+        <member name="M:PolymorphicAI.TryLaughAtDeadPlayer(System.Int32)">
+            <summary>
+                Attempts to make the AI laugh at a dead player if it was tracking them. If the dead
+                player was the one being tracked and the AI is visible on screen, adds laugh
+                actions; otherwise becomes idle.
+            </summary>
+            <param name="deadPayerNum">The player number that died</param>
+        </member>
+        <member name="M:PolymorphicAI.TryLooseSightOfPlayer(System.Int32)">
+            <summary>
+                Handles losing sight of a tracked player. If tracking the specified player while
+                alerted, switches to idle state with question mark and extensive look-around
+                behavior to search for the lost target.
+            </summary>
+            <param name="hiddenPayerNum">The player number that is now hidden</param>
+        </member>
+        <!-- AI Awareness Properties -->
+        <member name="P:PolymorphicAI.HasEverBeenAlerted">
+            <summary>
+                Gets whether this AI has ever entered the Alerted mental state during its lifetime.
+                Checks if LastAlertedTime is greater than 0, indicating at least one alert has
+                occurred.
+            </summary>
+            <returns>True if the unit has been alerted at least once, false otherwise</returns>
+        </member>
+        <member name="P:PolymorphicAI.LastAlertedTime">
+            <summary>
+                Gets the game time when this AI was last put into the Alerted mental state. Used to
+                track how long the unit has been alerted and for AI behavior decisions. Set when
+                transitioning to Alerted state.
+            </summary>
+            <returns>The Time.time value when last alerted, or 0 if never alerted</returns>
+        </member>
+        <!-- AI Awareness Fields -->
+        <member name="F:PolymorphicAI.exclamationMark">
+            <summary>
+                Reference to the exclamation mark reaction bubble shown when the AI becomes alerted
+                to enemy presence.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.hidingLookXRange">
+            <summary>
+                The horizontal sight range in units when the AI is in Hiding mental state.
+                Significantly shorter than normal sight range to represent limited awareness while
+                hiding. Default is 64 units.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.lastAlertedTime">
+            <summary>
+                Tracks the time when the AI last entered the Alerted mental state. Used to determine
+                if the AI has recently been alerted and for managing alert state transitions. A
+                value greater than 0 indicates the AI has been alerted before.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.prevSeenPlayerNum">
+            <summary>
+                Player number of the previously seen enemy. Initialized to -10 and used for tracking
+                when the AI loses sight of a target.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.questionMark">
+            <summary>
+                Reference to the question mark reaction bubble shown when the AI is suspicious or
+                confused about something.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.seenEnemyNum">
+            <summary>
+                Player number of the currently tracked enemy, or -10 if no enemy is being tracked.
+                Updated when the AI spots a player through sight checks.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.sightRangeX">
+            <summary>
+                Horizontal sight range in pixels for detecting enemies. Default value is 300 pixels.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.sightRangeY">
+            <summary>
+                Vertical sight range in pixels for detecting enemies. Default value is 20 pixels,
+                creating a narrow horizontal detection cone.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.suspciousThinkCount">
+            <summary>
+                Counter that tracks how many times the AI has performed suspicious thinking. Used in
+                DoSuspiciousThink to determine when to change facing direction (typically after 10
+                think cycles). Reset when hearing sounds or changing mental states.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.thoughtsSincePlayerSeen">
+            <summary>
+                Counter that tracks how many think cycles have passed since the AI last saw an
+                enemy. Increments each think cycle without enemy visibility. Used to determine when
+                to change behavior (e.g., change direction after 2 cycles, become idle after 6
+                cycles).
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:PolymorphicAI.ActionQueueDoesntContainQuestionMark">
+            <summary>
+                Checks whether the action queue contains any QuestionMark actions. Returns true if
+                no QuestionMark actions are found, false if at least one exists. Used to prevent
+                duplicate question mark reactions.
+            </summary>
+            <returns>True if the queue doesn't contain any QuestionMark actions, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.ActionsContains(EnemyActionType)">
+            <summary>
+                Checks if the action queue contains any action of the specified type. Searches
+                through all queued actions to find a matching type.
+            </summary>
+            <param name="enemyActionType">The type of action to search for in the queue</param>
+            <returns>True if at least one action of the specified type exists in the queue; false if the queue is empty or no matching actions are found</returns>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(ActionObject,QueueMode)">
+            <summary>
+                Adds an action to the action queue with specified queue mode behavior.
+            </summary>
+            <param name="action">The action object to add to the queue</param>
+            <param name="queueMode">Determines how the action is added: Clear (replaces queue), First (insert at beginning), Last (append), or AfterCurrent (insert after first action)</param>
+            <remarks>
+                Sets hasActionQueueChanged to true for network synchronization. Returns immediately
+                if gameObject is null. AfterCurrent mode inserts at position 1 if queue has items,
+                otherwise appends.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(ActionObject)">
+            <summary>
+                Adds an action to the end of the action queue.
+            </summary>
+            <param name="action">The action object to append to the queue</param>
+            <remarks>
+                Convenience method that calls AddAction with QueueMode.Last.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType)">
+            <summary>
+                Creates and adds an action of the specified type with default duration (0.0334f).
+            </summary>
+            <param name="type">The type of action to create and add</param>
+            <remarks>
+                Creates a new ActionObject with the specified type and a duration of 0.0334f
+                (approximately 1 frame at 30fps).
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,QueueMode)">
+            <summary>
+                Creates and adds an action of the specified type with the specified queue mode.
+            </summary>
+            <param name="type">The type of action to create</param>
+            <param name="Qmode">The queue mode determining how the action is added to the queue</param>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,System.Single)">
+            <summary>
+                Creates and adds an action of the specified type with custom duration.
+            </summary>
+            <param name="type">The type of action to create</param>
+            <param name="duration">The duration in seconds for the action</param>
+            <remarks>
+                Public method allowing external code to queue AI actions with specific durations.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,System.Single,QueueMode)">
+            <summary>
+                Creates and adds an action with specified type, duration, and queue mode.
+            </summary>
+            <param name="type">The type of action to create</param>
+            <param name="duration">The duration in seconds for the action</param>
+            <param name="Qmode">The queue mode determining how the action is added</param>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,GridPoint)">
+            <summary>
+                Creates and adds an action with a target grid point location.
+            </summary>
+            <param name="type">The type of action to create</param>
+            <param name="point">The target grid point for actions like Move or FacePoint</param>
+            <remarks>
+                Virtual method that can be overridden. Used for actions that require a spatial
+                target.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,GridPoint,QueueMode)">
+            <summary>
+                Creates and adds an action with target location and specified queue mode.
+            </summary>
+            <param name="type">The type of action to create</param>
+            <param name="point">The target grid point for the action</param>
+            <param name="Qmode">The queue mode determining how the action is added</param>
+        </member>
+        <member name="M:PolymorphicAI.AddAction(EnemyActionType,GridPoint,System.Single)">
+            <summary>
+                Adds a new action to the action queue with a specific duration. This creates an
+                ActionObject with the specified action type, target grid point, and duration, then
+                adds it to the queue.
+            </summary>
+            <param name="type">The type of action to perform (Wait, Move, Fire, etc.)</param>
+            <param name="point">The target grid position for the action</param>
+            <param name="duration">The duration in seconds for the action to last</param>
+        </member>
+        <member name="M:PolymorphicAI.BecomeAlert(ActionObject)">
+            <summary>
+                Transitions the AI to the Alerted mental state and removes the triggering action
+                from the queue. Called when processing a BecomeAlert action type.
+            </summary>
+            <param name="currentAction">The action object that triggered the alert transition</param>
+        </member>
+        <member name="M:PolymorphicAI.CheckActionQueue">
+            <summary>
+                Virtual method for checking the action queue state. The base implementation is
+                empty, allowing derived classes to implement specific queue checking logic.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.ClearActionQueue(System.Boolean)">
+            <summary>
+                Clears all actions from the AI's action queue. Optionally marks the queue as changed
+                for network synchronization.
+            </summary>
+            <param name="syncAfterwards">If true, sets hasActionQueueChanged flag to trigger network synchronization in the next update</param>
+        </member>
+        <member name="M:PolymorphicAI.DebugShowActionQueue">
+            <summary>
+                Displays debug information about the current action queue and mental state. Shows
+                the mental state, action state, and all queued actions with their types, durations,
+                and grid points when debug mode is enabled for this enemy.
+            </summary>
+        </member>
+        <member
+            name="M:PolymorphicAI.DebugShowInput(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Displays debug information about the current input state and pathfinding. Shows
+                which movement directions are active and current pathfinding node information when
+                debug mode is enabled.
+            </summary>
+            <param name="left">Whether left movement is active</param>
+            <param name="right">Whether right movement is active</param>
+            <param name="up">Whether up movement is active</param>
+            <param name="down">Whether down movement is active</param>
+            <param name="jump">Whether jump is active</param>
+            <param name="climb">Whether climb is active</param>
+        </member>
+        <member name="M:PolymorphicAI.DelayedDeath(System.Single)">
+            <summary>
+                Virtual method to trigger a delayed death for the AI unit. The base implementation
+                is empty, allowing derived classes to implement specific delayed death behavior.
+            </summary>
+            <param name="time">The delay in seconds before death occurs</param>
+        </member>
+        <member name="M:PolymorphicAI.Deserialize(System.Byte[])">
+            <summary>
+                Deserializes AI state from a byte array. Base implementation does nothing.
+            </summary>
+            <param name="byteStream">The byte array containing serialized AI state</param>
+            <remarks>
+                Virtual method intended to be overridden by derived classes that need custom
+                deserialization.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.FinishResurrecting">
+            <summary>
+                Called when the AI finishes a resurrection sequence. Virtual method that derived
+                classes can override to implement post-resurrection behavior.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.FollowPath(NavPath)">
+            <summary>
+                Assigns a navigation path to the AI's path agent and queues a FollowPath action.
+                This clears the current action queue and adds a new action to follow the specified
+                path to its target point.
+            </summary>
+            <param name="path">The navigation path for the AI to follow</param>
+        </member>
+        <member name="M:PolymorphicAI.ForceClimbing(System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Virtual method to force the AI into a climbing state. The base implementation is
+                empty, allowing derived classes to implement specific climbing behavior based on the
+                climb direction flags.
+            </summary>
+            <param name="leftClimb">Whether the unit should climb on the left side</param>
+            <param name="rightClimb">Whether the unit should climb on the right side</param>
+            <param name="topClimb">Whether the unit should climb on top</param>
+        </member>
+        <member name="M:PolymorphicAI.GetSatanPattern">
+            <summary>
+                Gets the Satan boss movement pattern. Virtual method intended for Satan boss AI
+                implementation to override.
+            </summary>
+            <returns>The current Satan boss pattern. Base implementation throws NotImplementedException.</returns>
+        </member>
+        <member name="M:PolymorphicAI.HasPathAgent">
+            <summary>
+                Checks if this AI has an active pathfinding agent attached for navigation.
+            </summary>
+            <returns>True if the pathAgent field is not null; false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.IsAtActionGridpoint(ActionObject)">
+            <summary>
+                Checks if the unit has reached the target grid position for a movement action.
+                Compares the unit's world position to the target position, accounting for unit
+                half-width tolerance on the X axis and exact row matching.
+            </summary>
+            <param name="currentAction">The movement action containing the target grid point</param>
+            <returns>True if the unit has reached the target position, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.IsRevealed">
+            <summary>
+                Checks if the AI unit is currently revealed (not hiding). A unit is considered
+                revealed if its mental state is anything other than Hiding.
+            </summary>
+            <returns>True if the unit is revealed (not in Hiding state), false if hiding</returns>
+        </member>
+        <member name="M:PolymorphicAI.Land">
+            <summary>
+                Virtual method called when the AI unit lands on the ground. The base implementation
+                is empty, allowing derived classes to implement specific landing behavior.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.RunNormalAction(ActionObject)">
+            <summary>
+                Executes standard timed actions like Wait, Fire, and UseSpecial by decrementing the
+                action's duration timer. Removes the action from the queue when the duration
+                expires.
+            </summary>
+            <param name="currentAction">The action to process</param>
+        </member>
+        <member name="M:PolymorphicAI.RunQueue">
+            <summary>
+                Processes the current action in the action queue based on its type. Handles
+                movement, firing, special abilities, path following, state changes, and various AI
+                behaviors. Removes completed actions and manages timeouts for stuck movement.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.Serialize">
+            <summary>
+                Serializes the AI state to a byte array. Base implementation returns null.
+            </summary>
+            <returns>Null in the base implementation</returns>
+            <remarks>
+                Virtual method intended to be overridden by derived classes that need custom
+                serialization.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.SetRevealed(System.Boolean,System.Single,System.Single)">
+            <summary>
+                Sets whether the AI unit is revealed (no longer hidden). When revealing a hiding
+                unit, changes its mental state to Idle and triggers a sound alert at the specified
+                position.
+            </summary>
+            <param name="revealed">Whether the unit should be revealed</param>
+            <param name="fromX">X coordinate of the source that revealed the unit</param>
+            <param name="fromY">Y coordinate of the source that revealed the unit</param>
+        </member>
+        <member name="M:PolymorphicAI.StopAllActions">
+            <summary>
+                Immediately stops all AI actions by clearing the action queue with synchronization
+                enabled. This ensures the action queue change is propagated across the network.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.StopStomping">
+            <summary>
+                Virtual method to stop any stomping action the AI might be performing. The base
+                implementation is empty, allowing derived classes to implement specific
+                stomp-stopping logic.
+            </summary>
+        </member>
+        <member
+            name="M:PolymorphicAI.Sync(ActionObject[],MentalState,System.Single,System.Single,System.Int32,ActionState)">
+            <summary>
+                Synchronizes AI state from network data, updating action queue, mental state, and
+                position.
+            </summary>
+            <param name="queue">Array of actions to replace the current action queue</param>
+            <param name="mentalState">The mental state to apply</param>
+            <param name="newX">The X position to potentially warp to</param>
+            <param name="newY">The Y position to potentially warp to</param>
+            <param name="seenPlayer">The player number that has been seen (-10 or actual player number)</param>
+            <param name="state">The action state to apply if position correction occurs</param>
+            <remarks>
+                Only updates position if the unit is idle/hanging and the position difference
+                exceeds thresholds (32 units for most units, 64 for Xenomorphs/Melters). Vertical
+                position only updates if not parachuting or jumping.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.Think_Networked">
+            <summary>
+                Wrapper for Think() that only processes AI logic if the unit is alive.
+            </summary>
+            <remarks>
+                Checks if unit.health is greater than 0 before calling the Think method. Used in
+                networked gameplay contexts.
+            </remarks>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:PolymorphicAI.actionQueue">
+            <summary>
+                The queue of actions this AI will perform sequentially. Each ActionObject contains
+                an action type, optional grid point target, and duration.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.framesSinceSync">
+            <summary>
+                Tracks frames elapsed since last network synchronization of the action queue. Reset
+                to 0 when syncing. Used for network optimization to avoid excessive RPC calls.
+                Default is 100.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.hasActionQueueChanged">
+            <summary>
+                Flag indicating whether the action queue has been modified since the last network
+                sync. Set to true when actions are added. Used to determine when to send network
+                updates. Reset after syncing.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.laughIndex">
+            <summary>
+                Static counter shared across all AI instances to stagger laugh timing. Increments
+                each time a laugh action is added. Used with modulo 4 to create varied wait times
+                (0.4s intervals) before laughing.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.mook">
+            <summary>
+                Reference to the Mook component if this AI controls a Mook unit. Used for
+                Mook-specific behaviors like hiding in grass, somersaulting, and sound playback.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.pathAgent">
+            <summary>
+                The pathfinding agent component used for navigation. Handles movement calculations
+                and obstacle avoidance for this AI.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.rayCastHit">
+            <summary>
+                Stores raycast hit information for physics queries. Protected field available to
+                derived classes for collision detection operations.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.repathCount">
+            <summary>
+                Counter that tracks failed pathfinding attempts for the current FollowPath action.
+                Increments when path is null. If exceeds 5, the action is cancelled. Resets to 0
+                when path succeeds or action completes.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.t">
+            <summary>
+                Time delta value clamped between 0 and 0.033334 seconds. Multiplied by 2.5 in
+                Tutorial mode, used for all time-based calculations in the AI update loop.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.timeOnSameSpot">
+            <summary>
+                Accumulates time in seconds when the AI remains at the same grid position. Resets
+                when position changes. If exceeds 2 seconds, the current action is cancelled to
+                prevent being permanently stuck.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.timeStuckAgainstWall">
+            <summary>
+                Accumulates time in seconds when the AI is blocked while trying to move forward.
+                Resets to 0 when movement succeeds. If exceeds 0.3 seconds, the current move action
+                is cancelled.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.unit">
+            <summary>
+                Reference to the Unit component attached to this GameObject. Provides access to
+                health, position, facing direction, and other unit properties.
+            </summary>
+        </member>
+        <!-- AI Decision Making Methods -->
+        <member name="M:PolymorphicAI.DoAlertedThink">
+            <summary>
+                Executes combat behavior when an enemy is seen. Fires at the target, then checks if
+                the enemy is still visible. If the enemy is lost, increments thoughtsSincePlayerSeen
+                and eventually returns to idle. Otherwise continues firing with movement between
+                shots.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.DoAttractedThink">
+            <summary>
+                Executes behavior when attracted to a sound or distraction. Determines direction
+                toward the attraction point, shows a question mark bubble (70% chance), waits
+                briefly, then moves 2-4 spaces toward the attraction before returning to idle.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.DoHidingThink">
+            <summary>
+                Executes behavior while hiding in grass or cover. Alternates between short waits
+                (0.25-0.3 seconds) and looking for enemies. Keeps the unit crouched and vigilant
+                while concealed.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.DoIdleThink">
+            <summary>
+                Executes idle behavior by creating a patrol pattern. Generates 3-6 random actions
+                alternating between waiting and moving to available grid points. If alwaysLookAround
+                is true, adds looking actions and facing changes during the patrol.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.DoPanicThink">
+            <summary>
+                Executes panic behavior by moving 2-4 grid spaces in the current walk direction.
+                This creates a fleeing behavior when the unit is panicked by explosions or threats.
+            </summary>
+        </member>
+        <member name="M:PolymorphicAI.DoSuspiciousThink">
+            <summary>
+                Executes suspicious behavior when the AI has heard something. Adds wait and look
+                actions to investigate. After 10 think cycles, may randomly turn around to check
+                behind. Tracks suspicion with suspciousThinkCount.
+            </summary>
+        </member>
+        <member
+            name="M:PolymorphicAI.GetInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+            <summary>
+                Processes the current action queue and sets input flags based on the next action to
+                execute. This is the main method that translates queued AI actions into actual
+                control inputs.
+            </summary>
+            <param name="left">Set to true when the AI should move left</param>
+            <param name="right">Set to true when the AI should move right</param>
+            <param name="up">Set to true when the AI should move up</param>
+            <param name="down">Set to true when the AI should move down (also used for hiding in grass)</param>
+            <param name="jump">Set to true when the AI should jump</param>
+            <param name="fire">Set to true when the AI should fire its weapon</param>
+            <param name="special1">Set to true when the AI should use special ability 1</param>
+            <param name="special2">Set to true when the AI should use special ability 2</param>
+            <param name="special3">Set to true when the AI should use special ability 3</param>
+            <param name="special4">Set to true when the AI should use special ability 4</param>
+            <param name="climbButton">Set to true when the AI should climb</param>
+            <remarks>
+                All parameters are initially set to false. The method examines the first action in
+                the action queue and sets the appropriate flags based on the action type (Wait,
+                Fire, Move, FacePoint, etc.). Special handling exists for the Hiding mental state
+                where down is always set to true.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.GetThinkState">
+            <summary>
+                Returns the current mental state of the AI. Used to query what behavioral state the
+                AI is currently in.
+            </summary>
+            <returns>The current MentalState (Idle, Suspicious, Alerted, Panicking, Attracted, or Hiding)</returns>
+        </member>
+        <member name="M:PolymorphicAI.IsAlerted">
+            <summary>
+                Checks whether the AI is currently in the Alerted mental state. This is when the AI
+                has confirmed sight of an enemy.
+            </summary>
+            <returns>True if mental state is Alerted, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.IsSuspicious">
+            <summary>
+                Checks whether the AI is currently in the Suspicious mental state. This is when the
+                AI has heard something but hasn't confirmed an enemy presence.
+            </summary>
+            <returns>True if mental state is Suspicious, false otherwise</returns>
+        </member>
+        <member name="M:PolymorphicAI.Reassess">
+            <summary>
+                Reassesses the available movement grid points for the AI unit when not in a
+                panicking state. This method is called when the AI needs to update its understanding
+                of where it can move, typically after environmental changes or when switching mental
+                states.
+            </summary>
+        </member>
+        <member
+            name="M:PolymorphicAI.RunHoverInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
+            <summary>
+                Handles hover input generation for AI units capable of hovering. Base implementation
+                is empty.
+            </summary>
+            <param name="left">Hover left input flag</param>
+            <param name="right">Hover right input flag</param>
+            <param name="up">Hover up input flag</param>
+            <param name="down">Hover down input flag</param>
+            <param name="currentAction">The current hover action being processed</param>
+            <remarks>
+                This virtual method is intended to be overridden by AI classes that support hovering
+                behavior.
+            </remarks>
+        </member>
+        <member
+            name="M:PolymorphicAI.RunJumpingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+            <summary>
+                Handles input generation for the Jump action. Sets movement direction based on
+                facing and activates jump.
+            </summary>
+            <param name="left">Set to true if the unit is facing left (negative scale.x)</param>
+            <param name="right">Set to true if the unit is facing right (positive scale.x)</param>
+            <param name="up">Movement up flag (not modified)</param>
+            <param name="down">Movement down flag (not modified)</param>
+            <param name="jump">Always set to true to perform the jump</param>
+            <param name="fire">Fire input flag (not modified)</param>
+            <param name="special1">Special ability 1 flag (not modified)</param>
+            <param name="special2">Special ability 2 flag (not modified)</param>
+            <param name="special3">Special ability 3 flag (not modified)</param>
+            <param name="special4">Special ability 4 flag (not modified)</param>
+            <remarks>
+                The jump is always performed in the direction the unit is currently facing,
+                determined by the sign of transform.localScale.x.
+            </remarks>
+        </member>
+        <member
+            name="M:PolymorphicAI.RunMovementInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
+            <summary>
+                Handles movement input generation when the current action is Move type. Sets
+                left/right flags based on target position.
+            </summary>
+            <param name="left">Set to true if the unit needs to move left to reach target</param>
+            <param name="right">Set to true if the unit needs to move right to reach target</param>
+            <param name="up">Movement up flag (not modified by this method)</param>
+            <param name="down">Movement down flag (not modified by this method)</param>
+            <param name="currentAction">The current action containing the target grid point to move to</param>
+            <remarks>
+                Only processes movement when the unit is on ground, in quicksand, hanging, attached
+                to a wall, or using a jetpack. Movement stops when within 1 unit of the target X
+                position.
+            </remarks>
+        </member>
+        <member
+            name="M:PolymorphicAI.RunStompingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+            <summary>
+                Handles input generation for the Stomp action. Sets movement direction and down
+                input for stomping.
+            </summary>
+            <param name="left">Set to true if the unit is facing left</param>
+            <param name="right">Set to true if the unit is facing right</param>
+            <param name="up">Movement up flag (not modified)</param>
+            <param name="down">Always set to true for stomping action</param>
+            <param name="jump">Jump input flag (not modified)</param>
+            <param name="fire">Fire input flag (not modified)</param>
+            <param name="special1">Special ability 1 flag (not modified)</param>
+            <param name="special2">Special ability 2 flag (not modified)</param>
+            <param name="special3">Special ability 3 flag (not modified)</param>
+            <param name="special4">Special ability 4 flag (not modified)</param>
+            <remarks>
+                Stomping involves moving in the current facing direction while holding down,
+                typically used for ground pound attacks.
+            </remarks>
+        </member>
+        <member name="M:PolymorphicAI.SetMentalState(MentalState)">
+            <summary>
+                Sets the AI unit's mental state and performs necessary state transition logic. When
+                transitioning to Alerted state, records the alert time. When entering Suspicious
+                state, resets the suspicious think counter. This method can be called via RPC for
+                network synchronization.
+            </summary>
+            <param name="newMentalState">The new mental state to set (Idle, Suspicious, Alerted, Panicking, Attracted, or Hiding)</param>
+        </member>
+        <member name="M:PolymorphicAI.Think">
+            <summary>
+                Main AI decision-making method that executes the appropriate thinking behavior based
+                on the current mental state. Calls the corresponding Do[State]Think method for Idle,
+                Suspicious, Alerted, Panicking, Attracted, or Hiding states.
+            </summary>
+        </member>
+        <!-- AI Decision Making Fields -->
+        <member name="F:PolymorphicAI.alwaysLookAround">
+            <summary>
+                When true, the AI will add look actions and face different directions during idle
+                behavior, creating more alert-looking patrol patterns. Otherwise maintains current
+                facing during idle movements.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.attractPoint">
+            <summary>
+                The grid point that the AI is attracted to when in Attracted mental state. Set by
+                the Attract method and used in DoAttractedThink to move towards sounds or
+                distractions.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.maxIdleWaitDuration">
+            <summary>
+                The maximum duration in seconds for wait actions during idle behavior. Used with
+                Random.Range to create varied wait times. Also used as duration for move actions
+                during idle. Default is 1 second.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.mentalState">
+            <summary>
+                The current mental state of the AI, determining its behavior patterns. Can be Idle,
+                Suspicious, Alerted, Panicking, Attracted, or Hiding.
+            </summary>
+        </member>
+        <member name="F:PolymorphicAI.minIdleWaitDuration">
+            <summary>
+                The minimum duration in seconds for wait actions during idle behavior. Used with
+                Random.Range to create varied wait times. Default is 0.3 seconds.
+            </summary>
+        </member>
+    </members>
+</doc>

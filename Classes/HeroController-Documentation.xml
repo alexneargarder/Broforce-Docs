@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <doc>
     <assembly>
         <name>Assembly-CSharp</name>
@@ -361,8 +361,7 @@
                 input from the DaisyWheel controller to prevent menu conflicts. Updates the
                 controllerNum reference with the pressing controller's ID.
             </summary>
-            <param name="controllerNum">Output parameter that receives the controller number
-                pressing fire.</param>
+            <param name="controllerNum">Output parameter that receives the controller number pressing fire.</param>
             <returns>True if a valid controller pressed the join button; otherwise, false.</returns>
         </member>
         <member name="M:HeroController.GetHeroColor(System.Int32)">
@@ -523,8 +522,7 @@
             </summary>
             <param name="controlId">The controller ID to check.</param>
             <param name="pid">The player network ID to check against.</param>
-            <returns>True if this controller-PID combination is already registered; otherwise,
-                false.</returns>
+            <returns>True if this controller-PID combination is already registered; otherwise, false.</returns>
         </member>
         <member name="M:HeroController.IsControllerIDUsed(System.Int32)">
             <summary>
@@ -606,7 +604,8 @@
             <param name="updatedHeroAlreadyChosenTypes">Updated list of heroes already chosen.</param>
             <param name="ackResponse">Network acknowledgment response.</param>
         </member>
-        <member name="M:HeroController.RegisterHeroToPlayer(TestVanDammeAnim,System.Int32,HeroType)">
+        <member
+            name="M:HeroController.RegisterHeroToPlayer(TestVanDammeAnim,System.Int32,HeroType)">
             <summary>
                 Registers a spawned hero character to a specific player slot. Links the hero
                 instance to the player data, activates the HUD, sets the hero type, and handles
@@ -632,8 +631,7 @@
                 hero based on game rules and availability.
             </summary>
             <param name="PlayerNum">The player number requesting a hero.</param>
-            <param name="ignoreYetToBeSeenHeroes">Whether to ignore heroes the player hasn't
-                unlocked yet.</param>
+            <param name="ignoreYetToBeSeenHeroes">Whether to ignore heroes the player hasn't unlocked yet.</param>
         </member>
         <member
             name="M:HeroController.RequestHeroTypeFromMasterRPC(PID,System.Int32,HeroType[],HeroType,HeroType[],Ack,System.Boolean)">
@@ -1164,8 +1162,7 @@
             <param name="y">Y coordinate to search from.</param>
             <param name="xRange">Maximum horizontal distance to search.</param>
             <param name="yRange">Maximum vertical distance to search.</param>
-            <param name="currentNearest">Reference to current nearest player, updated if closer
-                found.</param>
+            <param name="currentNearest">Reference to current nearest player, updated if closer found.</param>
             <returns>True if a closer player was found; otherwise, false.</returns>
         </member>
         <member name="M:HeroController.GetNearestPlayerPos(System.Single,System.Single)">
@@ -1423,8 +1420,7 @@
             <param name="x">X coordinate to check from.</param>
             <param name="y">Y coordinate to check from.</param>
             <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
-            <param name="seenPlayerNum">Output parameter for the nearest player's number in that
-                direction.</param>
+            <param name="seenPlayerNum">Output parameter for the nearest player's number in that direction.</param>
             <returns>True if a player is found in the direction; otherwise, false.</returns>
         </member>
         <!-- Player Detection Fields -->
@@ -1844,8 +1840,7 @@
                 checkpoint. Used for respawn location determination.
             </summary>
             <param name="pos">Reference parameter that receives the checkpoint position if found.</param>
-            <param name="spawnViaAirdrop">Reference parameter that indicates if spawn should be via
-                airdrop.</param>
+            <param name="spawnViaAirdrop">Reference parameter that indicates if spawn should be via airdrop.</param>
             <returns>True if a player is near an activated checkpoint; otherwise, false.</returns>
         </member>
         <member name="M:HeroController.OnDisconnect">
@@ -1958,7 +1953,8 @@
             </summary>
         </member>
         <!-- Camera System Methods -->
-        <member name="M:HeroController.AddTemporaryPlayerTarget(System.Int32,UnityEngine.Transform)">
+        <member
+            name="M:HeroController.AddTemporaryPlayerTarget(System.Int32,UnityEngine.Transform)">
             <summary>
                 RPC method that adds a temporary follow target for a specific player's camera. Used
                 for cutscenes or special camera focus events where the camera needs to track

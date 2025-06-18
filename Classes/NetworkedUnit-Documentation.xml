@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:NetworkedUnit.Awake">
+            <summary>
+                Initializes the unit by setting maxHealth to the current health value. Called once
+                when the unit is first instantiated.
+            </summary>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:NetworkedUnit.Direction">
+            <summary>
+                Gets the facing direction of the unit as an integer. Returns -1 if facing left
+                (negative X scale), 1 if facing right (positive X scale).
+            </summary>
+        </member>
+        <member name="P:NetworkedUnit.DirectionSynced">
+            <summary>
+                Gets or sets the synchronized direction as a byte value for network transmission.
+                Uses byte value 2 for left direction (-1), 1 for right direction (1). When set,
+                updates the unit's transform scale and internal syncedDirection field. This property
+                does not use interpolation during synchronization.
+            </summary>
+        </member>
+        <member name="P:NetworkedUnit.DirectionVec">
+            <summary>
+                Gets the full local scale vector of the unit's transform. Can be used to get both
+                direction and scale information.
+            </summary>
+        </member>
+        <member name="P:NetworkedUnit.XY">
+            <summary>
+                Gets or sets the 2D position of the unit as a Vector2. This property is synchronized
+                across the network. Getting returns the current X and Y position from BroforceObject
+                base class. Setting updates the position via SetXY method.
+            </summary>
+        </member>
+        <!-- Character State & Effects Properties -->
+        <member name="P:NetworkedUnit.IsEnemy">
+            <summary>
+                Gets whether this unit is an enemy. Calculated based on whether the unit is a hero
+                or RescueBro. If not a hero and not a RescueBro, the unit is considered an enemy.
+                This value is cached after first access for performance.
+            </summary>
+        </member>
+        <member name="P:NetworkedUnit.IsHero">
+            <summary>
+                Gets whether this unit is a hero (player character). Based on the internal isHero
+                field set by derived classes.
+            </summary>
+        </member>
+        <member name="P:NetworkedUnit.IsMook">
+            <summary>
+                Gets whether this unit is specifically a Mook enemy type. Returns true if the unit's
+                type inherits from Mook class.
+            </summary>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:NetworkedUnit.isHero">
+            <summary>
+                Protected field that determines if this unit is a hero (player character). Set to
+                true by hero classes during initialization.
+            </summary>
+        </member>
+        <!-- Unit Management Properties -->
+        <member name="P:NetworkedUnit.playerNum">
+            <summary>
+                Gets or sets the player number that owns this unit. Default value is -1, indicating
+                no player ownership. Used to associate units with specific players in multiplayer.
+            </summary>
+        </member>
+        <!-- Unit Management Fields -->
+        <member name="F:NetworkedUnit._playerNum">
+            <summary>
+                Backing field for the playerNum property. Stores the player number that owns this
+                unit. Default value is -1, indicating no player ownership.
+            </summary>
+        </member>
+        <!-- AI Awareness Properties -->
+        <member name="P:NetworkedUnit.IsLocalMook">
+            <summary>
+                Gets whether this unit is a mook (enemy) that should be controlled locally. Returns
+                true if the unit has an enemyAI or enemyAIOnChildOrParent component and is owned by
+                the local player. Used to determine which client should control the AI behavior in
+                multiplayer.
+            </summary>
+        </member>
+        <!-- AI Awareness Fields -->
+        <member name="F:NetworkedUnit.enemyAI">
+            <summary>
+                Reference to the PolymorphicAI component that controls this unit's AI behavior. Used
+                for enemy units that have their AI component on the same GameObject.
+            </summary>
+        </member>
+        <member name="F:NetworkedUnit.enemyAIOnChildOrParent">
+            <summary>
+                Reference to a PolymorphicAI component that might be on a child or parent
+                GameObject. Used for units where the AI component is not directly on this
+                GameObject.
+            </summary>
+        </member>
+        <!-- Networking & RPC Methods -->
+        <member name="M:NetworkedUnit.ReadyTobeSynced">
+            <summary>
+                Determines if the unit is ready to be synchronized across the network. Returns true
+                only if both X and Y position values are non-negative. This prevents synchronization
+                of units that haven't been properly positioned yet.
+            </summary>
+            <returns>True if the unit's position is valid (both X and Y &gt;= 0), false otherwise</returns>
+        </member>
+        <!-- Networking & RPC Fields -->
+        <member name="F:NetworkedUnit.syncedDirection">
+            <summary>
+                Stores the synchronized direction value (-1 for left, 1 for right). Updated when
+                DirectionSynced property is set from network synchronization.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <doc>
     <assembly>
         <name>Assembly-CSharp</name>
@@ -201,8 +201,7 @@
                 calculates reflection angle based on impact normal and projectile direction. Awards
                 achievement for deflection kills. Returns false if canReflect is disabled.
             </summary>
-            <param name="raycastHit">Raycast hit information containing impact point and surface
-                normal</param>
+            <param name="raycastHit">Raycast hit information containing impact point and surface normal</param>
             <returns>True if projectile was successfully reflected, false if reflection is disabled</returns>
         </member>
         <member name="M:Projectile.RunDamageBackground(System.Single)">
@@ -291,8 +290,7 @@
                 life and maximum life values proportionally, allowing projectiles to travel further
                 before expiring.
             </summary>
-            <param name="m">Multiplier to apply to the projectile's life (e.g., 2.0 doubles
-                remaining life)</param>
+            <param name="m">Multiplier to apply to the projectile's life (e.g., 2.0 doubles remaining life)</param>
         </member>
         <member
             name="M:Projectile.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
@@ -537,8 +535,7 @@
             <param name="xI">Initial X velocity</param>
             <param name="yI">Initial Y velocity</param>
             <param name="_zOffset">Z-axis offset for rendering depth</param>
-            <param name="playerNum">Player number who fired the projectile (0-3 for players, -1 for
-                enemies)</param>
+            <param name="playerNum">Player number who fired the projectile (0-3 for players, -1 for enemies)</param>
             <param name="FiredBy">Reference to the unit that fired this projectile</param>
         </member>
         <member name="M:Projectile.GetSuggestedSpeed">

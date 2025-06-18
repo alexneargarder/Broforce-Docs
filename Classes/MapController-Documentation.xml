@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:MapController.explosionPrefab">
+            <summary>
+                The prefab used for creating hidden explosive effects. Referenced by various game
+                systems for spawning explosion effects.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member
+            name="M:MapController.BurnGround_Local(System.Single,System.Single,System.Single,System.Int32)">
+            <summary>
+                Burns ground in a circular pattern using raycasts from a central point. Creates 24
+                rays in a circular pattern to detect and burn ground objects within range. The
+                position is snapped to a 16-unit grid for consistent burning patterns.
+            </summary>
+            <param name="range">The maximum distance for the burn rays.</param>
+            <param name="x">The X coordinate of the burn center (snapped to 16-unit grid).</param>
+            <param name="y">The Y coordinate of the burn center (snapped to 16-unit grid).</param>
+            <param name="groundLayer">The layer mask for ground detection (currently unused in the implementation).</param>
+        </member>
+        <member
+            name="M:MapController.BurnUnitsAround_NotNetworked(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+            <summary>
+                Burns units in an area without network synchronization by delegating to
+                Map.BurnUnitsAround_Local. Used for fire damage effects that don't need to be
+                replicated.
+            </summary>
+            <param name="firedBy">The entity that started the fire.</param>
+            <param name="playerNum">The player number who caused the burning.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="range">The radius of the burn effect.</param>
+            <param name="x">The X coordinate of the burn center.</param>
+            <param name="y">The Y coordinate of the burn center.</param>
+            <param name="penetrates">Whether the fire penetrates through objects.</param>
+            <param name="setGroundAlight">Whether to set the ground on fire.</param>
+        </member>
+        <member
+            name="M:MapController.DamageBlock(UnityEngine.MonoBehaviour,Block,System.Int32,DamageType,System.Single,System.Single)">
+            <summary>
+                Damages a specific block with network synchronization. This is a convenience method
+                that wraps Damage_Networked for block-specific damage.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="b">The block to damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="forceX">The horizontal force to apply.</param>
+            <param name="forceY">The vertical force to apply.</param>
+        </member>
+        <member
+            name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+            <summary>
+                Damages ground and damageable objects within a spherical area with network
+                synchronization. This is the standard method for dealing environmental damage that
+                should be replicated to all players.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="range">The diameter of the damage area (internally halved for radius calculation).</param>
+            <param name="x">The X coordinate of the damage center.</param>
+            <param name="y">The Y coordinate of the damage center.</param>
+            <param name="ignoreTheseColliders">Optional array of colliders to exclude from damage.</param>
+            <param name="groundLayerStrict">If true, only damages ground layer objects; if false, damages both ground and damageable objects.</param>
+            <returns>True if any objects were damaged, false otherwise.</returns>
+        </member>
+        <member
+            name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Boolean,UnityEngine.Collider[])">
+            <summary>
+                Damages ground and damageable objects within a rectangular area with network
+                synchronization. Uses a larger sphere check for initial object detection, then
+                filters by rectangular bounds for precise area damage.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="width">The width of the damage rectangle (automatically increased by 8 units internally).</param>
+            <param name="height">The height of the damage rectangle (automatically increased by 8 units internally).</param>
+            <param name="x">The X coordinate of the damage center.</param>
+            <param name="y">The Y coordinate of the damage center.</param>
+            <param name="debugDraw">If true, enables debug drawing (currently no implementation).</param>
+            <param name="ignoreTheseColliders">Optional array of colliders to exclude from damage.</param>
+            <returns>True if any objects were damaged, false otherwise.</returns>
+        </member>
+        <member
+            name="M:MapController.DamageGroundLocal(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+            <summary>
+                Damages ground and damageable objects within a spherical area locally without
+                network synchronization. Primarily used for client-side damage effects that don't
+                need to be replicated across the network.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="damageType">The type of damage being dealt.</param>
+            <param name="range">The diameter of the damage area (internally halved for radius calculation).</param>
+            <param name="x">The X coordinate of the damage center.</param>
+            <param name="y">The Y coordinate of the damage center.</param>
+            <param name="ignoreTheseColliders">Optional array of colliders to exclude from damage.</param>
+            <param name="strictlyGround">If true, only damages ground layer objects; if false, damages both ground and damageable objects.</param>
+            <returns>True if any objects were damaged, false otherwise.</returns>
+        </member>
+        <member
+            name="M:MapController.Damage_Local(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Applies damage to an object locally without network synchronization. Similar to
+                Damage_Networked but only affects the local client. Includes additional special case
+                handling for Tank damage sources.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="damageReciever">The object receiving the damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="type">The type of damage being dealt.</param>
+            <param name="forceX">The horizontal force to apply.</param>
+            <param name="forceY">The vertical force to apply.</param>
+            <param name="x">The X coordinate where damage occurs.</param>
+            <param name="y">The Y coordinate where damage occurs.</param>
+        </member>
+        <member
+            name="M:MapController.Damage_Networked(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Applies damage to an object with network synchronization based on damage policies.
+                This method enforces damage rules between different entity types and handles special
+                cases for certain damage sources.
+            </summary>
+            <param name="damageSender">The entity causing the damage.</param>
+            <param name="damageReciever">The object receiving the damage.</param>
+            <param name="damage">The amount of damage to deal.</param>
+            <param name="type">The type of damage being dealt.</param>
+            <param name="forceX">The horizontal force to apply.</param>
+            <param name="forceY">The vertical force to apply.</param>
+            <param name="x">The X coordinate where damage occurs.</param>
+            <param name="y">The Y coordinate where damage occurs.</param>
+        </member>
+        <member
+            name="M:MapController.IsIndestructibleGround(System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+            <summary>
+                Checks if there is any indestructible ground (blocks with health greater than 200)
+                within the specified spherical area. Used to determine if an area contains terrain
+                that cannot be destroyed.
+            </summary>
+            <param name="range">The diameter of the check area (internally halved for radius calculation).</param>
+            <param name="x">The X coordinate of the check center.</param>
+            <param name="y">The Y coordinate of the check center.</param>
+            <param name="ignoreTheseColliders">Optional array of colliders to exclude from the check.</param>
+            <param name="groundLayerStrict">If true, only checks ground layer objects; if false, checks both ground and damageable objects.</param>
+            <returns>True if any indestructible ground is found, false otherwise.</returns>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:MapController.SendRollBlockRPC(FallingBlock,System.Int32)">
+            <summary>
+                Sends network RPCs to synchronize a falling block being rolled by a player. First
+                sets the player pushing the block, then sends the roll direction to all clients.
+            </summary>
+            <param name="block">The falling block being rolled.</param>
+            <param name="direction">The direction of the roll (typically -1 or 1).</param>
+        </member>
+        <member name="M:MapController.SetBlockBeingPushedByPlayer(Block,PID,System.Single)">
+            <summary>
+                Sets which player is currently pushing a falling block, used for network ownership
+                tracking. Only updates if the provided timestamp is earlier than the existing
+                timestamp.
+            </summary>
+            <param name="block">The block being pushed (must be a FallingBlock).</param>
+            <param name="player">The player ID pushing the block.</param>
+            <param name="timeStamp">The timestamp of when the push started.</param>
+        </member>
+        <member
+            name="M:MapController.SettleBlockRPC(Block,System.Single,System.Single,System.Int32,System.Single)">
+            <summary>
+                Handles the network RPC for settling a falling block after it has been rolled. Only
+                processes the settlement if the RPC sender matches the player who pushed the block
+                or if no player is assigned.
+            </summary>
+            <param name="block">The block to settle (must be a FallingBlock).</param>
+            <param name="X">The final X position for the block.</param>
+            <param name="Y">The final Y position for the block.</param>
+            <param name="colOffset">The column offset for settlement.</param>
+            <param name="final_zAngle">The final Z-axis rotation angle.</param>
+        </member>
+        <!-- Entity Spawning Methods -->
+        <member
+            name="M:MapController.SpawnDrone_Networked(Drone,BroBase,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Spawns a drone with network synchronization that follows a specific hero character.
+                The drone is linked to a BroBase instance for following behavior.
+            </summary>
+            <param name="dronePrefab">The drone prefab to instantiate.</param>
+            <param name="followBro">The hero character the drone should follow.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <returns>The spawned drone instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnMookJumping_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Spawns a mook in a jumping state with network synchronization. Includes additional
+                parameters for forced jumping and sound effects on spawn.
+            </summary>
+            <param name="mookPrefab">The mook prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="forceJump">Whether to force the mook to jump on spawn.</param>
+            <param name="tumble">Whether the mook should tumble.</param>
+            <param name="onFire">Whether the mook spawns on fire.</param>
+            <param name="isAlert">Whether the mook spawns in an alert state.</param>
+            <param name="panicSound">Whether to play panic sound on spawn.</param>
+            <param name="laughSound">Whether to play laugh sound on spawn.</param>
+            <returns>The spawned mook instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnMook_Local(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Spawns a mook locally without network synchronization. Used for client-side mook
+                spawning that doesn't need to be replicated.
+            </summary>
+            <param name="mookPrefab">The mook prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="tumble">Whether the mook should tumble on spawn.</param>
+            <param name="useParachuteDelay">Whether to delay parachute deployment.</param>
+            <param name="useParachute">Whether the mook should use a parachute.</param>
+            <param name="onFire">Whether the mook spawns on fire.</param>
+            <param name="isAlert">Whether the mook spawns in an alert state.</param>
+            <returns>The spawned mook instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnMook_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Spawns a mook with network synchronization. Creates the mook on all connected
+                clients and synchronizes its spawn state including alert status.
+            </summary>
+            <param name="mookPrefab">The mook prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="tumble">Whether the mook should tumble on spawn.</param>
+            <param name="useParachuteDelay">Whether to delay parachute deployment.</param>
+            <param name="useParachute">Whether the mook should use a parachute.</param>
+            <param name="onFire">Whether the mook spawns on fire.</param>
+            <param name="isAlert">Whether the mook spawns in an alert state.</param>
+            <returns>The spawned mook instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnResource_Networked(System.String,System.Single,System.Single,System.String)">
+            <summary>
+                Spawns a resource by name with network synchronization. Uses the
+                InstantiationController to resolve legacy resource names to prefabs.
+            </summary>
+            <param name="resourceName">The legacy resource name to spawn.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="tag">Optional tag to assign to the spawned object for later reference (converted to uppercase).</param>
+        </member>
+        <member
+            name="M:MapController.SpawnResource_Networked_Block(UnityEngine.GameObject,System.Single,System.Single,System.String)">
+            <summary>
+                Spawns a block-based resource with network synchronization. Handles block
+                initialization, immediate step-on notifications, and optional tagging for later
+                reference.
+            </summary>
+            <param name="prefab">The block prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="tag">Optional tag to assign to the spawned object for later reference (converted to uppercase).</param>
+        </member>
+        <member
+            name="M:MapController.SpawnTestVanDamme_Networked(TestVanDammeAnim,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Spawns a TestVanDammeAnim (hero character) with network synchronization. Creates the
+                character on all connected clients and synchronizes its spawn state.
+            </summary>
+            <param name="vanDamPrefab">The TestVanDammeAnim prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="tumble">Whether the character should tumble on spawn.</param>
+            <param name="useParachuteDelay">Whether to delay parachute deployment.</param>
+            <param name="useParachute">Whether the character should use a parachute.</param>
+            <param name="onFire">Whether the character spawns on fire.</param>
+            <returns>The spawned TestVanDammeAnim instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnVehicle_Networked(Tank,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Spawns a vehicle (tank) with network synchronization. Creates the vehicle on all
+                connected clients with synchronized movement and alert state.
+            </summary>
+            <param name="vehiclePrefab">The tank prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="isAlert">Whether the vehicle spawns in an alert state.</param>
+            <returns>The spawned tank instance.</returns>
+        </member>
+        <member
+            name="M:MapController.SpawnVillager_Networked(Villager,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
+            <summary>
+                Spawns a villager with network synchronization. Includes support for armed villagers
+                that can be associated with a specific player.
+            </summary>
+            <param name="villagerPrefab">The villager prefab to instantiate.</param>
+            <param name="x">The X coordinate to spawn at.</param>
+            <param name="y">The Y coordinate to spawn at.</param>
+            <param name="xI">The initial horizontal velocity.</param>
+            <param name="yI">The initial vertical velocity.</param>
+            <param name="tumble">Whether the villager should tumble on spawn.</param>
+            <param name="useParachuteDelay">Whether to delay parachute deployment.</param>
+            <param name="useParachute">Whether the villager should use a parachute.</param>
+            <param name="onFire">Whether the villager spawns on fire.</param>
+            <param name="isAlert">Whether the villager spawns in an alert state.</param>
+            <param name="armedPlayerNum">The player number if this is an armed villager, or -1 for unarmed.</param>
+            <returns>The spawned villager instance.</returns>
+        </member>
+        <!-- Entity Spawning Fields -->
+        <member name="F:MapController.currentActiveDeadMooksInScene">
+            <summary>
+                Tracks the current number of active dead mooks (animated corpses or death animations
+                still playing). Used to manage visual corpse limits and performance.
+            </summary>
+        </member>
+        <member name="F:MapController.currentActiveMooksInScene">
+            <summary>
+                Tracks the current number of active (alive) mooks in the scene. Used by spawn
+                systems to manage enemy population and by the alarm system for threat assessment.
+            </summary>
+        </member>
+        <member name="F:MapController.currentDeadMooksInScene">
+            <summary>
+                Tracks the current number of dead mooks in the scene. Used for cleanup and
+                performance management of corpses.
+            </summary>
+        </member>
+    </members>
+</doc>

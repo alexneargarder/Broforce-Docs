@@ -1,0 +1,1498 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Sound.Awake">
+            <summary>
+                Initializes the Sound singleton instance and sets up all audio components. Creates
+                four primary AudioSource components: the main music source, high/low intensity music
+                sources for dynamic music, and ambient background/effects sources. Configures volume
+                based on PlayerOptions settings and whether in menu screen. Creates a pool of 64
+                ReusableOneShotSound objects for efficient sound effect playback. Sets up 3D audio
+                properties including rolloff mode and spatial blend.
+            </summary>
+        </member>
+        <member name="M:Sound.LateUpdate">
+            <summary>
+                Main update loop for the Sound system. Handles ambient sound delays, music fading
+                in/out, intensity-based music transitions, low pass filter effects, pitch shifting,
+                ambient effects timing, and various sound category frame limiters. Manages smooth
+                transitions between high and low intensity music based on gameplay alertness.
+                Processes audio effects like boss pulse timing and victory sting playback.
+            </summary>
+        </member>
+        <member name="M:Sound.OnEnable">
+            <summary>
+                Unity callback when the Sound object is enabled. Checks if automatic music playback
+                should start based on several conditions: musicClip must be assigned, music volume
+                must be above 0.1, music must not already be playing, playAutomatically must be
+                true, and playDelay must be 0 or less. If all conditions are met, starts playing the
+                main music track.
+            </summary>
+        </member>
+        <member name="M:Sound.Start">
+            <summary>
+                Handles initial music playback setup when the component starts. Automatically plays
+                music if playDelay is 0, playAutomatically is true, music is enabled, and no music
+                is currently playing. Also disables the audio low pass filter if one is assigned.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Sound.isInMenuScreen">
+            <summary>
+                Indicates whether the Sound system is currently being used in a menu screen rather
+                than gameplay. This affects music volume calculations in SetMusicVolume() and
+                determines which volume settings to apply. Menu screens use direct PlayerOptions
+                volume while gameplay may have additional volume modifiers.
+            </summary>
+        </member>
+        <member name="F:Sound.playAutomatically">
+            <summary>
+                Controls whether music should start playing automatically when the Sound system
+                initializes. When true, the music will begin playing in Start() or OnEnable() if
+                other conditions are met. Set to false when boss music or special tracks are playing
+                to prevent the main music from interfering. This flag is disabled during boss pulse
+                and boss fight music playback.
+            </summary>
+        </member>
+        <member name="F:Sound.playDelay">
+            <summary>
+                The delay in seconds before music starts playing automatically after initialization.
+                Used in Start() and OnEnable() to postpone music playback. When greater than 0, the
+                delay counts down in Update() before triggering playback. A value of 0 or less
+                allows immediate playback if other conditions are met.
+            </summary>
+        </member>
+        <!-- Audio System Management Methods -->
+        <member name="M:Sound.GetInstance">
+            <summary>
+                Returns the singleton instance of the Sound class for global access to the audio
+                system.
+            </summary>
+            <returns>The single Sound instance managing all game audio</returns>
+        </member>
+        <member name="M:Sound.Pause">
+            <summary>
+                Pauses all audio playback by deactivating the Sound instance GameObject. This stops
+                all music, sound effects, and ambient sounds while preserving their state. The audio
+                can be resumed later with Resume().
+            </summary>
+        </member>
+        <member
+            name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip[],System.Single,System.Single,System.Single)">
+            <summary>
+                Plays a random announcer sound from an array. Returns null if clips array is null or
+                empty. Otherwise selects a random clip from the array and calls the single-clip
+                overload with all parameters.
+            </summary>
+            <param name="clips">Array of AudioClips to randomly select from</param>
+            <param name="v">Volume level for playback</param>
+            <param name="pitch">Pitch multiplier for playback</param>
+            <param name="delay">Delay in seconds before playing (default 0)</param>
+            <returns>The AudioSource playing the announcer sound, or null if clips array was invalid</returns>
+        </member>
+        <member
+            name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip,System.Single,System.Single,System.Single)">
+            <summary>
+                Plays an announcer sound with special audio settings. Positions the sound at the
+                Sound instance position, or camera position if Sound instance is null. Creates the
+                audio using PlayAudioClip with reverb and effects bypass enabled, marked as
+                announcer sound, and never pooled. The created AudioSource is unparented and marked
+                with DontDestroyOnLoad to persist across scene changes.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="v">Volume level for playback</param>
+            <param name="pitch">Pitch multiplier for playback</param>
+            <param name="delay">Delay in seconds before playing (default 0)</param>
+            <returns>The AudioSource playing the announcer sound, or null if unable to create</returns>
+        </member>
+        <member name="M:Sound.Resume">
+            <summary>
+                Resumes audio playback after a pause by reactivating the Sound GameObject.
+                Repositions the Sound transform to match the SortOfFollow camera position if
+                available. If music was playing before the pause (musicOn is true) or boss pulse
+                music was active, restarts the music playback from where it was paused.
+            </summary>
+        </member>
+        <member name="M:Sound.SetPosition(UnityEngine.Vector3)">
+            <summary>
+                Updates the world position of the Sound instance GameObject. This affects the
+                listener position for 3D audio calculations and determines where ambient sounds and
+                music originate from. Typically called to follow the camera or player position for
+                proper audio spatialization.
+            </summary>
+            <param name="position">The new world position for the Sound system</param>
+        </member>
+        <!-- Audio System Management Properties -->
+        <member name="P:Sound.MusicEnabled">
+            <summary>
+                Gets whether music is enabled based on the player's music volume setting. Music is
+                considered enabled if the volume is greater than 0.01f.
+            </summary>
+        </member>
+        <!-- Audio System Management Fields -->
+        <member name="F:Sound.instance">
+            <summary>
+                Static reference to the singleton Sound instance. Set during Awake() and accessed
+                globally via GetInstance(). Provides centralized access to all audio playback
+                functionality throughout the game.
+            </summary>
+        </member>
+        <member name="F:Sound.music">
+            <summary>
+                Main AudioSource component for background music playback. Created in Awake() with
+                specific settings (looping, no doppler, priority 1). Handles standard music tracks,
+                boss music, victory stings, and special music sequences.
+            </summary>
+        </member>
+        <!-- Music Playback & Control Methods -->
+        <member name="M:Sound.FadeInLevelMusic">
+            <summary>
+                Fades in the level's intensity-based music system. Only executes if music volume is
+                above 0.01f. Enables the music intensity system, stops all currently playing music
+                tracks (low intensity, high intensity, and regular music), then calls FadeInMusic()
+                to start the fade-in process.
+            </summary>
+        </member>
+        <member name="M:Sound.FadeInMusic">
+            <summary>
+                Starts fading in the music from silence to full volume. If music isn't already
+                playing, calls PlayMusic() first. Sets playingMusicLoud to false, enables
+                fadingInMusic, disables fadingOutMusic, and sets the fade speed to the player's
+                music volume setting.
+            </summary>
+        </member>
+        <member name="M:Sound.FadeMusic">
+            <summary>
+                Sets the static fading flag to true and disables automatic music playback. This
+                appears to be a simplified fade control that affects the global music state.
+            </summary>
+        </member>
+        <member name="M:Sound.FadeOutMusic">
+            <summary>
+                Starts fading out the currently playing music to silence. Only executes if music
+                volume is above 0.01f. Enables fadingOutMusic, disables fadingInMusic, sets fade
+                speed to half the player's music volume, and disables automatic music playback.
+            </summary>
+        </member>
+        <member name="M:Sound.GetBossMusicVolumeM(UnityEngine.AudioClip)">
+            <summary>
+                Returns a volume multiplier specific to different boss music tracks. Alien boss
+                music gets 1.6666x volume, Forest boss gets 1.28x, and all others get 1.1x. Also
+                sets playingMusicLoud to false.
+            </summary>
+            <param name="clip">The boss music clip to get volume multiplier for</param>
+            <returns>Volume multiplier value between 1.1 and 1.6666</returns>
+        </member>
+        <member name="M:Sound.GetVictorySting">
+            <summary>
+                Gets the appropriate victory music clip based on the currently playing boss music.
+                The method sets playingMusicLoud to false and returns specific victory clips for
+                different boss themes (jungle, alien, forest, hell, charlie, delta). If no specific
+                boss music is playing or if Map.MapData is null, returns the default victory sting
+                clip.
+            </summary>
+            <returns>The victory music AudioClip that corresponds to the current boss theme, or the default victory sting</returns>
+        </member>
+        <member name="M:Sound.IsVictoryStingPlaying">
+            <summary>
+                Returns whether a victory sting (short celebratory music clip) is currently playing
+                after defeating a boss or completing a level.
+            </summary>
+            <returns>True if victory music is playing, false otherwise</returns>
+        </member>
+        <member name="M:Sound.PlayDeathMusic">
+            <summary>
+                Static method that plays the death music clip when the player dies. Only plays if
+                music volume is above 0.01f. Sets the music AudioSource to play the death clip
+                non-looping at the player's configured music volume.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayMainMusic">
+            <summary>
+                Plays the main background music clip. Sets playingMusicLoud to false and only plays
+                if music volume is above 0.01f. Configures the music AudioSource to play the
+                musicClip in a loop at the player's configured music volume.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayMusic">
+            <summary>
+                Main music playback method that handles all music selection logic. Checks map data
+                for music type and theme, selects appropriate low/high intensity music clips based
+                on level theme (Jungle, City, Hell, Desert, etc.), handles special cases like boss
+                fights and BroDown mode, and configures volume multipliers for specific music types.
+                Stops music if map specifies silence. Manages the dual-intensity music system for
+                dynamic gameplay audio.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayVictorySting">
+            <summary>
+                Static method that plays the victory music by calling the internal implementation on
+                the singleton instance. This is a convenience wrapper for external classes to
+                trigger victory music playback.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayVictoryStingInternal">
+            <summary>
+                Internal method that plays the victory music. Sets playingMusicLoud to false and
+                prevents multiple plays by checking isVictoryStingPlaying. Stops all intensity music
+                tracks and boss pulse music, disables music intensity system, then plays the
+                appropriate victory clip obtained from GetVictorySting() with volume adjusted by
+                GetBossMusicVolumeM(). Sets the music to non-looping and resets all fade states.
+            </summary>
+        </member>
+        <!-- Music Playback & Control Fields -->
+        <member name="F:Sound.alertnessCounter">
+            <summary>
+                Counter for tracking alertness or intensity level. Currently unused in the codebase
+                - appears to be a placeholder for a music intensity or alert state system that was
+                not implemented.
+            </summary>
+        </member>
+        <member name="F:Sound.currentIntensityMusicVolume">
+            <summary>
+                The current volume level for intensity-based music tracks (range 0-0.7f). This value
+                can be adjusted during gameplay using PageUp/PageDown keys and is affected by fade
+                in/out operations. It's multiplied by different factors for high intensity (0.6f)
+                and low intensity (0.5f) music to create proper volume balance. During music fades,
+                this value lerps towards the target volume at the rate specified by fadeSpeed.
+                Default starting value is 0.13f but typically matches
+                PlayerOptions.Instance.musicVolume.
+            </summary>
+        </member>
+        <member name="F:Sound.deathClip">
+            <summary>
+                Audio clip played when the player dies. Used by PlayDeathMusic() static method,
+                plays once (not looped) at the current music volume setting.
+            </summary>
+        </member>
+        <member name="F:Sound.fadeSpeed">
+            <summary>
+                The rate at which music volume changes during fade in/out operations, measured in
+                volume units per second. Default value is 0.1f for gradual fades. Can be set to
+                specific values like 0.02f for very slow boss pulse fades, or to
+                PlayerOptions.Instance.musicVolume for standard fades that complete in about 1
+                second at full volume. Used by both fadingInMusic and fadingOutMusic to control
+                transition smoothness.
+            </summary>
+        </member>
+        <member name="F:Sound.fading">
+            <summary>
+                A static flag controlling global music fade-out behavior. When true, the main music
+                volume decreases by 0.5f per second until it reaches 0.01f, then stops playing. This
+                provides a quick fade-out effect used when transitioning between levels or game
+                states. Unlike fadingOutMusic which uses a configurable fade speed, this always
+                fades at a fixed rate. Set via the FadeMusic() method and affects all Sound
+                instances.
+            </summary>
+        </member>
+        <member name="F:Sound.fadingInMusic">
+            <summary>
+                Controls whether music is currently fading in with configurable speed. When true,
+                music volume increases from its current level up to the target volume at the rate
+                specified by fadeSpeed. Automatically sets to false when the target volume is
+                reached. Used for smooth music entrances after silence or when resuming from a faded
+                state. Takes priority over fadingOutMusic when both would be active.
+            </summary>
+        </member>
+        <member name="F:Sound.fadingOutMusic">
+            <summary>
+                Controls whether music is currently fading out with configurable speed. When true,
+                both regular music and intensity music volumes decrease at the rate specified by
+                fadeSpeed. This is used for smooth transitions when stopping music or switching
+                tracks. Automatically set to false when fadingInMusic is activated. The fade
+                continues until volume reaches zero or is interrupted by other music commands.
+            </summary>
+        </member>
+        <member name="F:Sound.highAlienClip">
+            <summary>
+                High intensity music for Alien theme. Used as highIntensityMusicClip in SetMusic()
+                when MusicType is Alien. Has a 1.25x volume multiplier for increased loudness.
+            </summary>
+        </member>
+        <member name="F:Sound.highDesertClip">
+            <summary>
+                Audio clip for high intensity desert theme music. Assigned to highIntensityMusicClip
+                when MusicType.Desert is selected. Used as part of the dynamic music system that
+                plays high intensity music during combat in desert environments.
+            </summary>
+        </member>
+        <member name="F:Sound.highFactoryClip">
+            <summary>
+                High intensity music for Factory/Forest theme. Used as highIntensityMusicClip in
+                SetMusic() when MusicType is Factory (typically for Forest and City theme levels).
+            </summary>
+        </member>
+        <member name="F:Sound.highHellClip">
+            <summary>
+                High intensity music for Hell theme. Used as highIntensityMusicClip in SetMusic()
+                when MusicType is Hell (for Hell-themed levels).
+            </summary>
+        </member>
+        <member name="F:Sound.highIntensityMusic">
+            <summary>
+                AudioSource for high-intensity music layer in the dynamic music system. Fades in
+                during combat or high-action sequences based on
+                StatisticsController.GetMusicIntensity(). Created in Awake() with volume at 66.6% of
+                base music volume.
+            </summary>
+        </member>
+        <member name="F:Sound.highIntensityMusicClip">
+            <summary>
+                Current high intensity music clip selected based on the map's MusicType (jungle,
+                factory, hell, desert, etc). This clip is assigned to the highIntensityMusic
+                AudioSource and plays during combat situations. Volume is controlled by
+                musicVolumeCaseSpecificMultiplier and intensity blending system.
+            </summary>
+        </member>
+        <member name="F:Sound.highIntensityTime">
+            <summary>
+                The remaining time in seconds to continue playing high intensity music after combat
+                ends. When gameplay action triggers high intensity music, this timer is set (default
+                1.2 seconds) and counts down. The high intensity track continues playing until both
+                this timer reaches zero AND StatisticsController.GetMusicIntensity() returns 0. This
+                creates a brief musical "cooldown" after action sequences, preventing jarring
+                transitions when combat briefly pauses.
+            </summary>
+        </member>
+        <member name="F:Sound.highJungleBlueSkyClip">
+            <summary>
+                High intensity music for jungle blue sky theme. Used as highIntensityMusicClip in
+                SetMusic() when MusicType is JungleBlueSky or as the default fallback music.
+            </summary>
+        </member>
+        <member name="F:Sound.highJungleRedSkyClip">
+            <summary>
+                High intensity music for jungle red sky theme. Used as highIntensityMusicClip in
+                SetMusic() when MusicType is JungleRedSky (typically for BurningJungle theme
+                levels).
+            </summary>
+        </member>
+        <member name="F:Sound.highOriginalMusicClip">
+            <summary>
+                High intensity version of the original Broforce drums music. Used as
+                highIntensityMusicClip in SetMusic() when MusicType is BroforceDrums (typically for
+                Jungle theme levels).
+            </summary>
+        </member>
+        <member name="F:Sound.isVictoryStingPlaying">
+            <summary>
+                Tracks whether a victory sting is currently playing. Prevents multiple victory
+                stings from playing simultaneously and is checked by other systems (like Helicopter)
+                to know when victory music is active. Set to true when PlayVictoryStingInternal() is
+                called.
+            </summary>
+        </member>
+        <member name="F:Sound.lowAlienClip">
+            <summary>
+                Low intensity music for Alien theme. Used as lowIntensityMusicClip in SetMusic()
+                when MusicType is Alien. Has a 1.25x volume multiplier for increased loudness.
+            </summary>
+        </member>
+        <member name="F:Sound.lowDesertClip">
+            <summary>
+                Audio clip for low intensity desert theme music. Assigned to lowIntensityMusicClip
+                when MusicType.Desert is selected. Used as part of the dynamic music system that
+                plays low intensity music during calm moments in desert environments.
+            </summary>
+        </member>
+        <member name="F:Sound.lowFactoryClip">
+            <summary>
+                Low intensity music for Factory/Forest theme. Used as lowIntensityMusicClip in
+                SetMusic() when MusicType is Factory (typically for Forest and City theme levels).
+            </summary>
+        </member>
+        <member name="F:Sound.lowHellClip">
+            <summary>
+                Low intensity music for Hell theme. Used as lowIntensityMusicClip in SetMusic() when
+                MusicType is Hell (for Hell-themed levels).
+            </summary>
+        </member>
+        <member name="F:Sound.lowIntensityMusic">
+            <summary>
+                AudioSource for low-intensity music layer in the dynamic music system. Plays during
+                exploration or calm moments, fading out when action increases. Created in Awake()
+                with volume at 50% of base music volume.
+            </summary>
+        </member>
+        <member name="F:Sound.lowIntensityMusicClip">
+            <summary>
+                Current low intensity music clip selected based on the map's MusicType (jungle,
+                factory, hell, desert, etc). This clip is assigned to the lowIntensityMusic
+                AudioSource and plays during calm gameplay moments. Volume is controlled by
+                musicVolumeCaseSpecificMultiplier and intensity blending system.
+            </summary>
+        </member>
+        <member name="F:Sound.lowJungleBlueSkyClip">
+            <summary>
+                Low intensity music for jungle blue sky theme. Used as lowIntensityMusicClip in
+                SetMusic() when MusicType is JungleBlueSky or as the default fallback music.
+            </summary>
+        </member>
+        <member name="F:Sound.lowJungleRedSkyClip">
+            <summary>
+                Low intensity music for jungle red sky theme. Used as lowIntensityMusicClip in
+                SetMusic() when MusicType is JungleRedSky (typically for BurningJungle theme
+                levels).
+            </summary>
+        </member>
+        <member name="F:Sound.lowOriginalMusicClip">
+            <summary>
+                Low intensity version of the original Broforce drums music. Used as
+                lowIntensityMusicClip in SetMusic() when MusicType is BroforceDrums (typically for
+                Jungle theme levels).
+            </summary>
+        </member>
+        <member name="F:Sound.musicClip">
+            <summary>
+                The main background music AudioClip for the current level or menu. This is the
+                primary music track that plays during normal gameplay when not in boss fights or
+                special sequences. Used by PlayMainMusic() and checked during automatic playback in
+                Start() and OnEnable(). Can be null if no music is assigned.
+            </summary>
+        </member>
+        <member name="F:Sound.musicOn">
+            <summary>
+                A static flag indicating whether music is globally enabled in the game. This is
+                toggled by the F2 key during gameplay and affects all music playback decisions. When
+                false, no music will play regardless of other settings. When true, music plays
+                according to volume settings and game state. Default value is true. Separate from
+                the MusicEnabled property which checks player volume settings.
+            </summary>
+        </member>
+        <member name="F:Sound.musicStartTime">
+            <summary>
+                The timestamp in seconds where music playback should begin when starting a track.
+                This allows music to start at a specific point rather than the beginning, useful for
+                syncing music across level transitions or resuming after interruptions. Applied to
+                the main music AudioSource via music.time when PlayMusic() is called. Default value
+                is 0 (start from beginning).
+            </summary>
+        </member>
+        <member name="F:Sound.musicVolumeCaseSpecificMultiplier">
+            <summary>
+                Volume multiplier for music tracks based on the selected MusicType. Default is 1.0f
+                for most types. Alien music uses 1.25f for higher volume. Applied to both low and
+                high intensity music volumes.
+            </summary>
+        </member>
+        <member name="F:Sound.overrideVolumeLevel">
+            <summary>
+                An override multiplier for music volume that takes precedence over standard volume
+                calculations. When greater than 0, music volume is clamped to this value times the
+                player's music volume setting. Used for special scenarios like menu screens (0.43f
+                volume cap). When -1 (default), no override is applied and normal volume
+                calculations are used. This ensures certain music never plays too loudly regardless
+                of player settings.
+            </summary>
+        </member>
+        <member name="F:Sound.playingIntensityIntro">
+            <summary>
+                Indicates whether the music intensity system is playing intro versions of the
+                intensity tracks. When true, switching between low and high intensity will play the
+                tracks from the beginning rather than syncing timestamps. This flag is cleared after
+                the first intensity switch occurs. Used to ensure music starts properly when the
+                intensity system first activates, preventing mid-track jumps that could sound
+                unnatural.
+            </summary>
+        </member>
+        <member name="F:Sound.shopMusicElevatorJingle">
+            <summary>
+                Elevator music jingle used in shop sequences
+                (BossPulseType.ShopMusicElevatorJingle). Provides light background music for shop or
+                elevator intermission scenes.
+            </summary>
+        </member>
+        <member name="F:Sound.starSpangledBanner">
+            <summary>
+                The Star-Spangled Banner (US national anthem) music clip used for patriotic moments.
+                Played during BossPulseType.StarSpangledBanner with playingMusicLoud flag set to
+                true. Does not use boss pulse flag, indicating special ceremonial playback.
+            </summary>
+        </member>
+        <member name="F:Sound.useMusicIntensity">
+            <summary>
+                Controls whether the dynamic music intensity system is active. When true, music
+                switches between low and high intensity tracks based on gameplay action (via
+                StatisticsController.GetMusicIntensity()). When false, standard single-track music
+                plays instead. This is automatically set to true for most level music, false for
+                boss fights, victory stings, and special music like BroDown mode. The intensity
+                system allows seamless transitions between calm and action-packed musical moments.
+            </summary>
+        </member>
+        <member name="F:Sound.victorySting">
+            <summary>
+                Default audio clip for victory music. Used by GetVictorySting() as the fallback
+                victory music when no boss-specific victory clip matches or when Map.MapData exists.
+                Also used in PlaySpecialMusic().
+            </summary>
+        </member>
+        <!-- Ambient Sound Management Methods -->
+        <member name="M:Sound.CheckInitialAmbience">
+            <summary>
+                Checks if ambient sounds should start playing based on map data. Called early in
+                initialization to set up environmental audio. Only switches ambience if not already
+                playing and map data exists.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayAmbientSource">
+            <summary>
+                Internal helper method that starts playing the currently selected ambient sound
+                holder. Sets the background audio clip from the first sound in the holder's
+                background array, starts playback, and marks ambient as playing.
+            </summary>
+        </member>
+        <member name="M:Sound.PlayAutomaticAmbient">
+            <summary>
+                Automatically selects and plays ambient background sounds based on the current level
+                theme. Maps themes to specific ambient sound holders: Jungle/Forest use jungle
+                ambience, City uses city sounds, Hell uses hell ambience, Desert uses desert sounds,
+                etc. Starts the ambient background AudioSource with the selected sounds at zero
+                volume for fade-in.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToAlienCave">
+            <summary>
+                Sets the ambient background sounds to alien cave environment with otherworldly
+                sounds and alien atmosphere. Includes direct audio source setup, playing immediately
+                after assignment.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToBurningJungle">
+            <summary>
+                Sets the ambient background sounds to burning jungle environment (fire crackling,
+                destruction sounds). Only changes if not already using burning jungle ambience.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToCave">
+            <summary>
+                Sets the ambient background sounds to cave environment (echoes, dripping water, cave
+                ambience). Includes direct audio source setup, playing immediately after assignment.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToCity">
+            <summary>
+                Sets the ambient background sounds to city environment (traffic, urban noise). Only
+                changes if not already using city ambience.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToDesert">
+            <summary>
+                Sets the ambient background sounds to desert environment (wind, sand, sparse
+                wildlife). Includes direct audio source setup, playing immediately after assignment.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToHeavyRain">
+            <summary>
+                Sets the ambient background sounds to heavy rain environment with more intense storm
+                sounds. Includes direct audio source setup, playing immediately after assignment.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToHell">
+            <summary>
+                Sets the ambient background sounds to hell environment (demonic sounds, lava). Only
+                changes if not already using hell ambience.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToHellFirey">
+            <summary>
+                Sets the ambient background sounds to fiery hell variant with more intense fire and
+                flame sounds. Only changes if not already using hell fiery ambience.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToJungle">
+            <summary>
+                Sets the ambient background sounds to jungle environment (birds, insects, foliage).
+                Only changes if not already using jungle ambience to avoid restarting sounds.
+            </summary>
+        </member>
+        <member name="M:Sound.SetAmbientToLightRain">
+            <summary>
+                Sets the ambient background sounds to light rain environment. Includes direct audio
+                source setup unlike other ambient setters, playing the rain sounds immediately after
+                assignment.
+            </summary>
+        </member>
+        <member name="M:Sound.StopAmbience">
+            <summary>
+                Completely stops all ambient background sounds by setting playingAmbient to false
+                and clearing the current ambient sound holder reference.
+            </summary>
+        </member>
+        <member name="M:Sound.StopRainAmbience">
+            <summary>
+                Specifically stops rain ambience (both light and heavy variants) and switches back
+                to automatic ambient selection based on level theme. Only acts if currently playing
+                rain sounds.
+            </summary>
+        </member>
+        <member name="M:Sound.SwitchAmbienceTo(AmbienceType)">
+            <summary>
+                Central ambient sound switching method that routes to specific ambient setters based
+                on the AmbienceType enum. Handles all ambient types including None, Auto, Jungle,
+                City, Cave, Hell variants, Rain variants, and Desert. Stops ambience for None type,
+                uses automatic selection for Auto type.
+            </summary>
+            <param name="ambienceType">The type of ambient sound environment to switch to</param>
+        </member>
+        <!-- Ambient Sound Management Fields -->
+        <member name="F:Sound.ambienceStartDelay">
+            <summary>
+                Delay in seconds before ambient sounds begin playing at level start. Defaults to
+                0.1f seconds. Counts down in LateUpdate() and triggers CheckInitialAmbience() when
+                it reaches zero, allowing other systems to initialize first.
+            </summary>
+        </member>
+        <member name="F:Sound.ambienceVolume">
+            <summary>
+                The maximum volume level for ambient background sounds (range 0-1). This controls
+                the volume ceiling that ambient sounds can reach when fading in. During gameplay,
+                the ambient background AudioSource gradually increases its volume up to this value
+                using a fade-in rate of 0.15f per second. Default value is 0.6f, making ambient
+                sounds play at 60% of full volume to maintain proper audio balance with other game
+                sounds.
+            </summary>
+        </member>
+        <member name="F:Sound.ambientBackground">
+            <summary>
+                AudioSource for continuous ambient background sounds. Plays looping environmental
+                audio from the active SoundHolderAmbient. Volume fades in over time (0.15f per
+                second) when ambient is enabled and fades out when disabled.
+            </summary>
+        </member>
+        <member name="F:Sound.ambientEffectDelay">
+            <summary>
+                The countdown timer in seconds until the next random ambient effect sound plays.
+                When this reaches zero while ambient sounds are active, a random effect sound from
+                the current SoundHolderAmbient is played with randomized stereo panning. After
+                playing, the timer resets to a random value between 1 and 5 seconds. Only counts
+                down when ambient is playing and the ambient effects AudioSource is not already
+                playing a sound.
+            </summary>
+        </member>
+        <member name="F:Sound.ambientEffects">
+            <summary>
+                AudioSource for occasional ambient effect sounds. Plays random one-shot effects from
+                the active SoundHolderAmbient at randomized intervals (1-5 seconds) and stereo
+                positions. Non-looping with 75% volume.
+            </summary>
+        </member>
+        <member name="F:Sound.playingAmbient">
+            <summary>
+                Tracks whether ambient environmental sounds are currently playing. When true, the
+                ambient background AudioSource is either playing or fading in, and ambient effect
+                sounds (like random jungle noises) can trigger periodically. When false, any playing
+                ambient sounds will fade out at 1.5f volume per second. This flag is set when
+                changing ambience types (jungle, city, hell, etc.) and cleared when stopping
+                ambience entirely.
+            </summary>
+        </member>
+        <member name="F:Sound.soundHolderAmbient">
+            <summary>
+                The currently active ambient sound holder. Points to one of the specific ambient
+                holders (jungle, city, etc.) based on the current level theme or manual selection.
+                Used by PlayAmbientSource() to access background and effect clips.
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientCave">
+            <summary>
+                Ambient sound holder for cave environments. Contains echoing cave ambience with
+                dripping water and other underground sounds. Activated via
+                SwitchAmbienceTo(AmbienceType.Cave) or SetAmbientToCave().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientCaveAlien">
+            <summary>
+                Ambient sound holder for alien cave environments. Contains otherworldly cave
+                ambience with alien atmospheric sounds. Activated via
+                SwitchAmbienceTo(AmbienceType.AlienCave) or SetAmbientToAlienCave().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientCity">
+            <summary>
+                Ambient sound holder for city-themed levels. Contains background ambience and
+                occasional effect sounds appropriate for urban environments. Automatically selected
+                when playing City theme levels or manually via SetAmbientToCity().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientDesert">
+            <summary>
+                Ambient sound holder for desert environments. Contains wind and sand ambience
+                appropriate for arid landscapes. Automatically selected for Desert theme levels or
+                via SetAmbientToDesert().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientHeavyRain">
+            <summary>
+                Ambient sound holder for heavy rain atmosphere. Contains intense rain and storm
+                sounds. Activated via SwitchAmbienceTo(AmbienceType.HeavyRain) or
+                SetAmbientToHeavyRain(). Can be stopped with StopRainAmbience().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientHell">
+            <summary>
+                Ambient sound holder for hell-themed levels. Contains demonic ambience with fire and
+                brimstone sounds. Automatically selected for Hell theme levels or via
+                SetAmbientToHell().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientHellFirey">
+            <summary>
+                Ambient sound holder for intense hell environments with heavy fire effects. Contains
+                more aggressive hell ambience with prominent fire sounds. Activated via
+                SwitchAmbienceTo(AmbienceType.HellFire) or SetAmbientToHellFirey().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientJungle">
+            <summary>
+                Ambient sound holder for jungle-themed levels. Contains background ambience (birds,
+                insects) and occasional jungle effect sounds. Used for both Jungle and Forest
+                themes. Selected automatically or via SetAmbientToJungle().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientJungleBurning">
+            <summary>
+                Ambient sound holder for burning jungle environments. Combines jungle ambience with
+                fire crackling and burning sounds. Automatically selected for BurningJungle theme or
+                via SetAmbientToBurningJungle().
+            </summary>
+        </member>
+        <member name="F:Sound.soundholderAmbientRainy">
+            <summary>
+                Ambient sound holder for light rain atmosphere. Contains rain background sounds and
+                occasional thunder effects. Can be activated via SwitchAmbienceTo(AmbienceType.Rain)
+                or SetAmbientToLightRain().
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Sound.DisableLowPass">
+            <summary>
+                Static helper method to disable the low pass audio filter effect. Safely checks for
+                null instance and filter before disabling to avoid errors.
+            </summary>
+        </member>
+        <!-- Boss Music System Methods -->
+        <member name="M:Sound.PlayBossFightMusic(BossMusicType)">
+            <summary>
+                Plays boss fight music based on the specified type or map theme. Sets
+                playingMusicLoud to false and only plays if music volume is above 0.01f and not
+                already playing jungle boss music. When type is Default, selects music based on
+                Map.MapData's theme or musicType (alien overrides theme). Otherwise uses the
+                specified BossMusicType to select from available boss fight clips. Calls
+                SetBossMusicVolume() to adjust volume, sets looping, and stops intensity music
+                tracks.
+            </summary>
+            <param name="bossMusicType">The type of boss music to play, or Default to auto-select based on map</param>
+        </member>
+        <member name="M:Sound.PlayBossPulse(BossPulseType,System.Boolean)">
+            <summary>
+                Plays specific boss pulse music based on the BossPulseType. Only plays if music
+                volume is above 0.01f. Disables automatic playback and sets various music state
+                flags. Maps each BossPulseType to a specific AudioClip (e.g., Soldier to
+                bossPulseDolf, Mech to bossPulseGoliath). Special handling for StarSpangledBanner
+                (sets playingMusicLoud true), ChasedInHell and VictorySting (disables
+                playingBossPulse). Supports fade-in with configurable fade speed. Stops intensity
+                music tracks when switching to boss pulse.
+            </summary>
+            <param name="type">The type of boss pulse music to play, determining which AudioClip to use</param>
+            <param name="fadeIn">Whether to fade in the music from silence (default false)</param>
+        </member>
+        <member name="M:Sound.SetBossMusicVolume">
+            <summary>
+                Sets the volume for boss fight music based on the current clip and game mode. Final
+                boss music plays at 1.0x player volume, deathmatch mode plays at 0.85x, and all
+                other boss music plays at 1.15x player volume.
+            </summary>
+        </member>
+        <!-- Boss Music System Fields -->
+        <member name="F:Sound.bossFightClipAlien">
+            <summary>
+                The boss fight music AudioClip for alien-themed boss encounters. Selected when
+                PlayBossFightMusic() is called with BossMusicType.Alien. Creates an otherworldly
+                atmosphere appropriate for alien boss battles with corresponding victory music.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipCharlie">
+            <summary>
+                Audio clip for the boss fight music in City/Charlie-themed levels. Selected in
+                PlayBossFightMusic() when the level theme is City or when BossMusicType.Charlie is
+                specified.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipDelta">
+            <summary>
+                Audio clip for the boss fight music in BurningJungle/Delta-themed levels. Selected
+                in PlayBossFightMusic() when the level theme is BurningJungle, BossMusicType.Delta,
+                or BossMusicType.Desert is specified.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipDesert">
+            <summary>
+                Audio clip for the boss fight music in Desert-themed levels. Currently not used in
+                the code but appears to be intended for desert boss fights.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipFinal">
+            <summary>
+                Audio clip for the final boss fight music. Selected in PlayBossFightMusic() when
+                BossMusicType.Final is specified. Has special volume scaling in
+                GetBossMusicRescaleAmount().
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipForest">
+            <summary>
+                The boss fight music AudioClip for forest-themed boss encounters. Explicitly
+                selected when PlayBossFightMusic() is called with BossMusicType.Forest. Provides
+                variety in boss music based on environment theme with matching victory music.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipHell">
+            <summary>
+                Audio clip for the boss fight music in Hell-themed levels. Selected in
+                PlayBossFightMusic() when the level theme is Hell or when BossMusicType.Hell is
+                specified.
+            </summary>
+        </member>
+        <member name="F:Sound.bossFightClipJungle">
+            <summary>
+                The boss fight music AudioClip specifically for jungle-themed boss encounters.
+                Selected in PlayBossFightMusic() when the boss type is Default and the level theme
+                or random selection chooses jungle. Has a corresponding victory clip in
+                bossVictoryClipJungle.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseAlien">
+            <summary>
+                Boss pulse music for creepy alien encounters (BossPulseType.AlienCreepy). Played
+                with looping enabled during battles with alien enemies that have a horror theme.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseAlienEpic">
+            <summary>
+                Boss pulse music for epic alien encounters (BossPulseType.Alien). Played with
+                looping enabled during major alien boss battles.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseChaseHell">
+            <summary>
+                Special music for hell chase sequences (BossPulseType.ChasedInHell). Played without
+                boss pulse flag, indicating it's more atmospheric than combat music.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseDolf">
+            <summary>
+                Boss pulse music for Soldier type boss encounters. Also used as the default boss
+                music when type is unspecified. Played with looping enabled during
+                BossPulseType.Soldier encounters or as fallback.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseElevator">
+            <summary>
+                Boss pulse music clip intended for elevator boss encounters. Currently unused in the
+                codebase but available for future elevator sequences.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseGoliath">
+            <summary>
+                Boss pulse music for Mech type boss encounters (BossPulseType.Mech). Played with
+                looping enabled during battles with mechanical boss enemies.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseHeavy">
+            <summary>
+                Boss pulse music for War type boss encounters (BossPulseType.War). Played with
+                looping enabled during intense war-themed boss battles.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseHelicockter">
+            <summary>
+                Boss pulse music for helicopter encounters (BossPulseType.Helicockter). Also reused
+                for BossPulseType.SatanicChant encounters. Played with looping enabled.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseMammoth">
+            <summary>
+                Boss pulse music for Tank type boss encounters (BossPulseType.Tank). Played with
+                looping enabled during battles with tank or mammoth boss enemies.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseMuscleTemple">
+            <summary>
+                Boss pulse music for Muscle Temple encounters (BossPulseType.MuscleTemple). Played
+                with looping enabled during muscle-themed temple boss battles.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseSatan">
+            <summary>
+                Boss pulse music for Hell type boss encounters (BossPulseType.Hell). Played with
+                looping enabled during battles with demonic or hell-themed bosses.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseSuperSatan">
+            <summary>
+                Boss pulse music clip intended for super Satan boss encounters. Currently unused in
+                the codebase but available for future boss types.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseSwissArmy">
+            <summary>
+                Boss pulse music for BattleStation type encounters (BossPulseType.BattleStation).
+                Played with looping enabled during complex multi-phase boss battles.
+            </summary>
+        </member>
+        <member name="F:Sound.bossPulseTerrorkockter">
+            <summary>
+                Boss pulse music for Military type boss encounters (BossPulseType.Miltary). Played
+                with looping enabled during battles with military-themed boss enemies.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipAlien">
+            <summary>
+                Audio clip for the victory music played after defeating an alien boss. Used by
+                GetVictorySting() when the current music is bossFightClipAlien.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipCharlie">
+            <summary>
+                Audio clip for the victory music played after defeating a Charlie/City boss. Used by
+                GetVictorySting() when the current music is bossFightClipCharlie.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipDelta">
+            <summary>
+                Audio clip for the victory music played after defeating a Delta boss. Used by
+                GetVictorySting() when the current music is bossFightClipDelta.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipDesert">
+            <summary>
+                Audio clip for the victory music played after defeating a Desert boss. Currently not
+                used in the code but appears to be intended for desert boss victories.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipForest">
+            <summary>
+                The victory music sting that plays after defeating a boss when bossFightClipForest
+                was the active boss music. Used by GetVictorySting() to ensure the victory audio
+                matches the forest theme established during the boss fight.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipHell">
+            <summary>
+                Audio clip for the victory music played after defeating a Hell boss. Used by
+                GetVictorySting() when the current music is bossFightClipHell.
+            </summary>
+        </member>
+        <member name="F:Sound.bossVictoryClipJungle">
+            <summary>
+                The victory music sting that plays after defeating a boss when bossFightClipJungle
+                was the active boss music. Retrieved by GetVictorySting() to provide
+                theme-appropriate victory audio that matches the jungle boss fight music.
+            </summary>
+        </member>
+        <member name="F:Sound.playingBossPulse">
+            <summary>
+                Indicates whether boss pulse music is currently playing. Boss pulse music is looping
+                background music used during boss encounters or special sequences. When true, it
+                affects music volume calculations and prevents intensity-based music switching.
+            </summary>
+        </member>
+        <member name="F:Sound.playingMusicLoud">
+            <summary>
+                Indicates whether music should be played at increased volume. When true, music
+                volume is multiplied by 1.25f. Used for dramatic sequences like the Star Spangled
+                Banner or certain victory stings. Resets to false when switching to other music
+                types.
+            </summary>
+        </member>
+        <!-- Sound Effects Playback Methods -->
+        <member name="M:Sound.PlaySoundEffect(UnityEngine.AudioClip[],System.Single)">
+            <summary>
+                Plays a random sound effect from an array at the Sound instance's position. Returns
+                immediately if array is empty. Otherwise selects a random clip and calls the
+                single-clip overload with default pitch of 1.0.
+            </summary>
+            <param name="clips">Array of AudioClips to randomly select from</param>
+            <param name="v">Volume level for playback</param>
+        </member>
+        <member name="M:Sound.PlaySoundEffect(UnityEngine.AudioClip[],System.Single,System.Single)">
+            <summary>
+                Plays a random sound effect from an array at the Sound instance's position with
+                specified pitch. Returns immediately if array is empty. Otherwise selects a random
+                clip and calls the single-clip overload with the specified pitch.
+            </summary>
+            <param name="clips">Array of AudioClips to randomly select from</param>
+            <param name="v">Volume level for playback</param>
+            <param name="p">Pitch multiplier for playback</param>
+        </member>
+        <member name="M:Sound.PlaySoundEffect(UnityEngine.AudioClip,System.Single)">
+            <summary>
+                Plays a sound effect at the Sound instance's position with default pitch. Simply
+                calls the pitch-enabled overload with a pitch value of 1.0.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="v">Volume level for playback</param>
+        </member>
+        <member name="M:Sound.PlaySoundEffect(UnityEngine.AudioClip,System.Single,System.Single)">
+            <summary>
+                Plays a sound effect at the Sound instance's position. Returns if clip is null or
+                hasPlayedEffectSound is true. Creates the sound using PlayAudioClip with the Sound
+                instance position, disabling reverb bypass and marking as an announcer sound.
+                Parents the created AudioSource to the Sound instance and sets hasPlayedEffectSound
+                to prevent multiple plays in the same frame.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="v">Volume level for playback</param>
+            <param name="p">Pitch multiplier for playback</param>
+        </member>
+        <member
+            name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip[],System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
+            <summary>
+                Plays a random sound effect from an array of clips at a specific 3D position.
+                Returns null if clips array is null or empty. Otherwise selects a random clip from
+                the array and calls the single-clip overload with all provided parameters.
+            </summary>
+            <param name="clips">Array of AudioClips to randomly select from</param>
+            <param name="v">Volume level for playback</param>
+            <param name="pos">3D position where the sound should originate</param>
+            <param name="pitch">Pitch multiplier (default 1.0)</param>
+            <param name="bypassReverb">Whether to bypass reverb zones (default true)</param>
+            <param name="bypassEffects">Whether to bypass audio effects (default false)</param>
+            <param name="neverPool">Whether to prevent pooling this sound (default false)</param>
+            <param name="delay">Delay in seconds before playing (default 0)</param>
+            <returns>The AudioSource playing the sound, or null if clips array was invalid</returns>
+        </member>
+        <member
+            name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip,System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
+            <summary>
+                Plays a sound effect at a specific 3D position. Returns null if clip is null or
+                hasPlayedEffectSound is true (preventing multiple effect sounds in the same frame).
+                Otherwise calls PlayAudioClip with the provided parameters to create a positioned
+                sound effect.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="v">Volume level for playback</param>
+            <param name="pos">3D position where the sound should originate</param>
+            <param name="pitch">Pitch multiplier (default 1.0)</param>
+            <param name="bypassReverb">Whether to bypass reverb zones (default true)</param>
+            <param name="bypassEffects">Whether to bypass audio effects (default false)</param>
+            <param name="neverPool">Whether to prevent pooling this sound (default false)</param>
+            <param name="delay">Delay in seconds before playing (default 0)</param>
+            <returns>The AudioSource playing the sound, or null if unable to play</returns>
+        </member>
+        <member name="M:Sound.PlaySoundEffectSpecial(UnityEngine.AudioClip[],System.Single)">
+            <summary>
+                Plays a special sound effect from an array, selecting randomly. Returns immediately
+                if array is empty. This method appears to bypass the hasPlayedEffectSound check by
+                calling the regular PlaySoundEffect method, allowing special sounds to play even if
+                a regular effect has already played this frame.
+            </summary>
+            <param name="clips">Array of AudioClips to randomly select from</param>
+            <param name="v">Volume level for playback</param>
+        </member>
+        <member name="M:Sound.PlaySoundEffectSpecial(UnityEngine.AudioClip,System.Single)">
+            <summary>
+                Plays a special sound effect that bypasses normal effect sound restrictions. Returns
+                if clip is null. Creates the sound using PlayAudioClip at the Sound instance
+                position with reverb bypass enabled. Parents the AudioSource to the Sound instance.
+                Unlike regular PlaySoundEffect, this doesn't check or set hasPlayedEffectSound.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="v">Volume level for playback</param>
+        </member>
+        <!-- Sound Effects Playback Fields -->
+        <member name="F:Sound.achievementSoundClip">
+            <summary>
+                Audio clip intended for achievement unlock notifications. Currently not used in the
+                codebase - appears to be a placeholder for an achievement system that was not
+                implemented or was removed.
+            </summary>
+        </member>
+        <member name="F:Sound.brodownMusic">
+            <summary>
+                Audio clip for the special music played during BroDown game mode. Used in SetMusic()
+                when GameModeController.GameMode is BroDown, overriding normal level music.
+            </summary>
+        </member>
+        <member name="F:Sound.chainJangles">
+            <summary>
+                Array of chain jangling sound effect clips. Currently unused in Sound.cs but likely
+                used by chain-related game objects for ambient metal chain sounds.
+            </summary>
+        </member>
+        <member name="F:Sound.chainSnap">
+            <summary>
+                Chain snapping/breaking sound effect clip. Currently unused in Sound.cs but likely
+                triggered when chain objects break or snap in the game world.
+            </summary>
+        </member>
+        <member name="F:Sound.giveHalo">
+            <summary>
+                Halo giving sound effect clip. Currently unused in Sound.cs but may be triggered
+                when players receive holy/angelic power-ups or halos.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedChargeSound">
+            <summary>
+                A per-frame flag preventing multiple charging/power-up sound effects from playing
+                simultaneously. Reset to false at the end of each LateUpdate cycle. Likely used by
+                weapon charging systems or special ability code to ensure only one charge-up sound
+                effect plays per frame, preventing audio distortion from overlapping charge sounds.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedCreatureSound">
+            <summary>
+                A per-frame flag preventing multiple creature/enemy sound effects from playing
+                simultaneously. Reset to false at the end of each LateUpdate cycle. While not used
+                within the Sound class itself, this flag is likely checked by creature/enemy code
+                before playing sounds like roars or death cries, ensuring only one creature sound
+                plays per frame to avoid cacophony.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedEffectSound">
+            <summary>
+                A per-frame flag preventing multiple general sound effects from playing
+                simultaneously. Set to true when PlaySoundEffect() or PlaySoundEffectAt()
+                successfully plays a sound, preventing additional effect sounds that frame. Reset to
+                false at the end of each LateUpdate cycle. This throttling prevents audio distortion
+                from overlapping similar sounds and maintains clean audio output during intense
+                action.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedExplosionSound">
+            <summary>
+                A per-frame flag preventing multiple explosion sound effects from playing
+                simultaneously. Reset to false at the end of each LateUpdate cycle. While not
+                actively used in the current Sound class implementation, this flag is likely checked
+                by other game systems before playing explosion sounds to avoid audio overload when
+                multiple explosions occur in the same frame.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedHeroSound">
+            <summary>
+                A per-frame flag preventing multiple hero/player character sound effects from
+                playing simultaneously. Reset to false at the end of each LateUpdate cycle (note:
+                reset twice in the code, likely a minor bug). Expected to be checked by hero/bro
+                code before playing sounds like grunts, special moves, or voice lines to maintain
+                audio clarity.
+            </summary>
+        </member>
+        <member name="F:Sound.hasPlayedSpeechSound">
+            <summary>
+                A per-frame flag preventing multiple speech/dialogue sound effects from playing
+                simultaneously. Reset to false at the end of each LateUpdate cycle. While not used
+                within Sound class, this flag would be checked by dialogue or announcement systems
+                to ensure only one speech clip plays per frame, preventing overlapping voice lines
+                that would be unintelligible.
+            </summary>
+        </member>
+        <member name="F:Sound.resurrectHoly">
+            <summary>
+                Holy resurrection sound effect clip. Currently unused in Sound.cs but may be
+                triggered by game events related to player resurrection or holy power-ups.
+            </summary>
+        </member>
+        <member name="F:Sound.rogueforceBombardmentSiren">
+            <summary>
+                Audio clip for the bombardment warning siren. Note: This field references RogueForce
+                content which is incomplete/unavailable in current game builds. The
+                TimePressureBombardment system that would use this is disabled.
+            </summary>
+        </member>
+        <!-- Audio Source Pool Management Methods -->
+        <member name="M:Sound.GetPoolClip">
+            <summary>
+                Retrieves a reusable audio source from the object pool. Returns null if the pool is
+                empty. Otherwise takes the last item from _oneShotBank, removes it from the list,
+                activates its GameObject, enables the component, and returns it for use.
+            </summary>
+            <returns>A ReusableOneShotSound from the pool, or null if pool is empty</returns>
+        </member>
+        <member
+            name="M:Sound.PlayAudioClip(UnityEngine.AudioClip,UnityEngine.Vector3,System.Single,System.Single,System.Boolean,System.Boolean,System.Single,System.Boolean,System.Boolean)">
+            <summary>
+                Core method for playing audio clips with full control over positioning and effects.
+                Creates or retrieves an AudioSource (from pool unless neverPool is true), configures
+                all audio properties including 3D positioning, pitch adjustment (with special
+                handling for announcer sounds and low currentPitch values), rolloff settings, and
+                bypass flags. For positioned sounds, calculates distance-based volume falloff and
+                stereo panning relative to the camera. Handles delayed playback and automatic
+                cleanup timing based on clip length. Announcer sounds get special settings with no
+                distance falloff and higher priority.
+            </summary>
+            <param name="clip">The AudioClip to play</param>
+            <param name="position">3D position for the sound</param>
+            <param name="volume">Base volume level</param>
+            <param name="pitch">Pitch multiplier (adjusted by currentPitch)</param>
+            <param name="bypassReverb">Whether to bypass reverb zones</param>
+            <param name="bypassEffects">Whether to bypass audio effects</param>
+            <param name="delay">Delay before playing in seconds</param>
+            <param name="announcerSound">Whether this is an announcer sound with special settings</param>
+            <param name="neverPool">Whether to prevent pooling this AudioSource</param>
+            <returns>The configured AudioSource, or null if unable to create</returns>
+        </member>
+        <member name="M:Sound.Repool(ReusableOneShotSound)">
+            <summary>
+                Static method that returns a ReusableOneShotSound to the object pool. Adds the sound
+                back to the singleton instance's _oneShotBank list for future reuse.
+            </summary>
+            <param name="sound">The ReusableOneShotSound to return to the pool</param>
+        </member>
+        <!-- Audio Source Pool Management Fields -->
+        <member name="F:Sound.OneShotPoolSize">
+            <summary>
+                Defines the maximum number of pooled audio sources for one-shot sound effects. This
+                constant sets the size of the reusable audio source pool at 64, though the actual
+                pooling implementation and usage of this value is not directly visible in the
+                provided code. The pool system helps optimize performance by reusing audio sources
+                instead of creating new ones.
+            </summary>
+        </member>
+        <member name="F:Sound._oneShotBank">
+            <summary>
+                A pool of reusable audio source components for efficient sound effect playback.
+                Initialized with 64 ReusableOneShotSound objects during Awake() to avoid runtime
+                allocations. When playing a sound effect, an available source is pulled from this
+                list, configured, and played. After the sound completes, it's returned to the pool
+                via Repool(). This pooling system prevents garbage collection overhead from
+                constantly creating/destroying GameObjects for short sound effects.
+            </summary>
+        </member>
+        <!-- Volume & Settings Control Methods -->
+        <member name="M:Sound.Dimmusic(System.Single)">
+            <summary>
+                Temporarily dims the music volume for a specified duration. Sets the musicDimTime
+                field which is used in Update to apply a volume reduction effect. The music volume
+                gradually fades down and stays dimmed until the timer expires, creating a smooth
+                ducking effect for emphasis on other audio.
+            </summary>
+            <param name="p">The duration in seconds to keep the music dimmed</param>
+        </member>
+        <member name="M:Sound.LowPassFilter(System.Single,System.Single)">
+            <summary>
+                Applies a low-pass audio filter effect for a specified duration. Sets up the filter
+                parameters and enables lowPassFading to create a muffled sound effect. The actual
+                filtering is handled by RunLowPassFilter and continues until the duration expires.
+                Commonly used for underwater effects or emphasis moments.
+            </summary>
+            <param name="m">The filter intensity (0-1 range, where lower values create more muffling)</param>
+            <param name="duration">How long in seconds to maintain the low-pass filter effect</param>
+        </member>
+        <member name="M:Sound.RunLowPassFilter(System.Single)">
+            <summary>
+                Configures and enables the low-pass filter with a target cutoff frequency based on
+                the intensity parameter. When m is 1.0 or higher, sets the target frequency to
+                10000Hz for minimal filtering. Lower m values reduce the target frequency
+                proportionally (10000 * m), creating stronger muffling effects. Always enables the
+                filter and sets lowPassFading to true to trigger gradual transitions.
+            </summary>
+            <param name="m">The filter intensity multiplier (1.0 = minimal effect, lower values = more muffling)</param>
+        </member>
+        <member name="M:Sound.RunPitch">
+            <summary>
+                Handles the gradual pitch shifting and low-pass filter effects over time. When
+                shiftingPitch is active, smoothly transitions currentPitch toward desiredPitch at
+                0.5 units per second. Applies the pitch to all music AudioSources (main, low
+                intensity, high intensity) as (1 + currentPitch) / 2. Also manages the low-pass
+                filter effect based on pitch and lowPassTimeOut, creating a muffled effect at
+                extreme pitch values.
+            </summary>
+        </member>
+        <member name="M:Sound.SetMusicVolume(System.Single)">
+            <summary>
+                Sets the volume of the currently playing music based on player options. Updates the
+                music AudioSource volume to match the PlayerOptions.Instance.musicVolume setting,
+                clamped between 0 and 1. When not in a menu screen, also updates the
+                currentIntensityMusicVolume field to track the gameplay music volume.
+            </summary>
+            <param name="val">The volume value parameter (currently unused - method always uses PlayerOptions.Instance.musicVolume instead)</param>
+        </member>
+        <member name="M:Sound.SetPitch(System.Single)">
+            <summary>
+                Sets a target pitch value for gradual pitch shifting of all music tracks. Enables
+                smooth pitch transitions by setting desiredPitch and activating the shiftingPitch
+                flag. The actual pitch change occurs over time in RunPitch(), creating a
+                time-slowing or time-speeding effect on the audio.
+            </summary>
+            <param name="p">The target pitch value (1.0 is normal speed, lower values slow down, higher values speed up)</param>
+        </member>
+        <member name="M:Sound.SetPitchNearInstant(System.Single)">
+            <summary>
+                Sets the pitch with a faster transition than SetPitch. Immediately adjusts
+                currentPitch to 75% of the target value before enabling gradual shifting to the
+                final pitch. Used for more responsive pitch changes while still maintaining some
+                smoothness in the transition.
+            </summary>
+            <param name="p">The target pitch value to transition to</param>
+        </member>
+        <member name="M:Sound.StartDippingMusicVolume(System.Single)">
+            <summary>
+                Begins temporarily reducing the music volume by setting a multiplier value. This
+                creates a "ducking" effect where music volume is lowered (typically during important
+                sound effects or dialogue). The actual volume reduction is applied during Update
+                when multiplying with dippingMusicVolumeM.
+            </summary>
+            <param name="m">The volume multiplier to apply (0-1 range, where lower values reduce volume more)</param>
+        </member>
+        <member name="M:Sound.StopDippingMusicVolume">
+            <summary>
+                Stops the music volume dipping effect by resetting the dippingMusicVolumeM
+                multiplier back to 1.0. This restores the music to its normal volume level after a
+                temporary reduction.
+            </summary>
+        </member>
+        <member name="M:Sound.SuddenLowPass(System.Single)">
+            <summary>
+                Applies an immediate low-pass filter effect at the Sound instance's position. This
+                is a convenience overload that calls the position-based version using the Sound
+                transform position. Creates an instant muffled effect without gradual transition.
+            </summary>
+            <param name="m">The filter intensity (0-1 range, where lower values create more muffling)</param>
+        </member>
+        <member name="M:Sound.SuddenLowPass(System.Single,UnityEngine.Vector3)">
+            <summary>
+                Applies an immediate low-pass filter effect with distance-based attenuation. Only
+                applies if useSuddenLowPass is enabled and not already fading. Calculates distance
+                from the sound position to the effect position and reduces the filter intensity
+                based on lowPassMinRange and lowPassMaxRange. Sets the audio low-pass filter cutoff
+                frequency for an instant muffled effect, commonly used for explosions or impacts.
+            </summary>
+            <param name="m">The base filter intensity (0-1 range)</param>
+            <param name="pos">The world position where the effect originates (used for distance calculations)</param>
+        </member>
+        <!-- Volume & Settings Control Fields -->
+        <member name="F:Sound.audioLowPass">
+            <summary>
+                Reference to the AudioLowPassFilter component used for muffled sound effects during
+                explosions or dramatic moments. When enabled, this filter reduces high frequencies
+                to create an underwater or shell-shocked audio effect. The cutoff frequency is
+                dynamically adjusted between the target frequency and frequency loss values.
+                Automatically disabled when the effect completes or when cutoff frequency exceeds
+                3000Hz to save processing power.
+            </summary>
+        </member>
+        <member name="F:Sound.currentPitch">
+            <summary>
+                Current pitch multiplier applied to music playback. Smoothly interpolates towards
+                desiredPitch when shiftingPitch is true. Affects all music sources and some sound
+                effects. Default is 1.0 (normal pitch).
+            </summary>
+        </member>
+        <member name="F:Sound.desiredPitch">
+            <summary>
+                Target pitch value that currentPitch should transition to. Used for smooth pitch
+                shifting effects on music and sound. Default is 1.0 (normal pitch). Values below 1
+                lower pitch, above 1 raise pitch.
+            </summary>
+        </member>
+        <member name="F:Sound.dippingMusicVolumeM">
+            <summary>
+                Music volume multiplier for temporary volume reduction ("dipping"). Defaults to 1.0f
+                (no reduction). Can be set via StartDippingMusicVolume() to reduce music during
+                important sound effects or dialogue, then restored with StopDippingMusicVolume().
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassFading">
+            <summary>
+                Whether the low-pass filter is currently transitioning between frequencies. When
+                true, the Update method interpolates lowPassFreqCurrent towards lowPassFreqTarget
+                each frame. Set to false when the transition completes.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassFreqCurrent">
+            <summary>
+                Current low-pass filter cutoff frequency in Hz. Smoothly interpolates towards
+                lowPassFreqTarget during filter fading. Higher values mean less filtering (more
+                treble frequencies pass through). Default is 10000Hz (minimal filtering).
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassFreqLoss">
+            <summary>
+                Amount of frequency reduction applied to the low-pass filter cutoff. Subtracted from
+                lowPassFreqCurrent when setting the actual filter cutoff frequency. Used for sudden
+                low-pass effects like explosions. Gradually diminishes based on
+                lowPassFrequencyJitterDampening.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassFreqTarget">
+            <summary>
+                The target cutoff frequency in Hz for the low-pass filter effect. Default is 10000Hz
+                (minimal filtering). During filter effects, this is set to lower values like 12500Hz
+                for sudden impacts or calculated values for pitch-based filtering. The actual filter
+                frequency lerps towards this target at different rates (5f/second when increasing,
+                12f/second when decreasing) to create smooth transitions. Values below 3000Hz create
+                heavily muffled audio.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassFrequencyJitterDampening">
+            <summary>
+                Dampening factor for reducing lowPassFreqLoss over time. Higher values cause the
+                frequency loss to diminish more quickly, returning the audio to normal faster after
+                sudden filter effects. Default is 12.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassM">
+            <summary>
+                Multiplier for low-pass filter effects during timeout periods. Values between 0 and
+                1 control filter intensity (0 = maximum filtering, 1 = no filtering). Gradually
+                returns to 1 when lowPassTimeOut expires. Default is 1.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassMaxRange">
+            <summary>
+                Maximum effective range for sudden low-pass filter effects. Beyond this distance, no
+                filtering is applied. Used with lowPassMinRange to create a gradual falloff zone
+                where filter intensity decreases with distance. Default is 300 units.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassMinRange">
+            <summary>
+                Minimum distance in units before sudden low-pass effects begin to apply. Sounds
+                within this range receive full filter effect. Used in conjunction with
+                lowPassMaxRange to calculate distance-based filter falloff. Default is 160 units.
+            </summary>
+        </member>
+        <member name="F:Sound.lowPassTimeOut">
+            <summary>
+                Duration in seconds for temporary low-pass filter effects. When positive, maintains
+                the low-pass filter with lowPassM multiplier. When reaching zero, the filter
+                gradually returns to normal. Set to -1 to disable timeout-based filtering.
+            </summary>
+        </member>
+        <member name="F:Sound.musicDimTime">
+            <summary>
+                The remaining time in seconds for temporary music volume reduction (dimming). When
+                greater than 0, music volume is reduced by a factor calculated as (1 -
+                min(musicDimTime * 4, 0.9)), creating a quick dip in volume. Used for emphasis
+                during special moments like announcements or dramatic effects. The dim effect
+                gradually fades back to normal volume as the timer counts down to zero.
+            </summary>
+        </member>
+        <member name="F:Sound.shiftingPitch">
+            <summary>
+                Whether pitch is currently transitioning between values. When true, RunPitch
+                interpolates currentPitch towards desiredPitch at 0.5 units per second. Also
+                triggers low-pass filtering based on pitch value.
+            </summary>
+        </member>
+        <member name="F:Sound.useSuddenLowPass">
+            <summary>
+                Whether sudden low-pass filter effects (like explosions) are enabled. When true,
+                allows SuddenLowPass method to apply immediate frequency reduction based on distance
+                from effect source. Default is true.
+            </summary>
+        </member>
+        <member name="F:Sound.wordTime">
+            <summary>
+                A timing constant set to 0.4 seconds, though it appears to be unused in the current
+                implementation. Based on the field name and value, this was likely intended to
+                control timing for speech or word-based audio effects, possibly for lip-sync or
+                dialogue pacing. The field remains in the code but has no active references in the
+                Sound class methods.
+            </summary>
+        </member>
+    </members>
+</doc>

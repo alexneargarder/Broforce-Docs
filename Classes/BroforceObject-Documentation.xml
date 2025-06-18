@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Position & Physics Methods -->
+        <member name="M:BroforceObject.SetPosition(UnityEngine.Vector3)">
+            <summary>
+                Sets the object's world position to the specified coordinates while preserving the
+                current Z position. Updates the internal X and Y fields to match the new transform
+                position.
+            </summary>
+            <param name="pos">The new position vector (only X and Y components are used, Z is preserved from current transform)</param>
+        </member>
+        <member name="M:BroforceObject.SetSpeed(System.Single,System.Single)">
+            <summary>
+                Virtual method for setting the object's velocity. Base implementation is empty -
+                derived classes should override to implement velocity changes.
+            </summary>
+            <param name="xi">The horizontal velocity component</param>
+            <param name="yi">The vertical velocity component</param>
+        </member>
+        <member name="M:BroforceObject.SetXY(System.Single,System.Single)">
+            <summary>
+                Updates the internal X and Y coordinate fields directly without modifying the
+                transform position. This method only updates the backing fields for the X and Y
+                properties.
+            </summary>
+            <param name="x">The new X coordinate value to store</param>
+            <param name="y">The new Y coordinate value to store</param>
+        </member>
+        <member name="M:BroforceObject.SetXY(UnityEngine.Transform)">
+            <summary>
+                Convenience method that extracts the X and Y position from a transform and calls
+                SetXY(float, float) to update the internal coordinate fields.
+            </summary>
+            <param name="t">The transform whose position will be used to set the X and Y coordinates</param>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:BroforceObject.X">
+            <summary>
+                Gets or sets the object's X position coordinate. This property provides access to
+                the private x field which stores the horizontal position.
+            </summary>
+        </member>
+        <member name="P:BroforceObject.Y">
+            <summary>
+                Gets or sets the object's Y position coordinate. This property provides access to
+                the private y field which stores the vertical position.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:BroforceObject.x">
+            <summary>
+                Private backing field that stores the object's X coordinate position. Serialized for
+                persistence and accessed through the X property.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.xI">
+            <summary>
+                The object's horizontal velocity component. Used for physics calculations and
+                movement updates in derived classes.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.y">
+            <summary>
+                Private backing field that stores the object's Y coordinate position. Serialized for
+                persistence and accessed through the Y property.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.yI">
+            <summary>
+                The object's vertical velocity component. Used for physics calculations and movement
+                updates in derived classes.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:BroforceObject.AttachMe(UnityEngine.Transform)">
+            <summary>
+                Attaches another GameObject to this object by adding it to the otherAttachments
+                list. Used by the attachment system to track objects that are connected to this one.
+            </summary>
+            <param name="t">The transform of the GameObject to attach</param>
+        </member>
+        <member name="M:BroforceObject.CrumbleBridge(System.Single)">
+            <summary>
+                Virtual method that triggers a bridge crumbling event. The base implementation only
+                invokes the OnCrumbleBridge event if handlers are subscribed. Derived classes can
+                override to add specific crumbling behavior.
+            </summary>
+            <param name="chance">The probability or intensity of the crumbling effect (unused in base implementation)</param>
+        </member>
+        <member name="M:BroforceObject.Disturb">
+            <summary>
+                Triggers a disturbance event on this object. If the object has a chain anchor, it
+                collapses the chain. Then invokes the OnDisturb event if any handlers are
+                subscribed. Can be called via RPC for network synchronization.
+            </summary>
+        </member>
+        <member name="M:BroforceObject.HideOtherAttachments">
+            <summary>
+                Hides all attached objects by sending them a "Collapse" message and deactivating
+                their GameObjects. Iterates through the otherAttachments list and processes each
+                non-null attachment.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:BroforceObject.chainAnchor">
+            <summary>
+                Reference to a ChainAnchor component that can connect this object to chains or
+                ropes. When the object is disturbed, the chain anchor will collapse if present.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.collapsed">
+            <summary>
+                Flag indicating whether this object has collapsed or fallen. Used by environmental
+                systems to track the state of destructible or physics-enabled objects.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.otherAttachments">
+            <summary>
+                List of GameObjects that are attached to this object. Used by the attachment system
+                to track and manage connected objects. Initialized as an empty list.
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:BroforceObject.ForgetPlayer(System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+                Virtual method called when a player should be forgotten by this object. Base
+                implementation is empty - derived classes override to implement AI behavior changes
+                when players die or disconnect.
+            </summary>
+            <param name="playerNum">The player number (0-3) that should be forgotten</param>
+            <param name="confuseMooks">If true, mooks should become confused instead of simply forgetting the player</param>
+            <param name="amuseMooks">If true, mooks should laugh at the dead player instead of forgetting them</param>
+        </member>
+        <member name="M:BroforceObject.GetHealthPercentage">
+            <summary>
+                Calculates the object's health as a percentage of its maximum health. Returns a
+                value between 0 and 1, clamped to prevent invalid percentages.
+            </summary>
+            <returns>The health percentage as a float between 0.0 (dead) and 1.0 (full health)</returns>
+        </member>
+        <member name="M:BroforceObject.IsAlive">
+            <summary>
+                Checks if the object is still alive based on its health value. Returns true if
+                health is greater than 0, false otherwise.
+            </summary>
+            <returns>True if the object has health remaining (health &gt; 0), false if dead or destroyed</returns>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:BroforceObject.destroyed">
+            <summary>
+                Flag indicating whether this object has been destroyed. Used to prevent multiple
+                destruction calls and to track object lifecycle state.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.health">
+            <summary>
+                The object's current health points. Defaults to 3. When health reaches 0 or below,
+                the object is considered dead as determined by IsAlive().
+            </summary>
+        </member>
+        <member name="F:BroforceObject.maxHealth">
+            <summary>
+                The object's maximum health capacity used for calculating health percentage.
+                Defaults to -1, which should be set by derived classes to an appropriate value.
+            </summary>
+        </member>
+        <member name="F:BroforceObject.protectedFromDestruction">
+            <summary>
+                When true, prevents this object from being destroyed by normal damage or destruction
+                calls. Used for invincible objects or during special game states.
+            </summary>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:BroforceObject.predabroTarget">
+            <summary>
+                Reference to a PredabroTarget component used by the Predabro enemy type for
+                targeting logic. Hidden in inspector as it's managed programmatically.
+            </summary>
+        </member>
+    </members>
+</doc>

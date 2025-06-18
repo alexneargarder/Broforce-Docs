@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Shrapnel.Awake">
+            <summary>
+                Initializes the shrapnel object when created or resurrected from the object pool.
+                Sets up sprite references, caches original sprite values for restoration,
+                initializes random seeds and z-depth offsets, and configures initial gravity and
+                bounce settings. This method handles both fresh instantiation and pool resurrection
+                scenarios.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.EffectDie">
+            <summary>
+                Handles the death of this shrapnel by attempting to return it to the object pool. If
+                pooling is not available or fails, destroys the GameObject entirely. This is the
+                primary cleanup method called when shrapnel expires.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.EffectFirstUpdate">
+            <summary>
+                Performs first-frame initialization for pooled effects. Registers with the
+                ShrapnelManager for performance optimization through timeslicing, sets up physics
+                layer masks, initializes see-saw motion parameters with random offsets, and applies
+                any pending color changes. This ensures proper setup regardless of how the object
+                was created.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.EffectResurrect">
+            <summary>
+                Resurrects this shrapnel from the object pool, resetting all properties to their
+                initial states. Clears motion values, resets sprite dimensions, removes parented
+                transform references, and re-invokes Awake for fresh initialization. This enables
+                efficient object pooling by fully resetting the instance.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.Start">
+            <summary>
+                Called when the shrapnel first becomes active. Delegates initialization to
+                EffectFirstUpdate for proper setup of pooled effect systems.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Properties -->
+        <member name="P:Shrapnel.ShouldTimeslice">
+            <summary>
+                Gets whether this shrapnel should participate in timeslicing for performance
+                optimization. Default returns true, allowing the ShrapnelManager to skip updates on
+                some frames when many particles are active. Override to false for critical effects
+                that must update every frame.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Shrapnel.timesliceIndex">
+            <summary>
+                Unique index assigned by ShrapnelManager for timeslicing optimization. Used to
+                distribute update calls across multiple frames when many shrapnel particles are
+                active, improving performance by updating only a subset each frame.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Shrapnel.ApplyGravity">
+            <summary>
+                Applies downward acceleration to vertical velocity based on gravity settings and
+                time delta. Uses curGravity multiplier which can be modified for different gravity
+                effects (e.g., in quicksand).
+            </summary>
+        </member>
+        <member name="M:Shrapnel.Bounce(System.Boolean,System.Boolean)">
+            <summary>
+                Handles physics response when colliding with surfaces. Applies bounce multipliers to
+                reverse velocity, adds friction, reduces lifetime and rotation speed. Can trigger
+                death effects, blood splashes, or gradual life loss based on configuration flags.
+            </summary>
+            <param name="bounceX">Whether horizontal bounce occurred</param>
+            <param name="bounceY">Whether vertical bounce occurred</param>
+        </member>
+        <member
+            name="M:Shrapnel.CheckWallCollisions(System.Boolean@,System.Boolean@,System.Single@,System.Single@)">
+            <summary>
+                Checks for collisions with terrain blocks and handles bouncing or constraint logic.
+                Also manages parenting to moving platforms when moveWithRestingTransform is enabled.
+                Updates bounce flags and adjusts position/velocity based on collision results.
+            </summary>
+            <param name="bounceY">Output flag indicating vertical bounce occurred</param>
+            <param name="bounceX">Output flag indicating horizontal bounce occurred</param>
+            <param name="yIT">Reference to vertical movement delta, modified if constrained</param>
+            <param name="xIT">Reference to horizontal movement delta, modified if constrained</param>
+        </member>
+        <member name="M:Shrapnel.Launch(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Launches the shrapnel from a specific position with initial velocity. Sets position,
+                applies velocity with random variations, calculates lifetime with randomization,
+                initializes rotation based on horizontal velocity, and configures sprite shrinking
+                rates. If shrapnelControlsMotion is false, creates a Rigidbody for Unity physics
+                simulation.
+            </summary>
+            <param name="x">Initial X position in world coordinates</param>
+            <param name="y">Initial Y position in world coordinates</param>
+            <param name="xI">Initial horizontal velocity</param>
+            <param name="yI">Initial vertical velocity</param>
+        </member>
+        <member
+            name="M:Shrapnel.Launch(System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Launches the shrapnel with explicit rotation speed control. Similar to the
+                4-parameter version but allows direct specification of rotation speed rather than
+                calculating it from velocity. Used when precise rotation control is needed.
+            </summary>
+            <param name="x">Initial X position in world coordinates</param>
+            <param name="y">Initial Y position in world coordinates</param>
+            <param name="xI">Initial horizontal velocity</param>
+            <param name="yI">Initial vertical velocity</param>
+            <param name="_rI">Initial rotation speed in degrees per second</param>
+        </member>
+        <member name="M:Shrapnel.RunMovement">
+            <summary>
+                Executes physics movement for this frame, including drag application, velocity
+                integration, wall collision detection, and position updates. Handles special cases
+                like destruction inside walls and collision bouncing. Called by Update when
+                shrapnelControlsMotion is true.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.SetPosition">
+            <summary>
+                Updates the transform position and rotation based on current values. If
+                rotateAtRightAngles is true or rotation speed is zero, snaps rotation to 90-degree
+                increments and rounds position to integer values for pixel-perfect rendering.
+                Otherwise applies smooth rotation and positioning.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Shrapnel._curRandomOnBounce">
+            <summary>
+                Current amount of random horizontal velocity applied on bounce. Initialized from
+                xI_randomOnBounce and reduced after each bounce. Multiplied by 0.66 after each
+                bounce application to create diminishing randomness over the shrapnel's lifetime.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.bloodSplashOnDeath">
+            <summary>
+                When true, creates a blood splash effect when the shrapnel bounces upward off the
+                ground (yI &gt; 0). Uses the bloodColor field to determine splash color. Also calls
+                Death() if the shrapnel isn't already dead. Used for gore particles.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.bounceM">
+            <summary>
+                The bounce multiplier that controls velocity retention after impacts. Default value
+                is 0.4 (40% velocity retention). Applied differently for horizontal bounces
+                (multiplied by 1.5) versus vertical bounces to create realistic bounce behavior.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.collidesWithWalls">
+            <summary>
+                Whether this shrapnel checks for and responds to collisions with walls and ground.
+                When true, performs collision detection each frame and bounces off surfaces. When
+                false, passes through all terrain. Default is true.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.curGravity">
+            <summary>
+                The current gravity multiplier being applied to the shrapnel. Initialized from
+                gravityM during Awake(). Used in ApplyGravity() to calculate downward acceleration,
+                can be modified at runtime for special effects.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.deathOnBounce">
+            <summary>
+                When true, immediately destroys the shrapnel particle upon any collision bounce.
+                Used for fragile particles that should shatter on impact. Calls Death() method when
+                triggered.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.destroyInsideWalls">
+            <summary>
+                Controls whether the shrapnel is immediately destroyed when inside wall colliders.
+                Default is true for automatic cleanup. Checked during RunMovement() to prevent
+                shrapnel from getting stuck inside terrain.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.drag">
+            <summary>
+                Air resistance factor applied to velocity each frame. When greater than 0, reduces
+                both X and Y velocity by (velocity * drag * deltaTime). Used to simulate air
+                friction and slow particles over time without using Unity's physics system.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.frictionM">
+            <summary>
+                Friction multiplier applied to horizontal velocity when bouncing off the ground.
+                Default value is 1.0. When the shrapnel bounces vertically, the X velocity is
+                multiplied by (0.8 * frictionM) to simulate ground friction effects.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.gravityM">
+            <summary>
+                Gravity strength multiplier for this shrapnel instance. Default value is 1.0 for
+                normal gravity. Applied to the standard gravity acceleration of 500 units/second².
+                Set to 0 for floating particles or values less than 1 for slower falling effects.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.groundLayer">
+            <summary>
+                Layer mask containing the ground collision layers (Ground and IndestructibleGround).
+                Set during EffectFirstUpdate() and used for raycasting when moveWithRestingTransform
+                is enabled to detect ground surfaces the shrapnel can parent to.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.lifeLossM">
+            <summary>
+                The percentage of starting life lost when the shrapnel bounces, if lifeLossOnBounce
+                is enabled. Default value is 0.2 (20% life loss per bounce). Applied in Bounce()
+                method to gradually reduce the shrapnel's lifetime through repeated impacts.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.lifeLossOnBounce">
+            <summary>
+                Determines whether the shrapnel loses life when bouncing off surfaces. When true,
+                bouncing reduces the shrapnel's life by a percentage of its start life. Works in
+                conjunction with lifeLossM to control how much life is lost per bounce.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.moveWithRestingTransform">
+            <summary>
+                Enables the shrapnel to move with surfaces it lands on, such as moving platforms or
+                vehicles. When true, CheckWallCollisions() performs raycasts to detect surfaces
+                below and parents the shrapnel to them.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.parentedCollider">
+            <summary>
+                Reference to a collider that the shrapnel is currently resting on or attached to.
+                Used for platform attachment mechanics. When set, the shrapnel moves with the
+                collider's transform, allowing it to ride on moving platforms or objects.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.parentedPosition">
+            <summary>
+                Stores the position of the parented collider's transform when attachment occurs.
+                Used to calculate relative movement. Updated in CheckWallCollisions() when the
+                shrapnel lands on a surface with moveWithRestingTransform enabled.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.r">
+            <summary>
+                Current rotation angle in degrees. Updated each frame by adding rI * deltaTime when
+                shrapnelControlsMotion is true, creating spinning motion for debris particles.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.rI">
+            <summary>
+                Rotation speed in degrees per second. Set during Launch based on horizontal velocity
+                direction and random factors. Gradually reduced by bouncing impacts when configured.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.randomMotion">
+            <summary>
+                Enables chaotic random velocity changes each frame to simulate erratic particle
+                movement. When true, adds random values between -6 and 6 (multiplied by
+                randomMotionM) to both X and Y velocity, then applies damping to prevent excessive
+                speed buildup.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.randomMotionM">
+            <summary>
+                Multiplier for random motion intensity when randomMotion is enabled. Default is 1.0.
+                Higher values create more erratic movement. Also affects the damping rate - velocity
+                is multiplied by (1 - deltaTime * 2 * randomMotionM) each frame.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.rotateAtRightAngles">
+            <summary>
+                When true, constrains rotation to 90-degree increments for pixel-art style
+                rendering. Also enables position rounding to integer values for crisp pixel-perfect
+                display. Default is true.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.rotationSpeedMultiplier">
+            <summary>
+                Multiplier applied to the rotation speed when the shrapnel is launched. Used to
+                scale the base rotation speed calculation. When Launch() is called, this multiplier
+                is applied to the calculated rotation speed (200-500 units) to create varied spin
+                effects.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.seeSawCounter">
+            <summary>
+                Internal counter that tracks the current phase of the see-saw oscillation.
+                Incremented each frame by (deltaTime * seeSawSpeed) and used as input to sine
+                functions for generating the swaying motion. Initialized with a random value between
+                0 and 100 to desynchronize multiple particles.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.seeSawFalling">
+            <summary>
+                Enables a pendulum-like swaying motion as the particle falls. When true, applies
+                damping to velocity and adds sinusoidal horizontal movement based on fall speed.
+                Creates a leaf-like or paper-like falling effect. Uses seeSawIntensity and
+                seeSawSpeed to control the motion.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.seeSawIntesity">
+            <summary>
+                Controls the horizontal swing amplitude when seeSawFalling is enabled. Default is
+                1.0. Applied as a multiplier to the base swing force of 300 units/second. Only
+                affects horizontal movement when falling speed exceeds -8 units/second.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.seeSawSpeed">
+            <summary>
+                Controls the oscillation frequency of see-saw falling motion. Initialized to a
+                random value between 8 and 13 in EffectFirstUpdate(). Higher values create faster
+                swaying. Used to increment the seeSawCounter each frame.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.shrapnelControlsMotion">
+            <summary>
+                Determines whether the shrapnel class controls movement directly (true) or delegates
+                to Unity's Rigidbody physics (false). When false, a Rigidbody component is added
+                during Launch() for realistic physics simulation, commonly used for grenades.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.size">
+            <summary>
+                Collision size radius for the shrapnel particle in world units. Used for wall
+                collision detection and determining when the shrapnel is inside walls. Also used to
+                set the box collider size when using Unity's Rigidbody physics (size * 2 + 2 units).
+            </summary>
+        </member>
+        <member name="F:Shrapnel.xI_randomOnBounce">
+            <summary>
+                The maximum horizontal velocity variation applied when bouncing. Controls how much
+                random horizontal movement is added after impacts. Copied to _curRandomOnBounce
+                during Awake() and reduced by 66% after each bounce for diminishing randomness.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.zOffset">
+            <summary>
+                The Z-axis offset for positioning the shrapnel in 3D space. Initialized with a small
+                random value (0-0.05) to create visual depth variation. Applied to
+                transform.position.z in SetPosition() to prevent z-fighting when multiple shrapnel
+                overlap.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:Shrapnel.SetColor(UnityEngine.Color)">
+            <summary>
+                Sets the sprite color for this shrapnel. If called before first update, the color is
+                cached and applied during initialization to ensure it persists through pooling
+                operations.
+            </summary>
+            <param name="shrapnelColor">The color to apply to the sprite renderer</param>
+        </member>
+        <!-- Animation & Sprite Systems Fields -->
+        <member name="F:Shrapnel._originalSpriteColor">
+            <summary>
+                Stores the original color of the sprite component before any modifications. Default
+                is Color.white. Cached during Awake() and used to restore the sprite to its original
+                appearance during resurrection.
+            </summary>
+        </member>
+        <member name="F:Shrapnel._originalSpriteDimY">
+            <summary>
+                Stores the original Y pixel dimension of the sprite. Default is 2.0. Used to set
+                spritePixelHeight for UV-based fade animations where different sprite regions
+                represent decay stages.
+            </summary>
+        </member>
+        <member name="F:Shrapnel._originalSpriteHeight">
+            <summary>
+                Stores the original height of the sprite before any scaling effects. Default is 1.0.
+                Used alongside _originalSpriteWidth to maintain the sprite's original aspect ratio
+                during resurrection.
+            </summary>
+        </member>
+        <member name="F:Shrapnel._originalSpriteWidth">
+            <summary>
+                Stores the original width of the sprite before any scaling effects. Default is 1.0.
+                Used to restore the sprite to its original size when the shrapnel is resurrected
+                from the object pool.
+            </summary>
+        </member>
+        <member name="F:Shrapnel._spriteValuesCached">
+            <summary>
+                Tracks whether the original sprite values have been cached. Prevents redundant
+                caching of sprite properties. Set to true after first caching _originalSpriteColor,
+                width, height, and dimY values during Awake().
+            </summary>
+        </member>
+        <member name="F:Shrapnel.fadeUVs">
+            <summary>
+                When true, cycles through different UV coordinates on the sprite sheet based on
+                remaining lifetime. Uses spritePixelHeight to offset UV coordinates in 4 stages:
+                full brightness at 80%+ life, then progressively darker frames at 60%, 30%, and
+                below 30% life remaining.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.fades">
+            <summary>
+                When true, the sprite's alpha transparency fades from fully opaque to fully
+                transparent over the particle's lifetime. Calculates alpha as (life / startLife).
+                Used for particles that should gradually disappear rather than vanishing instantly.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.lifeM">
+            <summary>
+                Base lifetime multiplier for the shrapnel particle. Default is 1.0. Applied to the
+                calculated lifetime in Launch() methods. Higher values make particles last longer
+                before being destroyed. Final lifetime is (base time + random variation) * lifeM.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.randomLifeM">
+            <summary>
+                Controls the amount of random variation in particle lifetime. Default is 1.0. In the
+                4-parameter Launch(), adds random variation between -0.5 and 0.5 seconds multiplied
+                by this value. Helps create more natural-looking particle effects by varying
+                lifespans.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.setColorAtStart">
+            <summary>
+                Flag indicating whether a custom color was set via SetColor() that should be
+                reapplied after pooling resurrection. This field is set to true when SetColor() is
+                called, reset to false during EffectResurrect(), and checked during
+                EffectFirstUpdate() to restore the custom color. This mechanism ensures that
+                shrapnel particles maintain their intended color even when recycled from the object
+                pool system.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.shrink">
+            <summary>
+                When true, the sprite gradually shrinks to zero size over the particle's lifetime.
+                Uses spriteWidthI and spriteHeightI to calculate the shrink rate. Default is true.
+                Creates a dissolving or disintegrating visual effect.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.sprite">
+            <summary>
+                Reference to the SpriteSM component used for rendering the shrapnel's visual
+                appearance. Cached during Awake() and used throughout the lifecycle for color
+                changes, size adjustments, and UV animation.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.spriteHeight">
+            <summary>
+                Current height of the sprite in world units. Initialized from the sprite component's
+                height in Launch() and modified over time when shrink is enabled. Used to
+                dynamically resize the visual representation of the shrapnel particle.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.spriteHeightI">
+            <summary>
+                Rate of height change per second when shrink is enabled. Calculated as
+                (-spriteHeight / life) to ensure the sprite reaches zero size when the particle
+                dies. Applied each frame as (spriteHeightI * deltaTime) to gradually shrink the
+                particle.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.spritePixelHeight">
+            <summary>
+                Height of each sprite frame in pixels on the texture atlas. Used with fadeUVs to
+                calculate UV coordinate offsets for displaying different animation frames.
+                Initialized from the sprite's pixel dimensions in Awake(). Default is 2 pixels.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.spriteWidth">
+            <summary>
+                Current width of the sprite in world units. Initialized from the sprite component's
+                width in Launch() and modified over time when shrink is enabled. Used to dynamically
+                resize the visual representation of the shrapnel particle.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.spriteWidthI">
+            <summary>
+                Rate of width change per second when shrink is enabled. Calculated as (-spriteWidth
+                / life) to ensure the sprite reaches zero size when the particle dies. Applied each
+                frame as (spriteWidthI * deltaTime) to gradually shrink the particle.
+            </summary>
+        </member>
+        <!-- Core System Methods -->
+        <member name="M:Shrapnel.Death">
+            <summary>
+                Marks the shrapnel as dead and triggers cleanup through EffectDie. Can be called
+                directly or via RPC for networked destruction. Sets isDead flag to prevent multiple
+                death calls.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.ForceDeathRPC">
+            <summary>
+                Sends a network RPC to destroy this shrapnel on all connected clients. Ensures
+                synchronized particle removal in multiplayer scenarios.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.RunLife">
+            <summary>
+                Decrements lifetime by frame delta and triggers Death when expired. Simple countdown
+                system that ensures shrapnel doesn't persist indefinitely, maintaining performance
+                and visual clarity.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.ShouldRunThisFrame">
+            <summary>
+                Determines if this shrapnel should update this frame based on timeslicing
+                optimization. When many particles are active, distributes updates across multiple
+                frames to maintain performance. Always updates timesliceIndex counter for proper
+                distribution.
+            </summary>
+        </member>
+        <member name="M:Shrapnel.Update">
+            <summary>
+                Main update loop handling all shrapnel behavior. Performs timeslicing checks,
+                calculates time delta with compensation, handles both manual and Rigidbody physics,
+                applies various motion effects (gravity, drag, see-saw, quicksand), manages sprite
+                effects (fading, UV animation, shrinking), and checks lifecycle conditions. Returns
+                false if skipped due to timeslicing.
+            </summary>
+        </member>
+        <!-- Core System Fields -->
+        <member name="F:Shrapnel.RandomizeSeed">
+            <summary>
+                When true, generates a random seed value during Awake() instead of using the fixed
+                seed value. Randomizes the seed to a value between 0 and 999,999,999 for varied
+                shrapnel behavior across instances.
+            </summary>
+        </member>
+        <member name="F:Shrapnel._shrapnelManager">
+            <summary>
+                Cached reference to the global ShrapnelManager singleton that manages timeslicing
+                and pooling for performance. Retrieved during EffectFirstUpdate() and used to
+                register this shrapnel instance and access timeslice settings.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.bloodColor">
+            <summary>
+                The color of blood effects created when this shrapnel impacts surfaces with
+                bloodSplashOnDeath enabled. Readonly field that determines which blood splash effect
+                variant is spawned (Red, Green, Oil, etc).
+            </summary>
+        </member>
+        <member name="F:Shrapnel.isDead">
+            <summary>
+                Tracks whether the shrapnel has died and is ready for cleanup or pooling. Set to
+                true by Death() method. Prevents redundant death calls and ensures proper cleanup
+                sequencing before returning to object pool.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.life">
+            <summary>
+                Remaining lifetime in seconds before automatic destruction. Decremented each frame
+                and triggers Death when reaching zero. Can be reduced by collisions, environmental
+                effects, or explicit modification.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.random">
+            <summary>
+                The deterministic random number generator instance used for all randomness in the
+                shrapnel's behavior. Initialized during Awake() with either the fixed seed or a
+                randomized value based on RandomizeSeed flag.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.seed">
+            <summary>
+                The random seed used to initialize the Randomf instance for deterministic
+                randomness. Default value is 10. Can be overridden by RandomizeSeed flag to use a
+                random value, ensuring consistent behavior for replays or testing.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.startLife">
+            <summary>
+                Original lifetime value set during Launch, used for calculating fade ratios and
+                other time-based effects. Preserved throughout the shrapnel's existence for
+                normalized time calculations. Default is 1 second.
+            </summary>
+        </member>
+        <member name="F:Shrapnel.t">
+            <summary>
+                Delta time value for the current frame, adjusted for time slicing. Clamped between 0
+                and 0.133 seconds to prevent large time jumps. When time slicing is active, this
+                value is multiplied by the time slice amount to compensate for running fewer updates
+                per second.
+            </summary>
+        </member>
+    </members>
+</doc>

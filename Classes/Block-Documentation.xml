@@ -1,0 +1,2081 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Block.DoEnabling">
+            <summary>
+                Updates the enabled state of this component based on ShouldEnable result. Optimizes
+                performance by disabling blocks that don't need updates.
+            </summary>
+        </member>
+        <member name="M:Block.FirstFrame">
+            <summary>
+                Performs one-time initialization on the first frame after spawning. Caches sprite
+                component and pixel data, deactivates all blood spray GameObjects, checks if the
+                block should be destroyed based on collider state or health, hides broken edge
+                visuals, gets sound instance, and stores initial state values (destroyed, collider
+                enabled, health).
+            </summary>
+        </member>
+        <member name="M:Block.FixedUpdate">
+            <summary>
+                Unity FixedUpdate method for physics-timestep operations. Runs burn damage logic if
+                the block is not destroyed.
+            </summary>
+        </member>
+        <member name="M:Block.OnSpawned">
+            <summary>
+                Called when the block is spawned into the game world. Initializes random generators,
+                attachment lists, burn counter, layer masks, health values, grid position from
+                transform position, and clears slime coverage. Also caches blood drip particle
+                spawners if present.
+            </summary>
+        </member>
+        <member name="M:Block.SecondFrame">
+            <summary>
+                Placeholder for second frame initialization. Currently only sets a flag to prevent
+                repeated execution but performs no other operations.
+            </summary>
+        </member>
+        <member name="M:Block.SetupRandomGenerators">
+            <summary>
+                Initializes the block's random number generators using the block's position as a
+                seed. Creates separate generators for general randomness, collapse behavior, burning
+                effects, and visual effects, all seeded with position and networking random seed for
+                deterministic behavior.
+            </summary>
+        </member>
+        <member name="M:Block.ShouldEnable">
+            <summary>
+                Determines if this block component should be enabled based on current state. Returns
+                true if burning, in destroy countdown, or being pushed.
+            </summary>
+            <returns>True if the block needs active updates (burning, destroying, or being pushed)</returns>
+        </member>
+        <member name="M:Block.Update">
+            <summary>
+                Unity Update method that handles time-based block behavior. Processes destroy
+                countdown after block is destroyed, manages oil particle unsticking, runs push force
+                decay logic, and enables/disables the component based on current state.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:Block.hasDoneFirstFrame">
+            <summary>
+                Tracks whether the block has completed its first frame of initialization. Set to
+                true in FirstFrame method. Used to ensure one-time setup operations are performed.
+            </summary>
+        </member>
+        <member name="F:Block.isSetup">
+            <summary>
+                Tracks whether the block has completed its initialization through SetupBlock method.
+                Set to true at the end of SetupBlock after neighbor references, position, and bounds
+                are configured.
+            </summary>
+        </member>
+        <member name="F:Block.startColliderEnabled">
+            <summary>
+                Stores the initial enabled state of the block's collider during FirstFrame
+                initialization. Used by ResetBlock to restore the collider to its original state
+                when resetting the block.
+            </summary>
+        </member>
+        <member name="F:Block.startDestroyed">
+            <summary>
+                Stores the initial destroyed state of the block during FirstFrame initialization.
+                Used by ResetBlock to determine whether to restore the block as destroyed or active.
+            </summary>
+        </member>
+        <member name="F:Block.startHealth">
+            <summary>
+                Stores the initial health value of the block during FirstFrame initialization. Used
+                by ResetBlock to restore the block to its original health value. Default value is 5.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Block.Burn(DamageObject)">
+            <summary>
+                Processes fire damage to the block. Explosive blocks detonate immediately,
+                flammable/oily blocks accumulate burn damage over time, heatable blocks increase
+                temperature. Collapses block if burn damage exceeds threshold.
+            </summary>
+            <param name="damgeObject">The fire damage information (note spelling in parameter)</param>
+        </member>
+        <member name="M:Block.BurnCollapsePoint">
+            <summary>
+                Virtual method that calculates the burn damage threshold for collapse. Returns 3
+                times the block's health in base implementation.
+            </summary>
+            <returns>The amount of burn damage needed to collapse this block</returns>
+        </member>
+        <member name="M:Block.BurnSurroundingBlocks">
+            <summary>
+                Spreads fire to adjacent blocks and oil particles. Calls Map.BurnBlocksAround to
+                ignite neighboring blocks and BurnSurroundingOil for attached oil.
+            </summary>
+        </member>
+        <member name="M:Block.BurnSurroundingOil">
+            <summary>
+                Ignites all oil particles stuck to this block. Iterates through stuckParticles list
+                and calls SetAlight on each particle.
+            </summary>
+        </member>
+        <member name="M:Block.CheckForMine">
+            <summary>
+                Checks if this block has an attached mine and detonates it if the mine hasn't
+                already exploded or been detonated. Uses RPC to ensure the detonation is
+                synchronized across all clients in multiplayer.
+            </summary>
+        </member>
+        <member name="M:Block.Damage(DamageObject)">
+            <summary>
+                Applies damage to the block from various damage sources. Handles special damage
+                types (DestroyBackground, InstaGib, Fire, Plasma), creates blood effects for alien
+                blocks, triggers burning for flammable blocks, plays defend sounds for projectile
+                impacts, and processes standard damage.
+            </summary>
+            <param name="damgeObject">The damage information including type, amount, and forces (note spelling in parameter)</param>
+        </member>
+        <member name="M:Block.DamageInternal(System.Int32,System.Single,System.Single)">
+            <summary>
+                Applies damage to the block's health internally, potentially causing it to collapse
+                if health reaches zero. Called by damage methods to handle the actual health
+                reduction and collapse triggering.
+            </summary>
+            <param name="damage">The amount of damage to apply to the block's health.</param>
+            <param name="xI">The horizontal force/impulse from the damage source, passed to the collapse method.</param>
+            <param name="yI">The vertical force/impulse from the damage source, passed to the collapse method.</param>
+        </member>
+        <member name="M:Block.ForceBurn">
+            <summary>
+                Forces the block to burn immediately, bypassing normal ignition conditions. If the
+                block is not destroyed and is burnable (flamable or oily), it starts burning with a
+                random duration of 6-10 seconds. Increments burn damage and triggers collapse when
+                burn damage exceeds BurnCollapsePoint(). For destroyed blocks, still processes heat
+                buildup if heatable or triggers damage if explosive. Always calls DoEnabling() at
+                the end.
+            </summary>
+        </member>
+        <member name="M:Block.PlayDeathSound">
+            <summary>
+                Plays the appropriate death sound effect when the block is destroyed. Volume varies
+                based on the last damage type: 15% volume for Unholy damage, 60% for InstaGib
+                damage, and full volume for all other damage types. Uses the soundHolder's
+                deathSounds array and plays at the block's position. Initializes the sound instance
+                if needed.
+            </summary>
+        </member>
+        <member name="M:Block.RunBurnLogic">
+            <summary>
+                Executes per-frame burning behavior for blocks on fire. Handles flame particle
+                spawning, damage accumulation over time, burning nearby units and doodads, spreading
+                fire to adjacent blocks, and automatic collapse when burn threshold reached.
+                Different logic for flammable, oily, and heatable blocks.
+            </summary>
+        </member>
+        <member name="M:Block.SetAlight_Local">
+            <summary>
+                Sets this block on fire locally without networking. Only affects flammable or oily
+                blocks that aren't destroyed. Initializes burn time and increments burn damage
+                counter.
+            </summary>
+        </member>
+        <member name="M:Block.Weaken">
+            <summary>
+                Reduces the block's health to 1, making it extremely fragile and susceptible to
+                destruction from any damage. Used to create weakened blocks that will collapse from
+                minimal damage.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Block.burnCounter">
+            <summary>
+                Timer for spawning fire spread effects to nearby blocks. When it exceeds threshold
+                (1f for normal, 0.1f for oily blocks), triggers fire spread.
+            </summary>
+        </member>
+        <member name="F:Block.burnDamage">
+            <summary>
+                The accumulated damage from burning. Increments when the block catches fire. When
+                this exceeds BurnCollapsePoint minus 2, the block is destroyed.
+            </summary>
+        </member>
+        <member name="F:Block.burnDurationCounter">
+            <summary>
+                Tracks the total elapsed time since the block started burning. Increments while
+                burnTime is positive for flamable blocks.
+            </summary>
+        </member>
+        <member name="F:Block.burnTime">
+            <summary>
+                The remaining time in seconds that the block will continue burning. Decreases each
+                frame while burning. When it reaches zero, burning stops.
+            </summary>
+        </member>
+        <member name="F:Block.burnUnitsCounter">
+            <summary>
+                Timer for burning damage to nearby units. When it exceeds 0.25f, calls
+                Map.BurnUnitsAround to damage units near the burning block.
+            </summary>
+        </member>
+        <member name="F:Block.collapseBlocksAround">
+            <summary>
+                Flag controlling whether this block should trigger collapse of neighboring blocks
+                when it collapses. Set to false temporarily during certain operations to prevent
+                cascade effects. Defaults to true and is reset to true after collapse operations.
+            </summary>
+        </member>
+        <member name="F:Block.collapseChance">
+            <summary>
+                Probability multiplier for collapse propagation to the above block. Value between 0
+                and 1 that determines the chance of the above block collapsing when this block is
+                destroyed. Used in conjunction with collapseRandom to determine collapse
+                propagation. Defaults to 1.0 (100% chance).
+            </summary>
+        </member>
+        <member name="F:Block.collapseChanceMultiplier">
+            <summary>
+                Multiplier applied to the collapse chance when this block collapses blocks above it.
+                Default is 0.5. Used in DelayedCollapseAbove to reduce the cascade probability as
+                collapses propagate upward.
+            </summary>
+        </member>
+        <member name="F:Block.collapseDelayTime">
+            <summary>
+                Time in seconds to wait after destruction before allowing collapse effects. Default
+                is 0.2 seconds. Used in ShouldEnable and Update to control when destroyed blocks
+                trigger collapse of blocks above them.
+            </summary>
+        </member>
+        <member name="F:Block.destroyCounter">
+            <summary>
+                Timer that tracks the delay before a destroyed block actually collapses. Counts up
+                from 0 to collapseDelayTime after destruction. When it reaches collapseDelayTime,
+                the block performs its actual collapse. Set to 100f for indestructible blocks to
+                prevent collapse.
+            </summary>
+        </member>
+        <member name="F:Block.explosive">
+            <summary>
+                Indicates whether this block explodes immediately when catching fire. When true,
+                fire damage instantly triggers DamageInternal instead of gradual burning.
+            </summary>
+        </member>
+        <member name="F:Block.flamable">
+            <summary>
+                Indicates whether this block can catch fire and burn when exposed to fire damage.
+                When true, fire damage starts the burning process and increases burn damage over
+                time.
+            </summary>
+        </member>
+        <member name="F:Block.flameCounter">
+            <summary>
+                Timer for spawning visual flame effects. When it exceeds 0.05f, creates flame
+                particles via EffectsController.
+            </summary>
+        </member>
+        <member name="F:Block.heatable">
+            <summary>
+                Indicates whether this block spreads heat/fire to surrounding blocks when burning.
+                When true and burning, the block calls Map.BurnBlocksAround to ignite adjacent
+                blocks.
+            </summary>
+        </member>
+        <member name="F:Block.lastDamageObject">
+            <summary>
+                Stores information about the most recent damage dealt to this block. Used to
+                determine special behaviors based on damage type and source, affect visual and audio
+                effects, and propagate damage information to attached doodads and collapsing blocks
+                above.
+            </summary>
+        </member>
+        <member name="F:Block.shrapnelBitPrefab">
+            <summary>
+                Reference to the smaller Shrapnel prefab for minor debris effects. Set in Unity
+                editor to define secondary debris particles.
+            </summary>
+        </member>
+        <member name="F:Block.shrapnelPrefab">
+            <summary>
+                Reference to the Shrapnel prefab to spawn when this block is destroyed. Set in Unity
+                editor to define what type of debris this block creates.
+            </summary>
+        </member>
+        <!-- Block Configuration & Setup Methods -->
+        <member name="M:Block.CheckDestroyed(UnityEngine.Collider)">
+            <summary>
+                Checks if the block should be marked as destroyed based on its collider state or
+                health. Sets destroyed flag and destroyCounter if the collider is null/disabled or
+                health is 0 or less, then calls DoEnabling to update the block's state.
+            </summary>
+            <param name="col">Optional collider to check. If null, retrieves the collider from this GameObject.</param>
+        </member>
+        <member name="M:Block.ReplaceBlockWith(GroundType)">
+            <summary>
+                Replaces this block with a new block of the specified ground type while preserving
+                position and connections. Creates a new block at the same grid position, sets up its
+                connections to neighboring blocks, marks it as the persistent replacement, registers
+                it in the network registry, and moves the current block forward in Z space. Updates
+                the GameObject name to indicate the replacement.
+            </summary>
+            <param name="groundType">The type of ground/terrain the new block should be.</param>
+        </member>
+        <member name="M:Block.ResetBlock">
+            <summary>
+                Resets the block to its initial state for level restart or pooling. Restores health,
+                clears burn/damage states, resets position, hides all blood effects, clears
+                attachments, and re-enables components based on starting configuration.
+            </summary>
+        </member>
+        <member name="M:Block.SetPosition(System.Int32,System.Int32)">
+            <summary>
+                Sets the block's position in the world based on its grid coordinates. Converts
+                row/column grid coordinates to world position (multiplying by 16 units per grid
+                cell) and updates both the transform position and internal X/Y values via SetXY.
+            </summary>
+            <param name="row">The row index in the block grid.</param>
+            <param name="col">The column index in the block grid.</param>
+        </member>
+        <member name="M:Block.SetupBlock(System.Int32,System.Int32,Block,Block)">
+            <summary>
+                Initializes the block with its grid position and neighbor references. Sets up the
+                block's row/column coordinates, links it to adjacent blocks above and below, updates
+                the GameObject name to include coordinates, and calculates world position bounds.
+            </summary>
+            <param name="row">The grid row position</param>
+            <param name="collumn">The grid column position (note spelling)</param>
+            <param name="aboveBlock">Reference to the block above this one, can be null</param>
+            <param name="belowBlock">Reference to the block below this one, can be null</param>
+        </member>
+        <member
+            name="M:Block.UseLargePieces(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+                Configures the block to use large tile pieces for visual variety. Sets parameters
+                for window and mural pieces that span multiple blocks.
+            </summary>
+            <param name="firstCollumn">The leftmost column of the large piece group.</param>
+            <param name="firstRow">The bottom row of the large piece group.</param>
+            <param name="collumns">Total number of columns the large piece spans.</param>
+            <param name="rows">Total number of rows the large piece spans.</param>
+            <param name="randomOffset">Random offset value for visual variation in tiling.</param>
+            <param name="windowPieces">Whether to use large window piece variations.</param>
+            <param name="muralPieces">Whether to use large mural piece variations.</param>
+        </member>
+        <!-- Block Configuration & Setup Fields -->
+        <member name="F:Block.IsADestroyableDoodad">
+            <summary>
+                Indicates whether this block is actually a destroyable doodad rather than a standard
+                terrain block. When true, special doodad destruction logic is used instead of normal
+                block destruction.
+            </summary>
+        </member>
+        <member name="F:Block.IsAlien">
+            <summary>
+                Indicates whether this block is an alien-themed block. Affects visual appearance and
+                behavior. Used to determine special alien block properties and interactions.
+            </summary>
+        </member>
+        <member name="F:Block.IsBouncy">
+            <summary>
+                Indicates whether this block has bouncy properties. When true, units that land on or
+                hit this block will bounce off it. Used for special block types like trampolines.
+            </summary>
+        </member>
+        <member name="F:Block.aboveBlock">
+            <summary>
+                Cached reference to the block directly above this one in the grid. Set during
+                SetupBlock and used for collapse propagation, terrain matching, and determining if
+                this block is exposed on top. When this block collapses, it propagates the collapse
+                to the above block if conditions are met.
+            </summary>
+        </member>
+        <member name="F:Block.belowBlock">
+            <summary>
+                Cached reference to the block directly below this one in the grid. Set during
+                SetupBlock and maintains the bidirectional relationship between vertically adjacent
+                blocks. Used for support checks and visual edge determination.
+            </summary>
+        </member>
+        <member name="F:Block.bounds">
+            <summary>
+                The rectangular bounds of this block in world space. Set during Setup to a 16x16
+                unit rect at the block's position. Used for collision and spatial queries.
+            </summary>
+        </member>
+        <member name="F:Block.canHaveWaterDrips">
+            <summary>
+                Flag indicating whether this block can spawn water drip particle effects. When true
+                and the block has no block below it, water drips can be created. Defaults to true.
+                Used to control visual water drip effects on the underside of blocks.
+            </summary>
+        </member>
+        <member name="F:Block.canPersist">
+            <summary>
+                Determines whether this block can be saved and restored during persistence
+                operations. Default is true. Set to false for temporary or non-saveable blocks.
+            </summary>
+        </member>
+        <member name="F:Block.collumn">
+            <summary>
+                The current column position of this block in the grid. Represents the X coordinate
+                in the block grid system. Set during initialization based on the block's transform
+                position using Map.GetRow (sic). Used extensively for neighbor lookups, position
+                calculations, and grid-based operations. Note the misspelling of "column" is
+                consistent throughout the codebase.
+            </summary>
+        </member>
+        <member name="F:Block.groundLayer">
+            <summary>
+                Layer mask used for physics raycasts to detect ground and solid objects. Initialized
+                in Awake to include "Ground", "LargeObjects", and "IndestructibleGround" layers.
+                Used for collision detection and determining nearby solid objects.
+            </summary>
+        </member>
+        <member name="F:Block.groundType">
+            <summary>
+                The type of terrain this block represents. Determines visual appearance, behavior,
+                and interactions. Used extensively for terrain matching checks with neighbors,
+                collapse behavior determination, and special case handling for different block types
+                like bridges, alien eggs, barrels, etc. Defaults to GroundType.Earth.
+            </summary>
+        </member>
+        <member name="F:Block.height">
+            <summary>
+                Defines the vertical grid size of the block in rows. Default value is 1. Used for
+                multi-row blocks that span more than one grid position vertically.
+            </summary>
+        </member>
+        <member name="F:Block.initialColumn">
+            <summary>
+                The original column position when the block was first initialized. Stores the column
+                value at initialization time for reference. Set during Awake to preserve the
+                original grid position.
+            </summary>
+        </member>
+        <member name="F:Block.initialRow">
+            <summary>
+                The original row position when the block was first initialized. Stores the row value
+                at initialization time for reference. Set during Awake to preserve the original grid
+                position.
+            </summary>
+        </member>
+        <member name="F:Block.originalPosition">
+            <summary>
+                The original world position of the block when first initialized. Cached during Awake
+                from the transform position. Used during the Reset method to restore the block to
+                its initial position.
+            </summary>
+        </member>
+        <member name="F:Block.persistThisBlockInstead">
+            <summary>
+                Reference to an alternative block that should be persisted instead of this one. Used
+                for block substitution during save/load operations. Hidden in inspector.
+            </summary>
+        </member>
+        <member name="F:Block.replaceOnCollapse">
+            <summary>
+                Whether this block should be replaced with replacementBlockType when it collapses.
+                When true, the block transforms into the specified type during collapse instead of
+                being destroyed. Set to false after replacement occurs.
+            </summary>
+        </member>
+        <member name="F:Block.replacementBlockType">
+            <summary>
+                The type of block that should replace this block when it collapses or is destroyed.
+                Defaults to GroundType.Empty. Used with replaceOnCollapse to transform blocks during
+                destruction sequences.
+            </summary>
+        </member>
+        <member name="F:Block.row">
+            <summary>
+                The current row position of this block in the grid. Represents the Y coordinate in
+                the block grid system. Set during initialization based on the block's transform
+                position using Map.GetRow. Used extensively for neighbor lookups, position
+                calculations, and grid-based operations throughout the block system.
+            </summary>
+        </member>
+        <member name="F:Block.size">
+            <summary>
+                Defines the horizontal grid size of the block in columns. Default value is 1. Used
+                for multi-column blocks that span more than one grid position horizontally.
+            </summary>
+        </member>
+        <member name="F:Block.soundHolder">
+            <summary>
+                Container for sound effects associated with this block. Used to play defend sounds
+                when hit by certain damage types (bullets, blades) and death sounds when destroyed.
+                The volume and specific sounds played depend on the context and damage type.
+            </summary>
+        </member>
+        <!-- Block Neighbor Access Properties -->
+        <member name="P:Block.AboveBlock">
+            <summary>
+                Gets the block above this block in the grid. Uses the Map.GetBlock method to
+                retrieve the block at same column, row + 1.
+            </summary>
+            <returns>The neighboring block above, or null if no block exists at that position.</returns>
+        </member>
+        <member name="P:Block.AboveIsEmpty">
+            <summary>
+                Checks if the above neighbor position is empty. A position is considered empty if
+                the AboveBlock is null or destroyed, and also verifies the row is not at the top
+                edge of the map (row &lt; Map.MapData.Height - 1).
+            </summary>
+            <returns>True if there is no block above or if the above block is destroyed (and not at map edge), false otherwise.</returns>
+        </member>
+        <member name="P:Block.BelowBlock">
+            <summary>
+                Gets the block below this block in the grid. Uses the Map.GetBlock method to
+                retrieve the block at same column, row - 1.
+            </summary>
+            <returns>The neighboring block below, or null if no block exists at that position.</returns>
+        </member>
+        <member name="P:Block.BelowIsEmpty">
+            <summary>
+                Checks if the below neighbor position is empty. A position is considered empty if
+                the BelowBlock is null or if the below block's destroyed flag is true.
+            </summary>
+            <returns>True if there is no block below or if the below block is destroyed, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsAboveTheSame">
+            <summary>
+                Determines if the block above has the same ground type as this block. Compares the
+                ground types using Map.IsTerrainTheSame.
+            </summary>
+            <returns>True if the above neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsBelowTheSame">
+            <summary>
+                Determines if the block below has the same ground type as this block. Compares the
+                ground types using Map.IsTerrainTheSame.
+            </summary>
+            <returns>True if the below neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsLeftTheSame">
+            <summary>
+                Determines if the block to the left has the same ground type as this block. Compares
+                the ground types using Map.IsTerrainTheSame.
+            </summary>
+            <returns>True if the left neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsRightTheSame">
+            <summary>
+                Determines if the block to the right has the same ground type as this block.
+                Compares the ground types using Map.IsTerrainTheSame.
+            </summary>
+            <returns>True if the right neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsTopLeftTheSame">
+            <summary>
+                Determines if the block diagonally above and to the left has the same ground type as
+                this block. Checks the position at column - 1, row + 1.
+            </summary>
+            <returns>True if the diagonal top-left neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.IsTopRightTheSame">
+            <summary>
+                Determines if the block diagonally above and to the right has the same ground type
+                as this block. Checks the position at column + 1, row + 1.
+            </summary>
+            <returns>True if the diagonal top-right neighbor exists and has the same groundType as this block, false otherwise.</returns>
+        </member>
+        <member name="P:Block.LeftBlock">
+            <summary>
+                Gets the block to the left of this block in the grid. Uses the Map.GetBlock method
+                to retrieve the block at column - 1, same row.
+            </summary>
+            <returns>The neighboring block to the left, or null if no block exists at that position.</returns>
+        </member>
+        <member name="P:Block.LeftIsEmpty">
+            <summary>
+                Checks if the left neighbor position is empty. A position is considered empty if the
+                LeftBlock is null or if the left block's destroyed flag is true.
+            </summary>
+            <returns>True if there is no block to the left or if the left block is destroyed, false otherwise.</returns>
+        </member>
+        <member name="P:Block.RightBlock">
+            <summary>
+                Gets the block to the right of this block in the grid. Uses the Map.GetBlock method
+                to retrieve the block at column + 1, same row.
+            </summary>
+            <returns>The neighboring block to the right, or null if no block exists at that position.</returns>
+        </member>
+        <member name="P:Block.RightIsEmpty">
+            <summary>
+                Checks if the right neighbor position is empty. A position is considered empty if
+                the RightBlock is null or if the right block's destroyed flag is true.
+            </summary>
+            <returns>True if there is no block to the right or if the right block is destroyed, false otherwise.</returns>
+        </member>
+        <!-- Block State & Query Methods -->
+        <member name="M:Block.ActuallyCollapse(System.Single,System.Single,System.Boolean)">
+            <summary>
+                Executes the actual collapse of the block. Can be called via RPC from network.
+                Handles protection checks, destroyable doodad special cases, visual effects based on
+                collapse chance, and triggers block destruction. Protected blocks are ignored.
+            </summary>
+            <param name="xI">The horizontal force/impulse for collapse effects.</param>
+            <param name="yI">The vertical force/impulse for collapse effects.</param>
+            <param name="collapseBlocksAround">Whether to trigger collapse checks on neighboring blocks.</param>
+        </member>
+        <member name="M:Block.Collapse(System.Single,System.Single,System.Single)">
+            <summary>
+                Initiates the collapse process for the block with a given chance. Handles network
+                synchronization, special damage source cases (helicopter chaingun, Satan force field
+                skip RPC), and execution delays for crush damage. Only collapses if not already
+                destroyed and chance is greater than zero.
+            </summary>
+            <param name="xI">The horizontal force/impulse causing the collapse.</param>
+            <param name="yI">The vertical force/impulse causing the collapse.</param>
+            <param name="chance">The probability of collapse (0-1). Values less than 1 may cause partial collapse effects.</param>
+        </member>
+        <member name="M:Block.CollapseForced">
+            <summary>
+                Forces the block to collapse with default parameters. Convenience method that calls
+                CollapseForced with zero forces and 100% collapse chance.
+            </summary>
+        </member>
+        <member name="M:Block.CollapseForced(System.Single,System.Single,System.Single)">
+            <summary>
+                Forces the block to collapse with specified parameters. Simply delegates to the
+                standard Collapse method, used when collapse must happen regardless of normal
+                conditions.
+            </summary>
+            <param name="xI">The horizontal force/impulse for the collapse.</param>
+            <param name="yI">The vertical force/impulse for the collapse.</param>
+            <param name="chance">The collapse chance (typically 1.0 for forced collapse).</param>
+        </member>
+        <member name="M:Block.DestroyBlockInternal(System.Boolean)">
+            <summary>
+                Handles the internal destruction process of the block. Disables colliders, clears
+                health, updates visuals, handles parachute deactivation, destroys water drips,
+                notifies statistics, triggers mine detonation if present, destroys attached slime,
+                unsticks oil particles, and optionally informs surrounding blocks.
+            </summary>
+            <param name="CollapseBlocksAround">Whether to inform surrounding blocks of this block's destruction, potentially triggering their collapse.</param>
+        </member>
+        <member name="M:Block.EffectsCollapse(System.Single,System.Single)">
+            <summary>
+                Creates visual and audio effects when the block collapses but isn't completely
+                destroyed. Spawns appropriate particle effects (alien, dirt, or custom colored)
+                based on block type, plays collapse sound effects, and creates alien-specific
+                collapse effects when applicable.
+            </summary>
+            <param name="xI">The horizontal force/impulse causing the collapse, affects particle direction.</param>
+            <param name="yI">The vertical force/impulse causing the collapse, affects particle direction.</param>
+        </member>
+        <member name="M:Block.EffectsDestroyed(System.Single,System.Single,System.Single)">
+            <summary>
+                Creates visual and audio effects when the block is completely destroyed. Similar to
+                EffectsCollapse but with more particles and force, indicating complete destruction
+                rather than just collapse.
+            </summary>
+            <param name="xI">The horizontal force/impulse from the destruction source.</param>
+            <param name="yI">The vertical force/impulse from the destruction source.</param>
+            <param name="force">The overall force of the destruction, affects particle velocity and spread.</param>
+        </member>
+        <member name="M:Block.InformAboveBlockOfCollapse">
+            <summary>
+                Specifically notifies the block above that this block has collapsed. Uses both grid
+                lookup and raycast fallback to find blocks directly above. Shows the bottom edge of
+                the above block and triggers special behavior for oil tank blocks.
+            </summary>
+        </member>
+        <member name="M:Block.InformSurroundingBlocksOfCollapse">
+            <summary>
+                Notifies all neighboring blocks that this block has collapsed, triggering
+                appropriate visual updates. Shows edges on adjacent blocks that are now exposed and
+                specifically informs the block above which may need to collapse.
+            </summary>
+        </member>
+        <member name="M:Block.IsEdgeBlock">
+            <summary>
+                Determines if this block is at the edge of a structure by checking how many
+                neighboring positions are occupied. Counts neighbors (including map boundaries as
+                "occupied") and returns true if fewer than 4 sides have blocks.
+            </summary>
+            <returns>True if the block has less than 4 occupied neighbor positions, indicating it's an edge block.</returns>
+        </member>
+        <member name="M:Block.IsSolid">
+            <summary>
+                Virtual method that determines if this block is solid for collision purposes.
+                Returns true in base implementation, can be overridden by non-solid blocks.
+            </summary>
+            <returns>True indicating the block is solid, false for non-solid variants</returns>
+        </member>
+        <member name="M:Block.IsSupported">
+            <summary>
+                Checks if this block is structurally supported and shouldn't fall. For falling
+                structure blocks, verifies support by checking up to 3 blocks in each horizontal
+                direction for solid blocks or blocks with support. Returns false if destroyed,
+                damaged, or no supporting blocks are found within range.
+            </summary>
+            <returns>True if the block has structural support, false if it should fall</returns>
+        </member>
+        <member name="M:Block.NotBroken">
+            <summary>
+                Checks if this block is still intact (not broken). Returns true if health is above 0
+                and the destroyed flag is false.
+            </summary>
+            <returns>True if the block has health and is not destroyed, false otherwise</returns>
+        </member>
+        <member name="M:Block.NotRolling">
+            <summary>
+                Virtual method that checks if the block is not rolling. Always returns true in base
+                implementation, can be overridden by rolling block types.
+            </summary>
+            <returns>True in base implementation, indicating the block is not rolling</returns>
+        </member>
+        <member name="M:Block.SetActive(System.Boolean)">
+            <summary>
+                Sets the active state of this block's GameObject. Virtual method that directly calls
+                SetActive on the base GameObject. Derived blocks can override to perform additional
+                activation/deactivation logic.
+            </summary>
+            <param name="active">True to activate the GameObject, false to deactivate</param>
+        </member>
+        <member name="M:Block.SetBelowBlockCollapsedVisuals">
+            <summary>
+                Updates visual state of the block below when this block collapses. Virtual method
+                intended for override by derived classes that need special below-block handling.
+                Base implementation is empty.
+            </summary>
+        </member>
+        <member name="M:Block.SetCollapsedAboveVisuals">
+            <summary>
+                Updates this block's visual state when the block above it has collapsed. Virtual
+                method for derived classes to implement special visual changes. Base implementation
+                is empty.
+            </summary>
+        </member>
+        <member name="M:Block.SetCollapsedVisuals">
+            <summary>
+                Sets the visual state of the block after it has collapsed. Disables the main
+                renderer, hides all edge pieces and center, shows broken background visuals, hides
+                side broken edges, and deactivates all added block pieces to show the block as
+                destroyed.
+            </summary>
+        </member>
+        <member name="M:Block.SetParachuteActive(System.Boolean)">
+            <summary>
+                Sets the parachute active state for this block. Virtual method that updates the
+                IsParachuteActive property. Derived blocks can override to add visual or physics
+                effects when parachute state changes.
+            </summary>
+            <param name="active">True to activate the parachute, false to deactivate</param>
+        </member>
+        <member name="M:Block.UnstickOilParticles">
+            <summary>
+                Removes all oil particles that are stuck to this block. Called when the block is
+                destroyed to ensure particles become unstuck and can fall/move freely. Maintains
+                list integrity by removing invalid references.
+            </summary>
+        </member>
+        <!-- Attachment & Support Methods -->
+        <member name="M:Block.AttachAboveBlock(Block)">
+            <summary>
+                Sets the reference to the block positioned above this one in the grid. Used for
+                neighbor tracking and collapse mechanics.
+            </summary>
+            <param name="above">The block positioned above this one.</param>
+        </member>
+        <member name="M:Block.AttachBelowBlock(Block)">
+            <summary>
+                Sets the reference to the block positioned below this one in the grid. Used for
+                neighbor tracking and support mechanics.
+            </summary>
+            <param name="below">The block positioned below this one.</param>
+        </member>
+        <member name="M:Block.AttachMe(UnityEngine.Transform)">
+            <summary>
+                Attaches a transform's gameObject to this block's list of other attachments.
+                Overrides the base class method to add the object to the otherAttachments list for
+                tracking attached entities.
+            </summary>
+            <param name="trans">The transform whose gameObject should be attached to this block.</param>
+        </member>
+        <member name="M:Block.AttachMe(SlimeGroundCover)">
+            <summary>
+                Attaches a slime ground cover entity to this block. The slime is added to the
+                block's slimeCover list for tracking and will be destroyed when the block is
+                destroyed.
+            </summary>
+            <param name="slime">The slime ground cover entity to attach to this block.</param>
+        </member>
+        <member name="M:Block.AttachMe(Doodad)">
+            <summary>
+                Attaches a doodad to this block. Handles special cases for JiggleDoodads (added to
+                separate list) and Spikes (stored in dedicated field). All doodads are added to the
+                general doodadAttachments list.
+            </summary>
+            <param name="doodad">The doodad to attach to this block.</param>
+        </member>
+        <member name="M:Block.CrumbleBridge(System.Single)">
+            <summary>
+                Override of base class crumble bridge method. Simply calls the base implementation.
+            </summary>
+            <param name="chance">The crumble chance passed to base method</param>
+        </member>
+        <member name="M:Block.CrumbleBridges(System.Single)">
+            <summary>
+                Sends crumble messages to adjacent bridge blocks. Raycasts left and right to find
+                connected blocks, sends "CrumbleBridge" message, or directly calls method on
+                adjacent grid blocks.
+            </summary>
+            <param name="chance">The probability that adjacent bridges will crumble (0-1)</param>
+        </member>
+        <member name="M:Block.DelayedCollapseAbove">
+            <summary>
+                Triggers collapse of the block above this one based on collapse chance and block
+                type compatibility. Checks extensive type matching rules, transfers damage source,
+                and initiates collapse with multiplied chance. Skips alien eggs.
+            </summary>
+        </member>
+        <member name="M:Block.Push(System.Single)">
+            <summary>
+                Applies a horizontal push force to the block. Accumulates force over time and
+                enables the block for updates. Base implementation doesn't move blocks but stores
+                force.
+            </summary>
+            <param name="xINormalized">The normalized horizontal push force to apply</param>
+            <returns>Always returns false in base implementation</returns>
+        </member>
+        <member name="M:Block.RemoveMe(SlimeGroundCover)">
+            <summary>
+                Removes a slime ground cover entity from this block's attachment list. Called when
+                slime needs to be detached without destroying the block.
+            </summary>
+            <param name="slime">The slime ground cover entity to remove from this block.</param>
+        </member>
+        <member name="M:Block.RunCollapseLogic">
+            <summary>
+                Executes post-destruction collapse behavior. Triggers collapse of block above if
+                enabled, disturbs block below, crumbles adjacent bridges, and ensures
+                collapseBlocksAround flag is set.
+            </summary>
+        </member>
+        <member name="M:Block.RunPushLogic">
+            <summary>
+                Gradually reduces push force over time. Decays positive and negative forces toward
+                zero at 0.3 units per second, used for visual wobble effects.
+            </summary>
+        </member>
+        <member name="M:Block.SupportedByDoodad(Doodad)">
+            <summary>
+                Sets the doodad that is supporting this block. Used when blocks are held up by
+                doodads rather than other blocks.
+            </summary>
+            <param name="doodad">The doodad object that is supporting this block.</param>
+        </member>
+        <!-- Attachment & Support Fields -->
+        <member name="F:Block.attachedObjects">
+            <summary>
+                Array of GameObjects attached to this block that move or are destroyed with it.
+                General attachment array for objects not specific to a particular side.
+            </summary>
+        </member>
+        <member name="F:Block.attachedObjectsBelow">
+            <summary>
+                Array of GameObjects attached below this block. These objects are positioned
+                relative to the block's bottom edge.
+            </summary>
+        </member>
+        <member name="F:Block.attachedObjectsLeft">
+            <summary>
+                Array of GameObjects attached to the left side of this block. These objects are
+                positioned relative to the block's left edge.
+            </summary>
+        </member>
+        <member name="F:Block.attachedObjectsRight">
+            <summary>
+                Array of GameObjects attached to the right side of this block. These objects are
+                positioned relative to the block's right edge.
+            </summary>
+        </member>
+        <member name="F:Block.disturbed">
+            <summary>
+                Indicates whether this block has been disturbed from its stable state. Used by
+                IsSupported method for fallingStructure blocks to determine stability.
+            </summary>
+        </member>
+        <member name="F:Block.doodadAttachments">
+            <summary>
+                List of doodad objects attached to this block. Stores references to decorative or
+                functional doodads that are attached to this block. When the block collapses, it
+                iterates through this list to set the lastDamageObject on each doodad and calls
+                their Collapse method. The list is cleared when the block is reset via the Reset
+                method.
+            </summary>
+        </member>
+        <member name="F:Block.fallingStructure">
+            <summary>
+                Indicates whether this block is part of a structure that can fall when unsupported.
+                When true, IsSupported checks for structural integrity and support conditions.
+            </summary>
+        </member>
+        <member name="F:Block.mine">
+            <summary>
+                Reference to a Mine object attached to this block. Checked in DestroyBlockInternal()
+                and CheckForMine() methods. When block is destroyed, calls Detonate(true) on the
+                mine if it hasn't already exploded or been detonated. Uses RPC for networked
+                detonation.
+            </summary>
+        </member>
+        <member name="F:Block.spikes">
+            <summary>
+                Reference to a Spikes doodad specifically attached to this block. Set when
+                AttachMe(Doodad) is called with a Spikes type doodad. Stored separately from general
+                doodadAttachments list for quick access to spike-specific functionality.
+            </summary>
+        </member>
+        <member name="F:Block.supportedBy">
+            <summary>
+                Reference to a doodad that is supporting this block. Used to track support
+                relationships between blocks and doodads. When this block collapses and has a
+                supporting doodad, it calls the doodad's Collapse method and clears this reference.
+                This field is checked in the IsSolid method to determine if the block counts as
+                solid terrain.
+            </summary>
+        </member>
+        <!-- Visual & Rendering Methods -->
+        <member name="M:Block.AddBlockPiece(BlockPiece[],System.Boolean,System.Boolean)">
+            <summary>
+                Instantiates and configures a block piece based on its type. Background meshes are
+                placed 12 units forward, centre tiles at 0.01 + foregroundCentreZOffset forward, and
+                edge pieces 3 units backward. Applies forced materials if configured. Randomly
+                selects from the provided prefab array and parents the piece to this block.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <param name="isBackgroundMesh">If true, creates a background mesh piece.</param>
+            <param name="isCentreTile">If true, creates a centre tile piece.</param>
+            <returns>The instantiated BlockPiece (backgroundMesh, centreObject, or a regular edge piece).</returns>
+        </member>
+        <member name="M:Block.AddEdgePiece(BlockPiece[])">
+            <summary>
+                Creates an edge piece positioned 6 units forward. Applies forced edge materials if
+                configured, including special bloody material for BloodSeepage components. Edge
+                pieces are typically used for broken block borders.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <returns>The instantiated edge BlockPiece with configured materials.</returns>
+        </member>
+        <member name="M:Block.AddForegroundDecorationPiece(BlockPiece[])">
+            <summary>
+                Creates a foreground decoration piece positioned 3 units backward. Default wrapper
+                that calls the overloaded version with -3f Z offset.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <returns>The instantiated decoration BlockPiece.</returns>
+        </member>
+        <member name="M:Block.AddForegroundDecorationPiece(BlockPiece[],System.Single)">
+            <summary>
+                Creates a foreground decoration piece at a specified Z offset. Randomly selects from
+                the prefab array and parents to this block. Virtual method that can be overridden by
+                derived classes.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <param name="zOffset">The Z-axis offset for positioning the piece.</param>
+            <returns>The instantiated decoration BlockPiece.</returns>
+        </member>
+        <member name="M:Block.AddForegroundPiece(BlockPiece[])">
+            <summary>
+                Creates a foreground decoration piece with a random Z offset between 1.94 and 2.0
+                units forward. Wrapper method that calls AddForegroundPiece with calculated offset.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <returns>The instantiated foreground BlockPiece.</returns>
+        </member>
+        <member name="M:Block.AddForegroundPiece(BlockPiece[],System.Single)">
+            <summary>
+                Creates a foreground piece at a specified Z offset. Randomly selects from the prefab
+                array and parents to this block. Used internally by other AddForegroundPiece
+                methods.
+            </summary>
+            <param name="prefabs">Array of BlockPiece prefabs to randomly select from.</param>
+            <param name="zOffset">The Z-axis offset for positioning the piece.</param>
+            <returns>The instantiated foreground BlockPiece.</returns>
+        </member>
+        <member name="M:Block.AddObject(BlockPiece)">
+            <summary>
+                Adds a BlockPiece to the list of additional objects attached to this block. These
+                objects are managed separately from the standard attached objects arrays and are
+                used for dynamic visual elements.
+            </summary>
+            <param name="meshObject">The BlockPiece object to add to the block's addedObjects list.</param>
+        </member>
+        <member name="M:Block.Bloody(DirectionEnum,BloodColor)">
+            <summary>
+                Applies blood spray visual effects to the block from a specific direction with the
+                specified color. Calls the overloaded method with fully parameter set to false for
+                partial blood coverage.
+            </summary>
+            <param name="direction">The direction from which the blood is applied (Up, Down, Left, or Right).</param>
+            <param name="color">The color of the blood effect (Red, Oil, Frozen, etc.).</param>
+        </member>
+        <member name="M:Block.Bloody(DirectionEnum,BloodColor,System.Boolean)">
+            <summary>
+                Applies blood spray visual effects to the block from a specific direction with
+                control over full coverage. Handles activating blood spray GameObjects, updating
+                sprite colors, applying blood to attached doodads and block pieces, creating oil
+                pools when appropriate, and managing blood drip particle effects.
+            </summary>
+            <param name="direction">The direction from which the blood is applied (Up, Down, Left, or Right).</param>
+            <param name="color">The color of the blood effect (Red, Oil, Frozen, etc.).</param>
+            <param name="fully">Whether to apply full blood coverage. For oil, this affects pool creation threshold.</param>
+        </member>
+        <member name="M:Block.Bloody(UnityEngine.Vector3,BloodColor)">
+            <summary>
+                Applies blood spray effects based on a normal vector direction. Converts the vector
+                to a cardinal direction and only applies blood if that side isn't already bloodied.
+                Used for directional blood splatter from impacts.
+            </summary>
+            <param name="normal">The normal vector indicating the direction of blood application.</param>
+            <param name="color">The color of the blood effect.</param>
+        </member>
+        <member name="M:Block.CanBloody(DirectionEnum)">
+            <summary>
+                Determines if the block can receive blood spray effects from a specific direction.
+                Blood can only be applied from directions where there is no solid neighboring block,
+                ensuring blood only appears on exposed surfaces.
+            </summary>
+            <param name="direction">The direction from which the blood would be applied (Up, Down, Left, or Right).</param>
+            <returns>True if there is no solid block in the specified direction, false otherwise.</returns>
+        </member>
+        <member name="M:Block.CreateDecal(DecalInfo)">
+            <summary>
+                Creates a decal effect on the block based on the provided decal information.
+                Currently only supports bloody decals, which are applied to both the block and any
+                attached doodads. Checks if the block can be bloodied in the specified direction
+                before applying.
+            </summary>
+            <param name="decalInfo">Contains the type of decal (only Bloody supported), direction, and blood color information.</param>
+        </member>
+        <member name="M:Block.CreateFlames(UnityEngine.Vector3)">
+            <summary>
+                Creates a flame visual effect at the block's position with specified direction
+                offset. Used during burning to spawn fire particles.
+            </summary>
+            <param name="direction">The directional offset for the flame effect, typically randomized within a 6-unit radius</param>
+        </member>
+        <member name="M:Block.FindBackgroundBlockFirstCollumn(System.Int32,GroundType)">
+            <summary>
+                Finds the leftmost column of a contiguous group of background blocks with the same
+                ground type. Similar to FindBigBlockFirstCollumn but checks background terrain
+                instead of foreground. Includes a safety counter of 200 iterations to prevent
+                infinite loops.
+            </summary>
+            <param name="c">The starting column to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The leftmost column index of the contiguous background block group.</returns>
+        </member>
+        <member name="M:Block.FindBackgroundBlockLastCollumn(System.Int32,GroundType)">
+            <summary>
+                Finds the rightmost column of a contiguous group of background blocks with the same
+                ground type. Similar to FindBigBlockLastCollumn but checks background terrain
+                instead of foreground. Includes a safety counter of 200 iterations to prevent
+                infinite loops.
+            </summary>
+            <param name="c">The starting column to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The rightmost column index of the contiguous background block group.</returns>
+        </member>
+        <member name="M:Block.FindBackgroundBlockTopRow(System.Int32,GroundType)">
+            <summary>
+                Finds the topmost row of a contiguous group of background blocks with the same
+                ground type. Searches upward in the block's column until it finds a different ground
+                type. Includes a safety counter of 200 iterations to prevent infinite loops.
+            </summary>
+            <param name="r">The starting row to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The topmost row index of the contiguous background block group.</returns>
+        </member>
+        <member name="M:Block.FindBigBlockBottomRow(System.Int32,System.Int32,GroundType)">
+            <summary>
+                Finds the bottommost row of a contiguous group of blocks with the same ground type.
+                Searches downward from the given position until it finds a different ground type.
+                Used for determining large tile piece boundaries. Includes a safety counter of 200
+                iterations to prevent infinite loops.
+            </summary>
+            <param name="c">The column to search in.</param>
+            <param name="r">The starting row to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The bottommost row index of the contiguous block group.</returns>
+        </member>
+        <member name="M:Block.FindBigBlockFirstCollumn(System.Int32,GroundType)">
+            <summary>
+                Finds the leftmost column of a contiguous group of blocks with the same ground type.
+                Searches left from the given column until it finds a different ground type or
+                reaches the map edge. Used for determining large tile piece boundaries. Includes a
+                safety counter of 200 iterations to prevent infinite loops.
+            </summary>
+            <param name="c">The starting column to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The leftmost column index of the contiguous block group.</returns>
+        </member>
+        <member name="M:Block.FindBigBlockLastCollumn(System.Int32,GroundType)">
+            <summary>
+                Finds the rightmost column of a contiguous group of blocks with the same ground
+                type. Searches right from the given column until it finds a different ground type or
+                reaches the map width. Used for determining large tile piece boundaries. Includes a
+                safety counter of 200 iterations to prevent infinite loops.
+            </summary>
+            <param name="c">The starting column to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The rightmost column index of the contiguous block group.</returns>
+        </member>
+        <member name="M:Block.FindBigBlockTopRow(System.Int32,System.Int32,GroundType)">
+            <summary>
+                Finds the topmost row of a contiguous group of blocks with the same ground type.
+                Searches upward from the given position until it finds a different ground type. Used
+                for determining large tile piece boundaries. Includes a safety counter of 200
+                iterations to prevent infinite loops.
+            </summary>
+            <param name="c">The column to search in.</param>
+            <param name="r">The starting row to search from.</param>
+            <param name="currentGroundType">The ground type to match.</param>
+            <returns>The topmost row index of the contiguous block group.</returns>
+        </member>
+        <member name="M:Block.FullBloody(UnityEngine.Vector3,BloodColor)">
+            <summary>
+                Applies full blood spray effects based on a normal vector direction. Similar to
+                Bloody but ensures full coverage when applied. Converts the vector to a cardinal
+                direction and only applies if that side isn't already bloodied.
+            </summary>
+            <param name="normal">The normal vector indicating the direction of blood application.</param>
+            <param name="color">The color of the blood effect.</param>
+        </member>
+        <member name="M:Block.HideAbove">
+            <summary>
+                Hides all visual elements on the top side of the block, including attached objects,
+                blood sprays, edge pieces, and triggers doodad collapses. Sets hiddenTop flag to
+                true, deactivates attachedObjects array and all top-side blood sprays/edges, calls
+                HideOtherAttachments on base class, and triggers Collapse on all doodadAttachments
+                with the current lastDamageObject.
+            </summary>
+        </member>
+        <member name="M:Block.HideBackgroundMesh">
+            <summary>
+                Hides the background mesh visual component of this block by deactivating its
+                GameObject. Used when the block needs to hide its background decoration.
+            </summary>
+        </member>
+        <member name="M:Block.HideBelow">
+            <summary>
+                Hides all visual elements on the bottom side of the block, including attached
+                objects, blood sprays, and edge pieces. Sets hiddenBottom flag to true and
+                deactivates all bottom-side GameObjects including attachedObjectsBelow array,
+                bloodSprayBottom, bloodSprayBottomHidden, and bottomEdge.
+            </summary>
+        </member>
+        <member name="M:Block.HideBottomDecoration">
+            <summary>
+                Virtual method to hide bottom decorations on this block. Base implementation is
+                empty. Derived block types can override to control visibility of bottom decorative
+                elements.
+            </summary>
+        </member>
+        <member name="M:Block.HideBrokenEdges">
+            <summary>
+                Hides all broken edge visuals including background and side edges. Deactivates
+                backgroundEdgeBroken, updates its Z offset based on row/column position for visual
+                variety, and calls HideSideBrokenEdges to hide all directional broken edges.
+            </summary>
+        </member>
+        <member name="M:Block.HideCentre">
+            <summary>
+                Hides the center object visual component of this block by deactivating its
+                GameObject. Used when the block's center visual needs to be hidden.
+            </summary>
+        </member>
+        <member name="M:Block.HideLeft">
+            <summary>
+                Hides all visual elements on the left side of the block, including attached objects,
+                blood sprays, and edge pieces. Sets hiddenLeft flag to true and deactivates all
+                left-side GameObjects including attachedObjectsLeft array, bloodSprayLeft,
+                bloodSprayLeftHidden, and leftEdge.
+            </summary>
+        </member>
+        <member name="M:Block.HideRight">
+            <summary>
+                Hides all visual elements on the right side of the block, including attached
+                objects, blood sprays, and edge pieces. Sets hiddenRight flag to true and
+                deactivates all right-side GameObjects including attachedObjectsRight array,
+                bloodSprayRight, bloodSprayRightHidden, and rightEdge.
+            </summary>
+        </member>
+        <member name="M:Block.HideSideBrokenEdges">
+            <summary>
+                Hides all directional broken edge visuals (top, bottom, left, right). Deactivates
+                the GameObjects for topEdgeBroken, bottomEdgeBroken, leftEdgeBroken, and
+                rightEdgeBroken if they exist.
+            </summary>
+        </member>
+        <member name="M:Block.HideTopDecorationShowTopEdge">
+            <summary>
+                Virtual method to hide top decorations while showing the top edge. Base
+                implementation is empty. Derived block types can override to manage visibility of
+                decorative elements versus structural edges.
+            </summary>
+        </member>
+        <member name="M:Block.IncreaseDripRate">
+            <summary>
+                Increases the rate of water drips from this block by reducing the delay between
+                drips. Only works if canHaveWaterDrips is true and there's no block below. If no
+                drip exists, spawns a new water drip. Otherwise reduces the existing drip's delay by
+                1 second (minimum 0.5 seconds).
+            </summary>
+        </member>
+        <member
+            name="M:Block.MakeAlienBlockCollapseEffects(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Creates visual effects when an alien block collapses, including green blood gushes,
+                slime particles, and optional alien particles. Spawns two blood gush effects in
+                opposite directions, multiple slime particles with varying velocities, and alien
+                particles if createParticles is true.
+            </summary>
+            <param name="_x">The X position where the effects should spawn.</param>
+            <param name="_y">The Y position where the effects should spawn.</param>
+            <param name="xI">The horizontal velocity influence for the effects.</param>
+            <param name="yI">The vertical velocity influence for the effects.</param>
+            <param name="createParticles">Whether to create alien particle effects in addition to blood and slime (default true).</param>
+        </member>
+        <member name="M:Block.MoveBottomEdgeToForeground">
+            <summary>
+                Virtual method to move the bottom edge visual element to the foreground rendering
+                layer. Base implementation is empty. Derived blocks can override to adjust edge
+                rendering order.
+            </summary>
+        </member>
+        <member name="M:Block.MoveLeftEdgeToForeground">
+            <summary>
+                Virtual method to move the left edge visual element to the foreground rendering
+                layer. Base implementation is empty. Derived blocks can override to adjust edge
+                rendering order.
+            </summary>
+        </member>
+        <member name="M:Block.MoveRightEdgeToForeground">
+            <summary>
+                Virtual method to move the right edge visual element to the foreground rendering
+                layer. Base implementation is empty. Derived blocks can override to adjust edge
+                rendering order.
+            </summary>
+        </member>
+        <member name="M:Block.MoveTopEdgeToForeground">
+            <summary>
+                Virtual method to move the top edge visual element to the foreground rendering
+                layer. Base implementation is empty. Derived blocks can override to adjust edge
+                rendering order.
+            </summary>
+        </member>
+        <member name="M:Block.Rustle(System.Single,System.Single,System.Single)">
+            <summary>
+                Virtual method called when foliage or vegetation blocks need to animate rustling
+                movement. Empty in base implementation, typically overridden by grass or bush
+                blocks.
+            </summary>
+            <param name="y">The vertical rustling strength</param>
+            <param name="x">The horizontal rustling position</param>
+            <param name="xI">The horizontal rustling impulse/intensity</param>
+        </member>
+        <member name="M:Block.SetCollapsedVisuals">
+            <summary>
+                Hides all visual components of the block when it has collapsed. Disables the
+                renderer, hides all edge pieces, shows the broken background mesh, and deactivates
+                any added objects like decorations.
+            </summary>
+        </member>
+        <member name="M:Block.ShowBackgroundMesh">
+            <summary>
+                Shows the background mesh visual component of this block by activating its
+                GameObject. Used to reveal background decoration when the block's foreground is
+                damaged or destroyed.
+            </summary>
+        </member>
+        <member name="M:Block.ShowBottomEdge">
+            <summary>
+                Shows the broken edge visual on the bottom side of the block if the block is not
+                destroyed. Only activates bottomEdgeBroken GameObject if the block is still intact.
+            </summary>
+        </member>
+        <member name="M:Block.ShowBrokenBackground">
+            <summary>
+                Shows the broken background edge visual and hides the main renderer when the block
+                is damaged. Activates the backgroundEdgeBroken GameObject and disables the block's
+                main Renderer component to show damage state.
+            </summary>
+        </member>
+        <member name="M:Block.ShowCentre">
+            <summary>
+                Shows the center object visual component of this block by activating its GameObject.
+                The center object typically represents the main visual element of the block.
+            </summary>
+        </member>
+        <member name="M:Block.ShowLeftEdge">
+            <summary>
+                Shows the broken edge visual on the left side of the block if the block is not
+                destroyed. Only activates leftEdgeBroken GameObject if the block is still intact.
+            </summary>
+        </member>
+        <member name="M:Block.ShowRightEdge">
+            <summary>
+                Shows the broken edge visual on the right side of the block if the block is not
+                destroyed. Only activates rightEdgeBroken GameObject if the block is still intact.
+            </summary>
+        </member>
+        <member name="M:Block.ShowTopEdge">
+            <summary>
+                Shows the broken edge visual on the top side of the block if the block is not
+                destroyed. Only activates topEdgeBroken GameObject if the block is still intact.
+            </summary>
+        </member>
+        <member name="M:Block.SpawnSlimeDrip">
+            <summary>
+                Spawns a slime drip particle effect beneath this block. Creates a new slime drip
+                effect using EffectsController if one doesn't already exist. The drip is positioned
+                8 units below the block with a random horizontal offset between -7 and 7 units, and
+                has a random delay between 0.5 and 4 seconds.
+            </summary>
+        </member>
+        <member name="M:Block.SpawnWaterDrip">
+            <summary>
+                Spawns a water drip particle effect beneath this block. Creates a new water drip
+                effect using EffectsController if one doesn't already exist. The drip is positioned
+                8 units below the block with a random horizontal offset between -7 and 7 units, and
+                has a random delay between 0.5 and 4 seconds.
+            </summary>
+        </member>
+        <!-- Visual & Rendering Fields -->
+        <member name="F:Block._bloodyTopCounter">
+            <summary>
+                Counts the number of times blood has been applied to the top edge. When greater than
+                7 and blood color is Oil, triggers oil pool placement below the block.
+            </summary>
+        </member>
+        <member name="F:Block.addedObjects">
+            <summary>
+                List of additional BlockPiece objects attached to this block for decorative or
+                functional purposes. Initialized with capacity 8 in OnSpawned(). Objects added via
+                AddObject() method. All pieces receive Bump() effects when stepped on and are
+                deactivated when block collapses.
+            </summary>
+        </member>
+        <member name="F:Block.backgroundEdgeBroken">
+            <summary>
+                SpriteSM component for the broken background edge visual. Shown via
+                ShowBrokenBackground() when block is damaged, hidden in HideBrokenEdges(). Z offset
+                is adjusted based on row/column modulo 4 for visual variety when hiding.
+            </summary>
+        </member>
+        <member name="F:Block.backgroundMesh">
+            <summary>
+                Protected reference to the background mesh BlockPiece. Created by AddBlockPiece()
+                when isBackgroundMesh is true, positioned 12 units forward in Z. Shown when block is
+                damaged via ShowBackgroundMesh(), hidden via HideBackgroundMesh(). Uses
+                forceCenterTileBackgroundMaterial if configured.
+            </summary>
+        </member>
+        <member name="F:Block.blocksOfTypeCollumns">
+            <summary>
+                The total number of columns in a group of blocks of the same type. Set by
+                UseLargePieces to define the width of tiled structures like buildings or walls.
+            </summary>
+        </member>
+        <member name="F:Block.blocksOfTypeRows">
+            <summary>
+                The total number of rows in a group of blocks of the same type. Set by
+                UseLargePieces to define the height of tiled structures like buildings or walls.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayBottom">
+            <summary>
+                GameObject for blood spray effect on the bottom side of the block. Activated when
+                Bloody() is called with DirectionEnum.Down. Contains ParticleSpawner components
+                cached in bloodSprayBottomBloodDrips for blood drip effects. Creates oil pools when
+                bloodied with BloodColor.Oil.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayBottomBloodDrips">
+            <summary>
+                Private array of ParticleSpawner components found in bloodSprayBottom's children.
+                Cached during FirstFrame() if bloodSprayBottom exists. Used to create blood drip
+                particle effects when bottom is bloodied, with emission rate and color adjusted
+                based on BloodColor type.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayBottomHidden">
+            <summary>
+                GameObject for hidden blood spray on bottom side. Deactivated in HideBelow() method
+                along with regular bloodSprayBottom. Provides alternative blood visuals for specific
+                block states or types where standard blood spray needs different positioning.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayBottomPiece">
+            <summary>
+                BlockPiece component for additional blood effects on the bottom side. Not directly
+                referenced in visible code but follows pattern of other blood spray pieces. Likely
+                used for layered blood visuals on complex blocks.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayLeft">
+            <summary>
+                GameObject for blood spray effect on the left side of the block. Activated when
+                Bloody() is called with DirectionEnum.Left. Deactivated during FirstFrame()
+                initialization and HideLeft(). Contains SpriteSM component for color changes.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayLeftHidden">
+            <summary>
+                GameObject for hidden blood spray on left side. Deactivated in HideLeft() method
+                along with regular bloodSprayLeft. Provides alternative blood visuals for specific
+                block states or types where standard blood spray needs different positioning.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayLeftPiece">
+            <summary>
+                BlockPiece component for additional blood effects on the left side. Receives
+                Bloody() calls with color and fully parameters when left side is bloodied. Cleaned
+                via Unbloody() during blood removal. Used for blocks with complex edge geometry.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayRight">
+            <summary>
+                GameObject for blood spray effect on the right side of the block. Activated when
+                Bloody() is called with DirectionEnum.Right. Deactivated during FirstFrame()
+                initialization and HideRight(). Contains SpriteSM component for color changes.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayRightHidden">
+            <summary>
+                GameObject for hidden blood spray on right side. Deactivated in HideRight() method
+                along with regular bloodSprayRight. Provides alternative blood visuals for specific
+                block states or types where standard blood spray needs different positioning.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayRightPiece">
+            <summary>
+                BlockPiece component for additional blood effects on the right side. Receives
+                Bloody() calls with color and fully parameters when right side is bloodied. Cleaned
+                via Unbloody() during blood removal. Used for blocks with complex edge geometry.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayTop">
+            <summary>
+                GameObject for blood spray effect on the top side of the block. Activated when
+                Bloody() is called with DirectionEnum.Up. Deactivated during FirstFrame()
+                initialization and when cleaning blood. Contains SpriteSM component for color
+                changes based on BloodColor parameter.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayTopHidden">
+            <summary>
+                GameObject for hidden blood spray on top side. Deactivated in HideAbove() method
+                along with regular bloodSprayTop. Provides alternative blood visuals for specific
+                block states or types where standard blood spray needs different positioning.
+            </summary>
+        </member>
+        <member name="F:Block.bloodSprayTopPiece">
+            <summary>
+                BlockPiece component for additional blood effects on the top side. Not directly
+                referenced in visible code but follows pattern of other blood spray pieces. Likely
+                used for layered blood visuals on complex blocks.
+            </summary>
+        </member>
+        <member name="F:Block.bloodyBottom">
+            <summary>
+                Indicates whether the bottom edge of the block has blood visual effects applied. Set
+                by Bloody() when blood hits from above (direction Down).
+            </summary>
+        </member>
+        <member name="F:Block.bloodyLeft">
+            <summary>
+                Indicates whether the left edge of the block has blood visual effects applied. Set
+                by Bloody() when blood hits from the right (direction Left).
+            </summary>
+        </member>
+        <member name="F:Block.bloodyRight">
+            <summary>
+                Indicates whether the right edge of the block has blood visual effects applied. Set
+                by Bloody() when blood hits from the left (direction Right).
+            </summary>
+        </member>
+        <member name="F:Block.bloodyTop">
+            <summary>
+                Indicates whether the top edge of the block has blood visual effects applied. Set by
+                Bloody() when blood hits from below (direction Up).
+            </summary>
+        </member>
+        <member name="F:Block.bottomEdge">
+            <summary>
+                Reference to the BlockPiece component representing the bottom edge visual of this
+                block. Used for edge rendering and blood effects on the bottom side.
+            </summary>
+        </member>
+        <member name="F:Block.bottomEdgeBroken">
+            <summary>
+                GameObject representing the broken bottom edge visual. Activated by ShowBottomEdge()
+                when neighboring blocks are destroyed and this block remains intact. Hidden during
+                HideSideBrokenEdges() and block initialization.
+            </summary>
+        </member>
+        <member name="F:Block.centreObject">
+            <summary>
+                The main central visual BlockPiece of this block. Created by AddBlockPiece() when
+                isCentreTile is true, positioned at 0.01f + foregroundCentreZOffset forward. Can be
+                shown/hidden via ShowCentre() and HideCentre() methods. Uses
+                forceCenterTileForegroundMaterial if configured.
+            </summary>
+        </member>
+        <member name="F:Block.dropCustomParticleColor">
+            <summary>
+                When true, uses custom particle colors (particleColor1 and particleColor2) instead
+                of default colors when spawning collapse particles.
+            </summary>
+        </member>
+        <member name="F:Block.dropDirt">
+            <summary>
+                When true, the block spawns dirt particles when destroyed or collapsed. Checked in
+                EffectsCollapse() and DestroyBlockInternal().
+            </summary>
+        </member>
+        <member name="F:Block.firstBlockOfTypeCollumn">
+            <summary>
+                The starting column position for a group of blocks of the same type. Set by
+                UseLargePieces for blocks that are part of larger structures. Used to calculate
+                relative position within a tiled pattern.
+            </summary>
+        </member>
+        <member name="F:Block.firstBlockOfTypeRow">
+            <summary>
+                The starting row position for a group of blocks of the same type. Set by
+                UseLargePieces for blocks that are part of larger structures. Used to calculate
+                relative position within a tiled pattern.
+            </summary>
+        </member>
+        <member name="F:Block.forceCenterTileBackgroundMaterial">
+            <summary>
+                Optional material override for center background tiles. Applied to backgroundMesh in
+                AddBackgroundPiece() if not null.
+            </summary>
+        </member>
+        <member name="F:Block.forceCenterTileForegroundMaterial">
+            <summary>
+                Optional material override for center foreground tiles. Applied to centreObject in
+                AddForegroundPiece() if not null.
+            </summary>
+        </member>
+        <member name="F:Block.forceEdgeBloodSeepageForegroundMaterial">
+            <summary>
+                Optional material override for blood seepage on edge pieces. Applied to BloodSeepage
+                component's bloodyMaterial in AddForegroundPiece() and AddEdgePiece().
+            </summary>
+        </member>
+        <member name="F:Block.forceEdgeForegroundMaterial">
+            <summary>
+                Optional material override for edge foreground pieces. Applied in
+                AddForegroundPiece() and AddEdgePiece() when not null.
+            </summary>
+        </member>
+        <member name="F:Block.foregroundCentreZOffset">
+            <summary>
+                Z-axis offset for foreground center pieces when the block is destroyed. Default is
+                2.0. Used in AddForegroundCentrePiece to position destruction debris in front of the
+                block.
+            </summary>
+        </member>
+        <member name="F:Block.hasBloodPoolAbove">
+            <summary>
+                Flag indicating whether there is a blood pool effect on top of this block. Currently
+                only set but not used in any game logic within the Block class itself.
+            </summary>
+        </member>
+        <member name="F:Block.hasDoneSecondFrame">
+            <summary>
+                Tracks whether the block has completed its second frame initialization. Set to true
+                in SecondFrame() to prevent duplicate processing.
+            </summary>
+        </member>
+        <member name="F:Block.hiddenBottom">
+            <summary>
+                Indicates whether the bottom edge visuals are hidden. Set by HideBelow() to hide
+                attached objects on the bottom edge when block is collapsed.
+            </summary>
+        </member>
+        <member name="F:Block.hiddenLeft">
+            <summary>
+                Indicates whether the left edge visuals are hidden. Set by HideLeft() to hide
+                attached objects on the left edge when block is collapsed.
+            </summary>
+        </member>
+        <member name="F:Block.hiddenRight">
+            <summary>
+                Indicates whether the right edge visuals are hidden. Set by HideRight() to hide
+                attached objects on the right edge when block is collapsed.
+            </summary>
+        </member>
+        <member name="F:Block.hiddenTop">
+            <summary>
+                Indicates whether the top edge visuals are hidden. Set by HideAbove() to hide
+                attached objects on the top edge when block is collapsed.
+            </summary>
+        </member>
+        <member name="F:Block.leftEdge">
+            <summary>
+                Reference to the BlockPiece component representing the left edge visual of this
+                block. Used for edge rendering when adjacent blocks are empty, blood effects
+                application, and visual hiding when needed. Deactivated in HideLeft() and
+                ShowLeftEdge().
+            </summary>
+        </member>
+        <member name="F:Block.leftEdgeBroken">
+            <summary>
+                GameObject representing the broken left edge visual. Activated by ShowLeftEdge()
+                when the left neighboring block is destroyed and this block remains intact. Hidden
+                during HideSideBrokenEdges() and block initialization.
+            </summary>
+        </member>
+        <member name="F:Block.lowerLeftPixelX">
+            <summary>
+                The X coordinate of the lower-left pixel in the sprite's texture. Cached from the
+                sprite component's lowerLeftPixel.x value during Start. Used for sprite rendering
+                calculations.
+            </summary>
+        </member>
+        <member name="F:Block.lowerLeftPixelY">
+            <summary>
+                The Y coordinate of the lower-left pixel in the sprite's texture. Cached from the
+                sprite component's lowerLeftPixel.y value during Start. Used for sprite rendering
+                calculations. Defaults to 16.
+            </summary>
+        </member>
+        <member name="F:Block.particleColor1">
+            <summary>
+                First custom color for collapse particles when dropCustomParticleColor is true.
+                Passed to EffectsController.CreateDirtWhiteParticles().
+            </summary>
+        </member>
+        <member name="F:Block.particleColor2">
+            <summary>
+                Second custom color for collapse particles when dropCustomParticleColor is true.
+                Passed to EffectsController.CreateDirtWhiteParticles().
+            </summary>
+        </member>
+        <member name="F:Block.rightEdge">
+            <summary>
+                Reference to the BlockPiece component representing the right edge visual of this
+                block. Used for edge rendering when adjacent blocks are empty, blood effects
+                application, and visual hiding when needed. Deactivated in HideRight() and
+                ShowRightEdge().
+            </summary>
+        </member>
+        <member name="F:Block.rightEdgeBroken">
+            <summary>
+                GameObject representing the broken right edge visual. Activated by ShowRightEdge()
+                when the right neighboring block is destroyed and this block remains intact. Hidden
+                during HideSideBrokenEdges() and block initialization.
+            </summary>
+        </member>
+        <member name="F:Block.sprite">
+            <summary>
+                Reference to the SpriteSM component attached to this block. Cached during Start and
+                used for sprite manipulation, offset calculations, and visual updates throughout the
+                block's lifecycle.
+            </summary>
+        </member>
+        <member name="F:Block.spriteOffset">
+            <summary>
+                The offset vector for the sprite's position relative to the block's transform.
+                Cached from the sprite component's offset during Start. Used to maintain proper
+                sprite positioning.
+            </summary>
+        </member>
+        <member name="F:Block.tilingOffset">
+            <summary>
+                Random offset value used for texture tiling variations. Set by UseLargePieces to add
+                visual variety to repeated block patterns. Helps prevent obvious tiling in large
+                structures.
+            </summary>
+        </member>
+        <member name="F:Block.topEdge">
+            <summary>
+                Reference to the BlockPiece component representing the top edge visual of this
+                block. Used for edge rendering and blood effects on the top side.
+            </summary>
+        </member>
+        <member name="F:Block.topEdgeBroken">
+            <summary>
+                GameObject representing the broken top edge visual. Activated by ShowTopEdge() when
+                neighboring blocks are destroyed and this block remains intact. Hidden during
+                HideSideBrokenEdges() and block initialization.
+            </summary>
+        </member>
+        <member name="F:Block.useLargeMuralPieces">
+            <summary>
+                Indicates whether this block should use large mural piece prefabs when destroyed.
+                Set by UseLargePieces method during block initialization. Used by derived classes to
+                select appropriate destruction visuals.
+            </summary>
+        </member>
+        <member name="F:Block.useLargeWindowPieces">
+            <summary>
+                Indicates whether this block should use large window piece prefabs when destroyed.
+                Set by UseLargePieces method during block initialization. Used by derived classes to
+                select appropriate destruction visuals.
+            </summary>
+        </member>
+        <member name="F:Block.waterDrips">
+            <summary>
+                Particle spawner component for water or slime drip effects beneath the block.
+                Created on demand when ShowWaterDrips or ShowSlimeDrips is called. Positioned 8
+                units below the block with a random horizontal offset. Has a random delay between
+                0.5 and 4 seconds.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:Block.AddSlime(SlimeGroundCover)">
+            <summary>
+                Adds a slime ground cover attachment to this block. The slime object is added to the
+                internal slimeCover list but the base implementation doesn't perform any additional
+                processing.
+            </summary>
+            <param name="slime">The SlimeGroundCover object to attach to this block</param>
+        </member>
+        <member name="M:Block.AddSlime(System.Int32,DirectionEnum)">
+            <summary>
+                Adds a specified amount of slime to an existing SlimeGroundCover on the specified
+                side of this block. Searches through the slimeCover list for a slime attachment
+                matching the given direction and adds slime to it if found.
+            </summary>
+            <param name="slimeAmount">The amount of slime to add to the existing coverage</param>
+            <param name="direction">The side of the block where the slime should be added</param>
+        </member>
+        <member name="M:Block.Alert">
+            <summary>
+                Virtual method to alert this block, typically used to trigger AI awareness or
+                environmental reactions. Base implementation is empty. Derived block types can
+                override to implement alert behaviors.
+            </summary>
+        </member>
+        <member name="M:Block.BounceOn">
+            <summary>
+                Virtual method called when something bounces on this block. Base implementation is
+                empty. Derived block types can override to implement bounce reactions such as visual
+                effects, sounds, or state changes.
+            </summary>
+        </member>
+        <member name="M:Block.GetSlimeXCentre(DirectionEnum)">
+            <summary>
+                Gets the X coordinate center position for slime placement on this block. Base
+                implementation returns the block's X position regardless of direction. Derived
+                blocks can override to provide direction-specific slime positioning.
+            </summary>
+            <param name="direction">The direction side of the block where slime is placed</param>
+            <returns>The X coordinate for slime center position, defaults to block's X position</returns>
+        </member>
+        <member name="M:Block.GetSlimeYCentre(DirectionEnum)">
+            <summary>
+                Gets the Y coordinate center position for slime placement on this block. Base
+                implementation returns the block's Y position regardless of direction. Derived
+                blocks can override to provide direction-specific slime positioning.
+            </summary>
+            <param name="direction">The direction side of the block where slime is placed</param>
+            <returns>The Y coordinate for slime center position, defaults to block's Y position</returns>
+        </member>
+        <member name="M:Block.HasSlime(DirectionEnum)">
+            <summary>
+                Checks whether this block has slime coverage on the specified side. Searches through
+                the slimeCover list for any SlimeGroundCover attachment with a matching direction.
+            </summary>
+            <param name="direction">The side of the block to check for slime coverage</param>
+            <returns>True if slime coverage exists on the specified side, false otherwise</returns>
+        </member>
+        <member name="M:Block.LandOn(System.Single)">
+            <summary>
+                Virtual method called when something lands on this block with a specified vertical
+                velocity. Base implementation is empty. Derived block types can override to react to
+                landing impacts based on the landing force.
+            </summary>
+            <param name="yI">The vertical velocity of the object landing on this block</param>
+        </member>
+        <member name="M:Block.SpreadSteppedOnEffects(DirectionEnum,System.Int32)">
+            <summary>
+                Spreads step effects to neighboring blocks. Default implementation is empty,
+                designed to be overridden by derived classes that want to propagate step effects
+                across multiple blocks.
+            </summary>
+            <param name="direction">The direction to spread the effect.</param>
+            <param name="spreadCount">The current spread distance from the source.</param>
+        </member>
+        <member name="M:Block.StandingOnBlock(TestVanDammeAnim,System.Single)">
+            <summary>
+                Called continuously while a unit is standing on this block. Default implementation
+                is empty, designed to be overridden by derived classes for blocks that react to
+                prolonged contact.
+            </summary>
+            <param name="tvd">The unit standing on the block.</param>
+            <param name="t">The time or delta time parameter.</param>
+        </member>
+        <member name="M:Block.StepOn(TestVanDammeAnim)">
+            <summary>
+                Called when a unit steps on this block. Triggers visual effects on the block by
+                calling SteppedOnEffects with no specific direction and zero spread.
+            </summary>
+            <param name="unit">The unit that stepped on the block.</param>
+        </member>
+        <member name="M:Block.StepOn(Grenade)">
+            <summary>
+                Called when a grenade lands on this block. Triggers visual effects on the block by
+                calling SteppedOnEffects with no specific direction and zero spread.
+            </summary>
+            <param name="grenade">The grenade that landed on the block.</param>
+        </member>
+        <member name="M:Block.StepOnBlock">
+            <summary>
+                Generic method called when anything steps on this block. Triggers visual effects by
+                calling SteppedOnEffects with no specific direction and zero spread.
+            </summary>
+        </member>
+        <member name="M:Block.StepOnBlockForced">
+            <summary>
+                Network-synchronized version of StepOnBlock that can be called via RPC. Marked with
+                [AllowedRPC] attribute. Triggers visual effects by calling SteppedOnEffects with no
+                specific direction and zero spread.
+            </summary>
+        </member>
+        <member name="M:Block.StepOnBlockImmediate">
+            <summary>
+                Immediately triggers step-on effects without any delay. Calls SteppedOnEffects with
+                no specific direction and zero spread. Used when instant visual feedback is needed.
+            </summary>
+        </member>
+        <member name="M:Block.SteppedOnEffects(DirectionEnum,System.Int32)">
+            <summary>
+                Applies visual bump effects to all block pieces when something steps on the block.
+                Iterates through all addedObjects (decorative pieces) and the topEdge piece, calling
+                their Bump method to create movement/shake effects.
+            </summary>
+            <param name="direction">The direction of the impact that caused the step.</param>
+            <param name="spreadCount">How many blocks the effect has spread across (used for diminishing effects).</param>
+        </member>
+        <!-- Environmental Interaction Properties -->
+        <member name="P:Block.IsParachuteActive">
+            <summary>
+                Gets or sets whether this block has an active parachute attachment. Virtual property
+                that can be overridden by derived block types to implement parachute functionality
+                for slowly falling blocks.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:Block.immuneToSlime">
+            <summary>
+                Determines whether this block is immune to slime coverage effects. When true, slime
+                cannot attach to or spread onto this block.
+            </summary>
+        </member>
+        <member name="F:Block.isOily">
+            <summary>
+                Indicates whether this block is covered in oil. Oily blocks can catch fire and
+                spread flames. Affects fire propagation behavior.
+            </summary>
+        </member>
+        <member name="F:Block.jiggleDoodads">
+            <summary>
+                List of jiggle doodads attached to this block. These doodads will jiggle when the
+                block is disturbed. Cleared in OnSpawned and managed through attachment methods.
+            </summary>
+        </member>
+        <member name="F:Block.oilPoolPlaced">
+            <summary>
+                Reference to oil pool doodad placed below this block when hit by oil. Set in
+                Bloody() when oil counter exceeds threshold.
+            </summary>
+        </member>
+        <member name="F:Block.slimeCover">
+            <summary>
+                List of slime ground cover objects attached to this block. Represents alien slime or
+                other ground cover effects. Cleared in OnSpawned and managed dynamically.
+            </summary>
+        </member>
+        <member name="F:Block.stuckParticles">
+            <summary>
+                List of oil particles stuck to this block. These particles can be ignited when the
+                block burns. Cleared in OnSpawned and managed as oil is applied to the block.
+            </summary>
+        </member>
+        <!-- Networking & RPC Methods -->
+        <member name="M:Block.Disturb">
+            <summary>
+                Handles disturbance of the block when called via RPC. Simply calls the base class
+                Disturb implementation to trigger any physics or visual reactions.
+            </summary>
+        </member>
+        <member name="M:Block.Disturb">
+            <summary>
+                Handles the disturbance of this block, typically from explosions or other
+                environmental effects. Marked with [AllowedRPC] attribute for network
+                synchronization. Calls the base class Disturb implementation.
+            </summary>
+        </member>
+        <member name="M:Block.DisturbNetworked">
+            <summary>
+                Sends an RPC call to all players to disturb this block. Calls the Disturb method on
+                all connected clients for synchronized physics reactions.
+            </summary>
+        </member>
+        <member name="M:Block.DisturbNetworked">
+            <summary>
+                Sends a network RPC call to disturb this block on all connected clients. Uses
+                Networking.RPC to call the Disturb method across the network with PID.TargetAll.
+            </summary>
+        </member>
+        <member name="M:Block.PackState(UnityStream)">
+            <summary>
+                Packs the block's state data for network synchronization. For FallingBlock instances
+                that have moved from their initial position, serializes the current column, row, and
+                rotation values. Called during network state transmission to sync block positions
+                across clients.
+            </summary>
+            <param name="stream">The network stream to serialize the block state data into</param>
+            <returns>The stream with the serialized state data, after calling base.PackState</returns>
+        </member>
+        <member name="M:Block.RegisterBlockOnNetwork">
+            <summary>
+                Registers this block and all its child components with the networking system for
+                multiplayer synchronization. Allocates deterministic IDs for the block transform,
+                gameObject, replacement NID, all child BroforceObjects, and all child colliders
+                (including their transforms).
+            </summary>
+        </member>
+        <member name="M:Block.UnpackState(UnityStream)">
+            <summary>
+                Unpacks network state data to restore the block's synchronized position and
+                rotation. Deserializes column, row, and rotation values from the stream and applies
+                them to this FallingBlock instance. Used to apply state received from other clients.
+            </summary>
+            <param name="stream">The network stream containing the serialized block state data</param>
+            <returns>The stream after deserialization, from base.UnpackState</returns>
+        </member>
+        <!-- Networking & RPC Fields -->
+        <member name="F:Block.replacementNID">
+            <summary>
+                Network ID allocated for the replacement block that will be created when this block
+                is replaced during collapse. Pre-allocated deterministically to ensure consistent
+                network object creation across all clients.
+            </summary>
+        </member>
+        <!-- Unity Event Methods -->
+        <member name="M:Block.OnDisable">
+            <summary>
+                Unity callback when the block GameObject is disabled. Currently empty but provides a
+                hook for cleanup operations.
+            </summary>
+        </member>
+        <member name="M:Block.Rotate(System.Int32)">
+            <summary>
+                Rotates the block by the specified direction. Currently empty implementation that
+                can be overridden by derived block types that support rotation.
+            </summary>
+            <param name="direction">The direction to rotate (specific values depend on implementation).</param>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Block.Destroy">
+            <summary>
+                Empty private method that serves as a placeholder. The actual destruction logic is
+                handled elsewhere in the Block class. This method exists but has no implementation.
+            </summary>
+        </member>
+        <member name="M:Block.PsuedoRandomNumber(System.Int32)">
+            <summary>
+                Generates a pseudo-random integer between 0 and max (inclusive) based on the block's
+                grid position and game seed. Uses a deterministic formula to ensure consistent
+                random numbers across game sessions with the same seed.
+            </summary>
+            <param name="max">The maximum value for the random number (inclusive)</param>
+            <returns>A pseudo-random integer between 0 and max</returns>
+        </member>
+        <member name="M:Block.PsuedoRandomValue(System.Single)">
+            <summary>
+                Generates a pseudo-random value between 0 and 1 based on the block's grid position
+                and game seed. Uses column * row * (seed + 1) to create deterministic random values
+                that are consistent across game sessions with the same seed.
+            </summary>
+            <param name="modulator">The range modulator for the random value generation</param>
+            <returns>A pseudo-random float value between 0 and 1</returns>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:Block.burnRandom">
+            <summary>
+                Random number generator used for burn effects and flame particle positioning.
+                Initialized in SetupRandomGenerators with a deterministic seed based on position.
+                Used to create random burn counter delays and flame effect directions.
+            </summary>
+        </member>
+        <member name="F:Block.collapseBelow">
+            <summary>
+                Unused flag intended to track whether blocks below should collapse. Not implemented
+                in current code.
+            </summary>
+        </member>
+        <member name="F:Block.collapseRandom">
+            <summary>
+                Random number generator used for collapse chance calculations. Initialized in
+                SetupRandomGenerators with a deterministic seed. Compared against collapseChance to
+                determine if blocks above should collapse when this block is destroyed.
+            </summary>
+        </member>
+        <member name="F:Block.effectsRandom">
+            <summary>
+                Random number generator reserved for visual effects. Initialized in
+                SetupRandomGenerators with a deterministic seed based on position. Currently
+                initialized but not actively used in the base Block class.
+            </summary>
+        </member>
+        <member name="F:Block.groundHit">
+            <summary>
+                Raycast hit result used for detecting neighboring blocks. Used in
+                ShowAboveBlockBottomEdge() and CrumbleBridges() for physics queries.
+            </summary>
+        </member>
+        <member name="F:Block.named">
+            <summary>
+                Tracks whether the block's GameObject name has been set with grid coordinates.
+                Prevents duplicate naming in Setup() method.
+            </summary>
+        </member>
+        <member name="F:Block.pushForce">
+            <summary>
+                Accumulated horizontal push force applied to the block. Modified by Push() method
+                and processed in RunPushLogic().
+            </summary>
+        </member>
+        <member name="F:Block.random">
+            <summary>
+                Random number generator for general block randomization. Initialized with a seed
+                based on the block's position plus the networking random seed to ensure
+                deterministic behavior across clients. Used for various random effects and
+                calculations.
+            </summary>
+        </member>
+        <member name="F:Block.sound">
+            <summary>
+                Cached reference to Sound singleton instance. Initialized in Start() and used in
+                PlayDeathSound() for audio playback.
+            </summary>
+        </member>
+        <member name="F:Block.soundVolume">
+            <summary>
+                Volume multiplier for block destruction sounds. Used in PlayDeathSound() with
+                different multipliers based on damage type (0.15x for Unholy, 0.6x for InstaGib).
+            </summary>
+        </member>
+        <member name="F:Block.t">
+            <summary>
+                Delta time value clamped between 0 and 0.033334 seconds (approximately 30 FPS frame
+                time). Updated each frame in Update method and used for time-based calculations to
+                ensure consistent behavior regardless of actual framerate.
+            </summary>
+        </member>
+    </members>
+</doc>

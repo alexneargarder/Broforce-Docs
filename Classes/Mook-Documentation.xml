@@ -1,0 +1,1548 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Mook.AnimateFallen">
+            <summary>
+                Handles fallen/knocked-down animation states. Sets slow frame rate (0.045),
+                deactivates gun, and displays appropriate fallen sprites based on fallenTime. Shows
+                frames 20-25 while falling (max 5 frames), then frames 25-31 for getting up (max 6
+                frames). Transitions to running state after frame 6 with gun reactivation and
+                friendly-fire flags reset.
+            </summary>
+        </member>
+        <member name="M:Mook.Awake">
+            <summary>
+                Unity lifecycle method that initializes the Mook enemy. Adds a DisableWhenOffCamera
+                component if not present, sets up random z-offset for visual depth, records spawn
+                time, manages initial off-camera disabling, hides the stand-on platform, caches
+                damage effect component, and initializes firing player tracking.
+            </summary>
+        </member>
+        <member name="M:Mook.Disable">
+            <summary>
+                Disables the mook and its AI. Stops AI behavior and optionally disables the
+                DisableWhenOffCamera component unless it has forceExtendDisableRangeToThisObject
+                set.
+            </summary>
+        </member>
+        <member name="M:Mook.OnDestroy">
+            <summary>
+                Unity lifecycle cleanup that updates global mook death counters. Decrements the
+                active dead mooks counter if this mook had died, and increments the total dead mooks
+                in scene counter.
+            </summary>
+        </member>
+        <member name="M:Mook.Reenable">
+            <summary>
+                Re-enables the mook and its AI after being disabled. Restores AI functionality and
+                enables the DisableWhenOffCamera component if present.
+            </summary>
+        </member>
+        <member name="M:Mook.RunFallen">
+            <summary>
+                Manages fallen state physics and recovery. Decrements fallen timer and resets
+                animation frame when timer expires. Stops horizontal movement if grounded (within
+                0.5 units of ground height) to prevent sliding while down.
+            </summary>
+        </member>
+        <member name="M:Mook.Start">
+            <summary>
+                Unity lifecycle method that handles Mook initialization after scene load. For
+                non-door-spawning mooks, it attempts ground placement via raycast or ceiling hanging
+                if possible. Sets initial invulnerability states based on spawn conditions and
+                handles parachute positioning for off-screen spawns.
+            </summary>
+        </member>
+        <member name="M:Mook.Update">
+            <summary>
+                Main update loop handling plasma/shock damage timers, catch-friendly-bullets
+                management, burning effects and fire spreading, blind/scared status effects with
+                vocal sounds, falling scream delays, corpse explosion checks, somersault collision
+                detection with units, string-up panic spreading, gravity disable timer, and
+                discharged scream delays.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Mook.BurnInternal(System.Int32,System.Int32)">
+            <summary>
+                Handles internal fire damage processing by accumulating burn damage. If not already
+                burning and able to panic, initiates panic state with 0.4-2 second burn time based
+                on panic success.
+            </summary>
+            <param name="damage">Amount of burn damage to add</param>
+            <param name="direction">Direction for panic behavior</param>
+        </member>
+        <member name="M:Mook.BurnOthers">
+            <summary>
+                Spreads fire to nearby units and blocks when enemies spread fire is enabled.
+                Raycasts horizontally to find flammable targets within range. Part of fire
+                propagation system for chain reaction effects.
+            </summary>
+            <remarks>
+                Only active when Demonstration.enemiesSpreadFire is true. Checks 14 units left and
+                right for targets at Y+5 height. Burns units within 16 unit radius using area
+                effect.
+            </remarks>
+        </member>
+        <member name="M:Mook.CatchFriendlyBullets">
+            <summary>
+                Determines whether this mook can catch friendly bullets (typically when controlled
+                by a player).
+            </summary>
+            <returns>True if the mook can catch friendly bullets, false otherwise</returns>
+        </member>
+        <member
+            name="M:Mook.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+            <summary>
+                Processes damage to the mook with special handling for various damage types. Handles
+                chainsaw impaling with disembowel conversion, propane block achievement tracking,
+                plasma/shock damage accumulation with stun effects, fire damage with panic
+                triggering, assassination mechanics for silent kills, tumbling/somersault triggers
+                from high knockback, and depleted uranium explosion effects. Notifies AI of damage
+                source and manages special death states.
+            </summary>
+            <param name="damage">The amount of damage to apply</param>
+            <param name="damageType">The type of damage being dealt</param>
+            <param name="xI">The horizontal knockback force</param>
+            <param name="yI">The vertical knockback force</param>
+            <param name="direction">The direction of the damage source (-1 or 1)</param>
+            <param name="damageSender">The entity that caused the damage</param>
+            <param name="hitX">The X coordinate where the damage hit</param>
+            <param name="hitY">The Y coordinate where the damage hit</param>
+        </member>
+        <member name="M:Mook.DamageSelfOnMookCollision">
+            <summary>
+                Applies self-damage when colliding with other mooks at high velocity. Deals 4 knock
+                damage with velocity-based knockback forces (3.33x horizontal velocity). Used during
+                tumbling/somersaulting collisions.
+            </summary>
+        </member>
+        <member name="M:Mook.Death">
+            <summary>
+                Triggers immediate death with randomized minimal knockback and default damage. Plays
+                death sound and applies standard death processing.
+            </summary>
+        </member>
+        <member name="M:Mook.Death(System.Single,System.Single,DamageObject)">
+            <summary>
+                Processes mook death with knockback and damage information. Handles door
+                unregistration, statistics notification, enemy death events, dead mook counter
+                updates, platform adjustments, hero kill attribution, state cleanup for
+                tumbling/somersaulting, and damage effect death processing. Manages demonstration
+                mode invulnerability.
+            </summary>
+            <param name="xI">The horizontal knockback force applied on death</param>
+            <param name="yI">The vertical knockback force applied on death</param>
+            <param name="damage">The damage object containing information about what killed the mook</param>
+        </member>
+        <member
+            name="M:Mook.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Ejects the mook from a vehicle or mech, killing the mook in the process. Initiates a
+                back somersault animation and sets up a delayed scream effect.
+            </summary>
+            <param name="x">The X position to discharge the unit at</param>
+            <param name="y">The Y position to discharge the unit at</param>
+            <param name="xI">The horizontal velocity to apply</param>
+            <param name="yI">The vertical velocity to apply</param>
+            <param name="stunUnit">Whether to stun the unit (not used in Mook implementation)</param>
+        </member>
+        <member name="M:Mook.ExplodeCorpse">
+            <summary>
+                Causes the mook's corpse to explode violently, dealing area damage. Creates a medium
+                explosion effect, damages nearby units and terrain, and applies burn effects in the
+                area.
+            </summary>
+        </member>
+        <member name="M:Mook.FallDamage(System.Single)">
+            <summary>
+                Applies fall damage when vertical impact exceeds threshold. Deals 5 base damage
+                (plus max health if extra fall damage enabled), triggers face-fall animation for
+                survivors, and credits kills to the last throwing character. Updates fall death
+                threshold after first impact.
+            </summary>
+            <param name="yI">The vertical impact velocity (negative values indicate falling)</param>
+        </member>
+        <member name="M:Mook.FireWeapon(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Fires the mook's weapon projectile with muzzle flash effect. Sets gun animation
+                frame, updates gun sprite, creates muzzle flash at specified position, spawns
+                projectile, and plays attack sound.
+            </summary>
+            <param name="x">The X position to spawn the projectile</param>
+            <param name="y">The Y position to spawn the projectile</param>
+            <param name="xSpeed">The horizontal velocity of the projectile</param>
+            <param name="ySpeed">The vertical velocity of the projectile</param>
+        </member>
+        <member name="M:Mook.Gib(DamageType,System.Single,System.Single)">
+            <summary>
+                Destroys the mook with gibbing effects and handles death notifications. Manages kill
+                attribution, statistics, and door cleanup on gibbing. Ensures proper credit for
+                kills and special kill types.
+            </summary>
+            <param name="damageType">Type of damage that caused gibbing.</param>
+            <param name="xI">Horizontal force for gib physics.</param>
+            <param name="yI">Vertical force for gib physics.</param>
+            <remarks>
+                Tracks thrown kills via lastThrewMe. Credits recent killer if within 0.33s. Notifies
+                statistics, removes from door spawner, triggers damage effects. Only processes death
+                notifications once via hasDied flag.
+            </remarks>
+        </member>
+        <member name="M:Mook.Gib">
+            <summary>
+                Gibs the mook with default parameters and no specific force. Convenience method for
+                simple gib calls without physics. Uses normal damage type with zero velocity.
+            </summary>
+        </member>
+        <member name="M:Mook.NotifyDeathType">
+            <summary>
+                Reports the death type to statistics system for tracking. Ensures death type is only
+                reported once per mook. Part of the game's death tracking and achievement system.
+            </summary>
+            <remarks>
+                Uses hasNotifiedDeathType flag to prevent duplicate reports. Sends both mook
+                reference and death type enum to statistics.
+            </remarks>
+        </member>
+        <member name="M:Mook.Revive(System.Int32,System.Boolean,TestVanDammeAnim)">
+            <summary>
+                Revives the mook as a zombie under player control. Resets status effects, disables
+                AI, and slightly randomizes movement speed.
+            </summary>
+            <param name="playerNum">The player number taking control of the revived mook</param>
+            <param name="isUnderPlayerControl">Whether the mook is under direct player control</param>
+            <param name="reviveSource">The unit that revived this mook</param>
+            <returns>True if the mook was successfully revived (requires canBeRevived to be true), false otherwise</returns>
+        </member>
+        <member name="M:Mook.Unrevive">
+            <summary>
+                Reverses revival effects and resets the mook to uncontrolled state. Clears player
+                ownership when revival is cancelled or expires. Returns the mook to standard enemy
+                configuration.
+            </summary>
+            <remarks>
+                Sets playerNum to -1 to remove player control. Maintains base class unrevive
+                behavior for state cleanup.
+            </remarks>
+        </member>
+        <member name="M:Mook.UseFire">
+            <summary>
+                Handles the mook's attack action when visible and not incapacitated. Fires weapon
+                with speed modifiers for demonstration mode, adds slight vertical spread, and
+                disturbs nearby wildlife. Calculates firing position based on facing direction.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Mook._mookDamageEffect">
+            <summary>
+                Component handling visual damage effects for this mook. Retrieved via GetComponent
+                during initialization and used to propagate damage, death, and gib events for visual
+                feedback.
+            </summary>
+        </member>
+        <member name="F:Mook.assasinated">
+            <summary>
+                Protected flag indicating mook is playing assassination death animation. Set to true
+                when killed by assassination attack. Triggers special AnimateAssasinated() behavior.
+                Cleared if mook gains velocity (knocked away) during assassination animation.
+            </summary>
+        </member>
+        <member name="F:Mook.assasinatedFrame">
+            <summary>
+                Specifies which sprite frame to display during assassination death animation. Used
+                when mook is killed by assassination (assasinated = true) to show special death
+                pose. Different mook types can have unique assassination death frames.
+            </summary>
+        </member>
+        <member name="F:Mook.canBeAssasinated">
+            <summary>
+                Determines if this mook type can be killed by assassination attacks. When true,
+                allows special assassination death animations using assasinatedFrame. Affects how
+                stealth kills and backstab attacks are processed.
+            </summary>
+        </member>
+        <member name="F:Mook.catchFriendlyBullets">
+            <summary>
+                Base flag indicating whether this mook can catch friendly bullets. Unlike
+                temporarilyCatchFriendBullets, this represents a permanent ability rather than a
+                temporary state.
+            </summary>
+        </member>
+        <member name="F:Mook.decapitated">
+            <summary>
+                Indicates whether this mook has been decapitated. Affects death animations,
+                assassination eligibility, and prevents certain visual effects like face huggers
+                from appearing.
+            </summary>
+        </member>
+        <member name="F:Mook.decapitationCounter">
+            <summary>
+                Timer tracking time since decapitation. Used to trigger delayed effects like death
+                gargles after 0.3 seconds have passed since decapitation occurred.
+            </summary>
+        </member>
+        <member name="F:Mook.disableCatchFriendBulletsCounter">
+            <summary>
+                Cooldown timer that prevents catching friendly bullets. When greater than 0, the
+                mook cannot catch bullets even if other flags allow it. Decremented each frame.
+            </summary>
+        </member>
+        <member name="F:Mook.disemboweled">
+            <summary>
+                Protected flag indicating mook is playing disemboweled death animation. Set to true
+                for violent deaths. Triggers special animation state showing disemboweledFrame.
+                Cleared if mook gains velocity during animation, transitioning to normal death
+                physics.
+            </summary>
+        </member>
+        <member name="F:Mook.disemboweledFrame">
+            <summary>
+                Specifies which sprite frame to display when mook is disemboweled. Used for gruesome
+                death animations when mook is killed by particularly violent attacks. Works with
+                disemboweled flag to show special death state.
+            </summary>
+        </member>
+        <member name="F:Mook.fallDeathThreshold">
+            <summary>
+                Velocity threshold for instant death from falling. When vertical velocity (yI) falls
+                below this value (-350f default), the mook takes fatal damage. Temporarily lowered
+                to -430f when hiding.
+            </summary>
+        </member>
+        <member name="F:Mook.firingPlayerNum">
+            <summary>
+                Player number used when this mook fires projectiles. Set to the mook's playerNum
+                during setup and special attacks. Default is -1, typically set to 5 for enemy
+                projectiles.
+            </summary>
+        </member>
+        <member name="F:Mook.hasCheckPostDeathEvent">
+            <summary>
+                Flag tracking whether the post-death event check has been performed. Used to trigger
+                corpse explosions 1.33 seconds after death based on random chance.
+            </summary>
+        </member>
+        <member name="F:Mook.hasDied">
+            <summary>
+                Protected flag preventing multiple death processing. Set to true in Die() and
+                DieAtEndOfFrame() to ensure death logic only runs once. Checked at start of death
+                methods to prevent duplicate death effects, gibbing, or score updates.
+            </summary>
+        </member>
+        <member name="F:Mook.isBeingThrown">
+            <summary>
+                Flag indicating the mook is currently being thrown by a player. Set to true when
+                thrown, enables temporary bullet catching and tracks the throwing player.
+            </summary>
+        </member>
+        <member name="F:Mook.lastThrewMe">
+            <summary>
+                Tracks the character (TestVanDammeAnim) that last threw this mook. Used for
+                attributing kills when the mook dies from falling damage after being thrown.
+            </summary>
+        </member>
+        <member name="F:Mook.showElectrifiedFrames">
+            <summary>
+                Determines if this mook type displays special electrocution animations. When true
+                and mook has plasmaDamage or shockCounter &gt; 0, shows electricity visual effects.
+                Used to differentiate mooks that visually react to electrical damage from those that
+                don't.
+            </summary>
+        </member>
+        <member name="F:Mook.takeExtraFallDamage">
+            <summary>
+                When true, this mook takes additional fall damage equal to their max health. Used
+                for certain enemy types that are particularly vulnerable to falling damage.
+            </summary>
+        </member>
+        <member name="F:Mook.temporarilyCatchFriendBullets">
+            <summary>
+                When true, this mook will catch friendly bullets temporarily during special states.
+                Used during somersaults and specific animations to prevent friendly fire damage.
+                Automatically disabled after use.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Mook.AddParentedDiff(System.Single,System.Single)">
+            <summary>
+                Adds positional differences from parent movement with special handling for falling
+                blocks. When alive and parented to a falling block with downward parent movement,
+                triggers a mid-air shake effect, adds upward velocity, stops horizontal movement,
+                and initiates tumbling to simulate being knocked off the falling platform.
+            </summary>
+            <param name="xDiff">The horizontal position difference to apply.</param>
+            <param name="yDiff">The vertical position difference to apply (modified for falling blocks).</param>
+        </member>
+        <member name="M:Mook.AddSpeedLeft">
+            <summary>
+                Adds leftward movement speed with reduced control during parachute/quicksand states.
+                Movement is disabled while tumbling or back-somersaulting. Parachute and quicksand
+                cap horizontal speed at 40% of maximum.
+            </summary>
+        </member>
+        <member name="M:Mook.AddSpeedRight">
+            <summary>
+                Adds rightward movement speed with reduced control during parachute/quicksand
+                states. Movement is disabled while tumbling or back-somersaulting. Parachute and
+                quicksand cap horizontal speed at 40% of maximum.
+            </summary>
+        </member>
+        <member name="M:Mook.ApplyFallingGravity">
+            <summary>
+                Applies gravity with special conditions for quicksand and disabled gravity. Handles
+                mid-air shake time that temporarily prevents gravity when units are knocked off
+                falling platforms.
+            </summary>
+        </member>
+        <member name="M:Mook.BackSomersault(System.Boolean)">
+            <summary>
+                Initiates back-somersault state if capable. Cancels front-somersault and tumbling,
+                enables back tumbling for forced tumbles or high vertical velocity, and resets
+                animation frames.
+            </summary>
+            <param name="forceTumble">Forces the mook into tumbling state during somersault</param>
+        </member>
+        <member name="M:Mook.CanBeAffectedByWind">
+            <summary>
+                Determines if the mook can be affected by wind forces. Prevents wind effects when
+                hiding in grass for stealth. Maintains concealment by ignoring environmental forces.
+            </summary>
+            <returns>True if wind can affect the mook, false when hiding.</returns>
+            <remarks>
+                Hiding mooks remain stationary to maintain cover in grass. Falls back to base class
+                wind vulnerability when not hiding.
+            </remarks>
+        </member>
+        <member name="M:Mook.CanPassThroughBarriers">
+            <summary>
+                Determines if the mook can pass through fragile barriers based on specific
+                conditions. Returns true when dead, blast jumping with sufficient horizontal
+                velocity, blinded, scared, or when the AI is alerted. Used by movement constraint
+                methods to allow panic-driven units to break through barriers.
+            </summary>
+            <returns>True if the mook should be allowed to pass through barriers, false otherwise.</returns>
+        </member>
+        <member name="M:Mook.CheckForQuicksand">
+            <summary>
+                Checks if the mook is in quicksand and handles state transitions. When entering
+                quicksand or while blind/not panicking in quicksand, stops special movements,
+                triggers panic, and activates standing platform if available.
+            </summary>
+        </member>
+        <member name="M:Mook.CheckForQuicksandDeath">
+            <summary>
+                Checks if the mook should die from being in quicksand. Mooks die after 0.5 seconds
+                in quicksand (compared to 2 seconds for bros).
+            </summary>
+        </member>
+        <member name="M:Mook.ConstrainToFragileBarriers(System.Single@,System.Single)">
+            <summary>
+                Constrains movement against fragile barriers unless the mook can pass through them.
+                When constrained, performs raycasts at waist height to detect barriers and stops
+                horizontal movement upon collision. Allows passage when panicking, blind, scared, or
+                alert.
+            </summary>
+            <param name="xIT">Reference to horizontal movement delta that will be constrained.</param>
+            <param name="radius">Collision radius for barrier detection.</param>
+        </member>
+        <member name="M:Mook.ConstrainToMookBarriers(System.Single@,System.Single)">
+            <summary>
+                Constrains movement against mook-specific barriers only when burning or blind. Under
+                normal conditions, mooks can pass through their own barriers, but status effects
+                cause them to collide with these obstacles.
+            </summary>
+            <param name="xIT">Reference to horizontal movement delta that will be constrained.</param>
+            <param name="radius">Collision radius for barrier detection.</param>
+        </member>
+        <member name="M:Mook.DisableGravity(System.Single)">
+            <summary>
+                Temporarily disables gravity for the mook for a specified duration. Used by special
+                abilities or environmental effects that need to suspend normal physics.
+            </summary>
+            <param name="time">Duration in seconds to disable gravity.</param>
+        </member>
+        <member name="M:Mook.EnableGravity">
+            <summary>
+                Immediately re-enables gravity by resetting the disable timer to zero. Restores
+                normal physics behavior after temporary suspension.
+            </summary>
+        </member>
+        <member name="M:Mook.FallOnFace">
+            <summary>
+                Makes the mook fall face-first and become temporarily incapacitated. Sets fallen
+                state with recovery time and appropriate animations. Used for comedic or stunning
+                face-plant landings.
+            </summary>
+            <remarks>
+                Sets action state to Fallen with 1 second recovery time. Clears AI actions and
+                forces wait period of 0.5 seconds. Reverses sprite facing for backwards falls. Stops
+                horizontal movement.
+            </remarks>
+        </member>
+        <member name="M:Mook.FlyDownwards(System.Single)">
+            <summary>
+                Virtual method for downward flying behavior. Base implementation is empty, meant to
+                be overridden by flying enemy types.
+            </summary>
+            <param name="time">The duration of the flying behavior</param>
+        </member>
+        <member name="M:Mook.FlyInDirection(System.Single,UnityEngine.Vector3)">
+            <summary>
+                Virtual method for directional flying behavior. Base implementation is empty, meant
+                to be overridden by flying enemy types.
+            </summary>
+            <param name="time">The duration of the flying behavior</param>
+            <param name="forceFlyingVelocity">The velocity vector for the flying direction</param>
+        </member>
+        <member name="M:Mook.FlyInstant(System.Single)">
+            <summary>
+                Virtual method for instant flying behavior. Base implementation is empty, meant to
+                be overridden by flying enemy types.
+            </summary>
+            <param name="time">The duration of the flying behavior</param>
+        </member>
+        <member name="M:Mook.FlyLeft(System.Single)">
+            <summary>
+                Virtual method for leftward flying behavior. Base implementation is empty, meant to
+                be overridden by flying enemy types.
+            </summary>
+            <param name="time">The duration of the flying behavior</param>
+        </member>
+        <member name="M:Mook.FlyRight(System.Single)">
+            <summary>
+                Virtual method for rightward flying behavior. Base implementation is empty, meant to
+                be overridden by flying enemy types.
+            </summary>
+            <param name="time">The duration of the flying behavior</param>
+        </member>
+        <member name="M:Mook.ForceClimbing(System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Virtual method to force the mook into a climbing state. Base implementation is
+                empty, meant to be overridden by climbing-capable enemy types.
+            </summary>
+            <param name="leftClimb">Whether the mook should climb on the left side</param>
+            <param name="rightClimb">Whether the mook should climb on the right side</param>
+            <param name="topClimb">Whether the mook should climb on top</param>
+        </member>
+        <member name="M:Mook.ForceJumpOutOfBike">
+            <summary>
+                Forces the mook to jump out of a vehicle with increased force. Clears AI actions and
+                adds a wait period after ejection. Used when mooks are ejected from destroyed
+                vehicles.
+            </summary>
+            <remarks>
+                Increases jump force by 60% for dramatic ejection. Sets fall death threshold lower
+                to -430 units. Updates hiding time to affect landing animations.
+            </remarks>
+        </member>
+        <member name="M:Mook.GetEnemyMovement">
+            <summary>
+                Overrides enemy movement behavior to handle special movement states. Bypasses normal
+                movement when exiting doors, back somersaulting, back tumbling, or fallen. During
+                door exits, moves the mook toward the exit position until reached.
+            </summary>
+        </member>
+        <member name="M:Mook.GetGroundHeightGround">
+            <summary>
+                Calculates ground height using multiple raycasts for mook movement. Uses special
+                ground checking when panicking, burning, blind, scared, or exiting doors with offset
+                raycasts based on movement direction. Falls back to normal ground check for standard
+                states.
+            </summary>
+            <returns>The Y coordinate of the ground below the mook</returns>
+        </member>
+        <member name="M:Mook.IsOnGround">
+            <summary>
+                Checks if the mook is standing on ground, excluding back somersaulting state.
+                Prevents ground-based behaviors during acrobatic maneuvers by returning false when
+                performing a back somersault regardless of actual ground contact.
+            </summary>
+            <returns>True if on ground and not back somersaulting, false otherwise.</returns>
+        </member>
+        <member name="M:Mook.Jump(System.Boolean)">
+            <summary>
+                Initiates a jump action with special handling for animation states. Extends base
+                jump functionality to reset reveal animations. Ensures proper state transitions when
+                leaving ground.
+            </summary>
+            <param name="wallJump">Whether this is a wall jump.</param>
+            <remarks>
+                Cancels any active reveal position animations. Maintains all base class jump physics
+                and state changes.
+            </remarks>
+        </member>
+        <member name="M:Mook.Knock(DamageType,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Applies knockback force with potential tumbling based on impact strength. Extends
+                base knockback to add tumbling for strong upward forces. Determines if the mook
+                should enter tumbling state from the impact.
+            </summary>
+            <param name="damageType">The type of damage causing knockback.</param>
+            <param name="xI">Horizontal knockback force.</param>
+            <param name="yI">Vertical knockback force.</param>
+            <param name="forceTumble">Whether to force tumbling regardless of force.</param>
+            <remarks>
+                Tumbling triggers when forceTumble is true or vertical force exceeds 200. Only
+                applies tumbling if the mook has canTumble capability.
+            </remarks>
+        </member>
+        <member name="M:Mook.Land">
+            <summary>
+                Handles landing mechanics including damage, bouncing, and state transitions. Complex
+                landing logic for different movement states and impact forces. Manages sound
+                effects, particle effects, and AI state updates.
+            </summary>
+            <remarks>
+                Updates hiding time based on AI mental state. Stops falling sounds. Handles bouncy
+                mooks, somersaulting recovery, and face-planting. Can trigger tumbling or continued
+                somersaulting based on impact. Disturbs wildlife on hard landings when dead.
+            </remarks>
+        </member>
+        <member name="M:Mook.Launch(System.Single,System.Single)">
+            <summary>
+                Launches the mook with specified velocities, setting it into a tumbling state.
+                Clears AI action queue and makes the AI wait before resuming normal behavior.
+            </summary>
+            <param name="xI">The horizontal launch velocity</param>
+            <param name="yI">The vertical launch velocity</param>
+        </member>
+        <member name="M:Mook.OpenParachute">
+            <summary>
+                Activates the parachute if not already deployed. Simply sets the IsParachuteActive
+                flag which triggers parachute physics and animation.
+            </summary>
+        </member>
+        <member name="M:Mook.RollOnto(System.Int32)">
+            <summary>
+                Handles being rolled onto by boulders or heavy objects. Knocks the mook away if
+                space available, otherwise crushes them. Determines survival based on adjacent
+                terrain.
+            </summary>
+            <param name="direction">Direction of the rolling object (-1 left, 1 right).</param>
+            <remarks>
+                Checks if adjacent block is solid to determine crush vs knock. Applies directional
+                knockback force of 200 units if space available. Instantly gibs the mook with crush
+                damage if trapped.
+            </remarks>
+        </member>
+        <member name="M:Mook.RunMovement">
+            <summary>
+                Executes physics-based movement with high-velocity wall impact detection. If moving
+                faster than 300 units/second and hits a wall, triggers wall damage (15 crush damage
+                in 20 unit radius), self-damage (4 knock damage), damage sound, and initiates back
+                somersault. Calls base movement implementation.
+            </summary>
+        </member>
+        <member name="M:Mook.SetPosition(UnityEngine.Vector3)">
+            <summary>
+                Sets the mook's position with special handling for door-exiting state. Door-exiting
+                mooks use rounded coordinates and fixed Z position of 14, while normal mooks use
+                standard positioning.
+            </summary>
+            <param name="pos">The new position vector to set</param>
+        </member>
+        <member name="M:Mook.SetPosition">
+            <summary>
+                Updates the mook's transform position based on current X/Y coordinates. Door-exiting
+                mooks use rounded positions with fixed Z of 14 plus z-offset, while normal mooks use
+                standard transform updates.
+            </summary>
+        </member>
+        <member name="M:Mook.ThrowMook(System.Boolean,System.Int32)">
+            <summary>
+                Handles the mook being thrown by a player character. Clears string-up and dancing
+                states, initiates back-somersault, enables friendly fire catching temporarily,
+                tracks the throwing player, and reduces plasma counter for faster detonation.
+            </summary>
+            <param name="thrownByBrommando">Whether the mook was thrown by Brommando (unused)</param>
+            <param name="throwingPlayerNum">The player number who threw this mook</param>
+        </member>
+        <member name="M:Mook.Tumble">
+            <summary>
+                Initiates tumbling state if the mook can tumble and isn't already
+                back-somersaulting. Sets tumbling flags for animation and movement handling.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:Mook.alwaysStandOnPlatformLayer">
+            <summary>
+                Forces this mook to always stand on platform layer blocks. Set to true during setup
+                when the mook is positioned on a platform layer block, ensuring they maintain proper
+                collision with platforms.
+            </summary>
+        </member>
+        <member name="F:Mook.backSomersaultFrames">
+            <summary>
+                Protected counter tracking the animation frames during backward tumbling. Reset to 0
+                when initiating backward tumbling in BackSomersault() or when bouncing with
+                canBackwardTumble. Used internally for animation timing.
+            </summary>
+        </member>
+        <member name="F:Mook.backSomersaulting">
+            <summary>
+                Indicates whether the mook is currently performing a backward somersault. Set to
+                true by BackSomersault() when canBackSomersault is true. Affects movement physics,
+                animation state, and AI behavior. Prevents other actions while active and is cleared
+                when landing or dying.
+            </summary>
+        </member>
+        <member name="F:Mook.backTumbling">
+            <summary>
+                Protected flag indicating the mook is performing a continuous backward tumbling
+                motion. Set to true when backSomersaulting with sufficient force (forceTumble or yI
+                &gt; 200f) and canBackwardTumble is true. Affects AI state and prevents actions
+                while tumbling. Reset when landing or transitioning states.
+            </summary>
+        </member>
+        <member name="F:Mook.canBackSomersault">
+            <summary>
+                Determines if this mook type can perform backward somersaults. When true, enables
+                BackSomersault() behavior including flipping animations and altered physics. Used to
+                differentiate mook capabilities between types.
+            </summary>
+        </member>
+        <member name="F:Mook.canBackwardTumble">
+            <summary>
+                Determines if this mook can perform continuous backward tumbling when knocked back
+                with force. When true and mook is knocked back hard enough (forceTumble or yI &gt;
+                200f), sets backTumbling flag for extended tumbling animation. Also affects bouncing
+                behavior when isBouncy is true.
+            </summary>
+        </member>
+        <member name="F:Mook.canForwardSomersault">
+            <summary>
+                Determines if this mook type can perform forward somersaults. Currently not actively
+                used in code but mirrors canBackSomersault for potential forward flipping animations
+                and movement behaviors.
+            </summary>
+        </member>
+        <member name="F:Mook.canHideInGrass">
+            <summary>
+                Determines if this mook type can hide in grass terrain. Currently unused in code but
+                likely intended for stealth mechanics where certain mook types could conceal
+                themselves in grass tiles.
+            </summary>
+        </member>
+        <member name="F:Mook.canLandOnFace">
+            <summary>
+                Determines if this mook type can land face-down when falling. When true and mook
+                hits ground while falling, calls FallOnFace() instead of normal landing recovery.
+                When false, mook bounces up slightly (yI = 80f) and continues normally.
+            </summary>
+        </member>
+        <member name="F:Mook.canTumble">
+            <summary>
+                Determines if this mook type can perform forward tumbling movements. When true,
+                enables tumbling behavior when knocked with sufficient vertical force (yI &gt; 200f)
+                or when Tumble() is called. Used to differentiate mook types that can tumble from
+                those that cannot.
+            </summary>
+        </member>
+        <member name="F:Mook.disableGravityTime">
+            <summary>
+                Time remaining to disable gravity for this mook. While greater than 0, gravity is
+                not applied, allowing for suspension effects. Decremented each frame during movement
+                calculations.
+            </summary>
+        </member>
+        <member name="F:Mook.fallenTime">
+            <summary>
+                Protected timer for how long the mook remains in fallen state. Set to 1f when
+                FallDamage() is called. Decrements each frame and when reaching 0, likely triggers
+                recovery animations or state changes. Prevents actions while greater than 0.
+            </summary>
+        </member>
+        <member name="F:Mook.frontSomersaulting">
+            <summary>
+                Indicates whether the mook is currently performing a forward somersault. Cleared
+                when BackSomersault() is called. Used by animation system to play appropriate
+                somersault animations and affects movement physics during the somersault motion.
+            </summary>
+        </member>
+        <member name="F:Mook.hasTumbled">
+            <summary>
+                Protected flag set to true when Tumble() successfully initiates a tumbling state.
+                Tracks whether the mook has entered tumbling at least once, potentially for
+                achievement tracking or special behavior triggers.
+            </summary>
+        </member>
+        <member name="F:Mook.isBouncy">
+            <summary>
+                Makes the mook bounce when hitting ground with sufficient downward velocity (yI &lt;
+                -210f). When true, reverses and dampens vertical velocity (yI = 50f - yI * 0.3f) and
+                reduces horizontal velocity by 10%. Can trigger backward tumbling if
+                canBackwardTumble is true and horizontal speed exceeds 90f.
+            </summary>
+        </member>
+        <member name="F:Mook.midAirShakeTime">
+            <summary>
+                Timer for mid-air screen shake effects. When greater than 0, causes screen shake
+                while the mook is airborne. Decremented each frame and typically set to 0.02f during
+                forceful launches.
+            </summary>
+        </member>
+        <member name="F:Mook.standOnMookPlatform">
+            <summary>
+                Collider component that creates a platform other units can stand on when this mook
+                enters certain states. Disabled during initialization, enabled when mook is in
+                quicksand, and lowered by 4 units when mook dies.
+            </summary>
+        </member>
+        <member name="F:Mook.tumbling">
+            <summary>
+                Indicates whether the mook is currently in a forward tumbling state. Set to true
+                when Tumble() is called and canTumble is true. Used by animation system to play
+                tumbling animations. Cleared when landing, dying, or transitioning to other movement
+                states like backSomersaulting.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:Mook.AnimateActualIdleDuckingFrames">
+            <summary>
+                Handles ducking idle animations including reveal and hiding states. Shows special
+                animations when emerging from or hiding in grass. Manages the transition between
+                hidden and revealed states.
+            </summary>
+            <remarks>
+                Reveal animation uses sprite row 7 frames 5-19 with variable timing. Hiding in grass
+                uses minimal animation on row 7 frame 5. Updates lastHidingTime to track concealment
+                state duration.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateActualIdleFrames">
+            <summary>
+                Animates specific idle frames including special states like choking. Handles tear
+                gas choking animation when stunned by gas effects. Provides visual feedback for
+                status ailments during idle.
+            </summary>
+            <remarks>
+                Tear gas choking uses sprite row 11 with 9 frames (15-23). Includes variable frame
+                delays and choking sound effects. Falls back to base idle animation when no special
+                states active.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateActualJumpingFrames">
+            <summary>
+                Handles frame animation selection during jumping states. Determines which animation
+                to play based on current movement state. Prioritizes special states like tumbling
+                and somersaulting over normal jumps.
+            </summary>
+            <remarks>
+                Checks for tumbling, front/back somersaulting states first. Falls back to base
+                jumping animation or special hiding jump animation. Units recently hiding use
+                special concealed jumping frames.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateAssasinated">
+            <summary>
+                Animates the assassination death sequence when killed by stealth attacks. Shows a
+                special death animation with blood effects at specific frames. Continues until all
+                15 frames are displayed or movement disrupts the animation.
+            </summary>
+            <remarks>
+                Uses sprite row 9 with frames 15-29. Frame 4 changes animation speed. Frame 5
+                creates blood artery effects and may repeat for dramatic effect. Animation is
+                interrupted if the unit gains significant velocity.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateBackSomersault">
+            <summary>
+                Manages back somersault death animation with tumbling variant. Deactivates weapon,
+                increments somersault frame counter, and either shows directional back flying frames
+                with rotation based on velocity (0.0225 frame rate) or delegates to tumbling
+                animation when back tumbling flag is set.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateBackSomersaultTumble">
+            <summary>
+                Displays rapid tumbling animation during back somersault. Shows frames 9-18 from
+                sprite row 6 with fast frame rate (0.0225) to create spinning effect during
+                uncontrolled backward tumbling motion.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateDeath">
+            <summary>
+                Complex death animation dispatcher handling multiple death types with velocity
+                thresholds. Priority order: disemboweled (requires low velocity), assassinated
+                (requires low velocity), tumbling, back somersault, front somersault, electrified
+                (plasma/shock damage), then standard death. High velocity cancels special death
+                animations in favor of physics-based animations.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateDecapitated">
+            <summary>
+                Handles decapitation animation showing blood spurting from neck. Deactivates weapon,
+                sets frame rate to 0.044455, displays frames 21-28 on row 32. Triggers death gargle
+                sound after 0.3 seconds (with impossible random check) or bleed sounds, and creates
+                blood particles every 4 frames.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateDisemboweled">
+            <summary>
+                Animates the disembowelment death sequence with gore effects. Similar to
+                assassination but with different timing and 16 total frames. Creates dramatic blood
+                effects during the animation sequence.
+            </summary>
+            <remarks>
+                Uses sprite row 10 with frames 15-30. Includes hold frame functionality. Blood
+                effects trigger at frame 5 with randomized repetition for gore. Can be extended by
+                setting disembowelHoldFrames for dramatic pauses.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateFrontSomersault">
+            <summary>
+                Handles front somersault death animation. Deactivates weapon and displays forward
+                flying frames with rotation based on velocity vector using 0.0225 frame rate. Part
+                of the physics-based death animation system.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateFrozen">
+            <summary>
+                Shows frozen statue animation when affected by freeze effects. Deactivates weapon,
+                sets frame rate to 0.16, and displays one of three frozen poses (determined at
+                freeze start) with 0-2 frame animation from the frozen sprite sheet position. Uses
+                serialized frozenSpriteSheetFrame coordinates (default 15,13) for sprite location.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateIdle">
+            <summary>
+                Manages idle animation states including special effect overlays. Checks for
+                electrified states before falling back to normal idle. Handles visual feedback for
+                status effects during idle stance.
+            </summary>
+            <remarks>
+                Shows electrified frames when plasma or shock effects are active. Uses sprite row 4
+                frames 6-7 for electrified idle animation. Falls back to base idle animation when no
+                special states apply.
+            </remarks>
+        </member>
+        <member name="M:Mook.AnimateJumping">
+            <summary>
+                Handles jumping animation with special cases for decapitation, parachutes, and
+                quicksand. Decapitated units use decapitation animation, while units with active
+                parachutes or in quicksand show running animation if affected by status effects
+                (burning/blind/scared) or idle animation otherwise. Falls back to base jumping
+                animation for normal jumps.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateRunning">
+            <summary>
+                Manages running animation with priority for decapitation and panic states.
+                Decapitated units always show decapitation animation. Units that are burning, blind,
+                or scared display panic running animation using frames 21-28 with faster frame rate
+                (0.044455) and deactivated weapons. Normal running uses base animation.
+            </summary>
+        </member>
+        <member name="M:Mook.AnimateTumbling">
+            <summary>
+                Animates the tumbling motion when knocked with significant force. Shows rotating
+                frames to simulate uncontrolled tumbling through the air. Used during knockback when
+                tumbling state is active.
+            </summary>
+            <remarks>
+                Uses sprite row 2 with 10 tumbling frames (21-30). Cycles through frames rapidly to
+                create rotation effect. Deactivates weapon visuals during tumbling animation.
+            </remarks>
+        </member>
+        <member name="M:Mook.FadeInMysteriously">
+            <summary>
+                Virtual method for mysterious fade-in effects. Base implementation is empty, meant
+                to be overridden for special enemy entrance effects.
+            </summary>
+        </member>
+        <member name="M:Mook.SetBackFlyingFrame(System.Single,System.Single)">
+            <summary>
+                Sets the sprite frame for backwards flying animations based on velocity direction.
+                Calculates the appropriate frame based on the angle of movement and adjusts sprite
+                facing. Used during knockback and thrown animations to display directional flying
+                sprites.
+            </summary>
+            <param name="xF">The horizontal force/velocity affecting the unit.</param>
+            <param name="yF">The vertical force/velocity affecting the unit.</param>
+            <remarks>
+                Does nothing if the unit is frozen. Deactivates gun visuals during flying
+                animations. Uses sprite row 9 for backwards flying frames with 13 directional frames
+                (0-12). Frame selection is based on the angle calculated from velocity components.
+            </remarks>
+        </member>
+        <member name="M:Mook.SetForwardFlyingFrame(System.Single,System.Single)">
+            <summary>
+                Sets the sprite frame for forward flying animations based on velocity direction.
+                Similar to SetBackFlyingFrame but uses forward-facing sprites on row 12. Used for
+                forward knockback and thrown animations.
+            </summary>
+            <param name="xF">The horizontal force/velocity affecting the unit.</param>
+            <param name="yF">The vertical force/velocity affecting the unit.</param>
+            <remarks>
+                Deactivates gun visuals during animation. Uses sprite row 12 for forward flying
+                frames. Automatically adjusts sprite facing based on horizontal velocity direction.
+            </remarks>
+        </member>
+        <member name="M:Mook.ShowDeadElectrifiedFrame">
+            <summary>
+                Displays electrocution death animation frames. Increments plasma frame counter,
+                deactivates weapon, sets fast frame rate (0.033). Shows airborne electrocution
+                sprite (frames 15-16) when above ground or grounded electrocution sprite (frames
+                17-18) when on ground, both from sprite row 4.
+            </summary>
+        </member>
+        <member name="M:Mook.SquirtDecapitatedBlood">
+            <summary>
+                Creates blood particle effects from decapitated neck area. Spawns 3 red blood
+                particles at neck height (Y + 12) with upward velocity bias (130 units/s) and
+                inherits 20% of horizontal and 50% of vertical mook velocity for realistic blood
+                physics.
+            </summary>
+        </member>
+        <member name="M:Mook.StartFallingScream">
+            <summary>
+                Initiates a delayed scream when the mook starts falling. Sets a 0.03 second delay
+                before the falling scream sound plays.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Fields -->
+        <member name="F:Mook.animatingRevealPosition">
+            <summary>
+                Indicates the mook is playing a reveal animation when emerging from hiding. During
+                this animation, special frame sequences play and the gun is deactivated. Animation
+                completes at frame 15.
+            </summary>
+        </member>
+        <member name="F:Mook.flames">
+            <summary>
+                Array of flame visual effects that can be spawned when this mook is on fire.
+                Randomly selected from this array when creating burning effects at the mook's
+                position.
+            </summary>
+        </member>
+        <member name="F:Mook.frozenPose">
+            <summary>
+                Randomly selected pose (0-2) used when displaying frozen animation. Combined with
+                frozenSpriteSheetFrame to determine the specific sprite to display while frozen.
+            </summary>
+        </member>
+        <member name="F:Mook.frozenSpriteSheetFrame">
+            <summary>
+                Base sprite sheet coordinates (15, 13) for frozen animation frames. Combined with
+                frozenPose to calculate the final sprite position: x + frozenPose * 3 + frame for
+                horizontal offset.
+            </summary>
+        </member>
+        <member name="F:Mook.lastHidingTime">
+            <summary>
+                Timestamp of when this mook was last hiding in grass or cover. Used to determine
+                eligibility for forward somersaults (disabled if hidden within last 2 seconds) and
+                updated during hide animations.
+            </summary>
+        </member>
+        <member name="F:Mook.strungUpCounter">
+            <summary>
+                Animation counter for when the mook is strung up or hanging. Incremented by
+                deltaTime and triggers periodic effects every 0.2 seconds (resets by subtracting 0.5
+                when threshold reached).
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:Mook.CanAddToStatistics">
+            <summary>
+                Determines if this mook should be counted in game statistics. Always returns true
+                for standard mooks, allowing kill tracking and scoring.
+            </summary>
+            <returns>True indicating this mook counts for statistics</returns>
+        </member>
+        <member name="M:Mook.CanSpeak">
+            <summary>
+                Checks if the mook can currently produce vocal sounds. Returns false during
+                back-somersault or fallen states, otherwise allows speech and sound effects.
+            </summary>
+            <returns>True if the mook can speak/vocalize</returns>
+        </member>
+        <member name="M:Mook.Freeze(System.Single)">
+            <summary>
+                Applies freeze status effect with random pose selection. Initializes a random frozen
+                pose (0-2), resets animation frame and counter, sets frame rate to 0.16, then
+                delegates to base freeze implementation for material effects and immobilization.
+            </summary>
+            <param name="time">Duration in seconds to remain frozen.</param>
+        </member>
+        <member name="M:Mook.GetMookType">
+            <summary>
+                Returns the specific type of this mook for identification. Used by game systems to
+                determine mook-specific behaviors. Part of the enemy type identification system.
+            </summary>
+            <returns>The MookType enum value for this mook variant.</returns>
+        </member>
+        <member name="M:Mook.GrowFromChestBurster">
+            <summary>
+                Virtual method for growing from a chest burster alien. Base implementation is empty,
+                meant to be overridden by appropriate enemy types.
+            </summary>
+        </member>
+        <member name="M:Mook.IsDecapitated">
+            <summary>
+                Checks if the mook has been decapitated. Used by animation and behavior systems to
+                handle special decapitation states and prevent certain actions.
+            </summary>
+            <returns>True if the mook is decapitated, false otherwise.</returns>
+        </member>
+        <member name="M:Mook.IsHidingInGrass">
+            <summary>
+                Checks if the mook is currently hiding in grass terrain. Queries AI state to
+                determine concealment status. Used for stealth mechanics and animation selection.
+            </summary>
+            <returns>True if AI mental state is Hiding, false otherwise.</returns>
+        </member>
+        <member name="M:Mook.StartEatingCorpse">
+            <summary>
+                Initiates corpse eating behavior for applicable mook types. Virtual method for
+                zombie-type mooks to override with eating logic. Base implementation does nothing as
+                most mooks don't eat corpses.
+            </summary>
+        </member>
+        <member name="M:Mook.UseNormalGroundCheck">
+            <summary>
+                Determines whether to use standard ground detection. Returns false when panicking,
+                burning, blind, scared, or exiting doors - these states use special offset ground
+                checking for erratic movement.
+            </summary>
+            <returns>True if normal ground checking should be used</returns>
+        </member>
+        <!-- Character State & Effects Properties -->
+        <member name="P:Mook.IsParachuteActive">
+            <summary>
+                Gets or sets the parachute active state. When activated, cancels tumbling and
+                somersaulting states and reduces horizontal velocity by 40% to simulate air
+                resistance.
+            </summary>
+        </member>
+        <member name="P:Mook.IsStunned">
+            <summary>
+                Gets whether the mook is currently stunned. A mook is considered stunned when the
+                stun timer is greater than zero, preventing normal actions and movement.
+            </summary>
+        </member>
+        <!-- Character State & Effects Fields -->
+        <member name="F:Mook.canBeRevived">
+            <summary>
+                Indicates whether this mook can be revived after death. Checked during revival
+                attempts to determine if resurrection mechanics should apply to this enemy type.
+            </summary>
+        </member>
+        <member name="F:Mook.canWilhelm">
+            <summary>
+                Determines if this mook can perform a Wilhelm scream. Set to false when taking
+                certain damage types to prevent the iconic scream sound effect from playing.
+            </summary>
+        </member>
+        <member name="F:Mook.mookType">
+            <summary>
+                The type classification of this mook, used to identify different enemy variants and
+                their behaviors.
+            </summary>
+        </member>
+        <!-- Status Effects Methods -->
+        <member name="M:Mook.Blind(System.Single)">
+            <summary>
+                Blinds the mook for specified duration, disorienting movement and combat. Updates
+                blind timer to maximum of current and new duration, triggers AI blindness, sets
+                firing player to 5 (invalid), and calculates stun vocal delay.
+            </summary>
+            <param name="time">Blind duration in seconds</param>
+        </member>
+        <member name="M:Mook.Blind">
+            <summary>
+                Applies permanent 9-second blindness effect. Triggers AI blind state, invalidates
+                firing target (sets to player 5), and applies the effect only if alive.
+            </summary>
+        </member>
+        <member name="M:Mook.Inseminate(AlienFaceHugger,System.Single,System.Single)">
+            <summary>
+                Handles alien face hugger insemination. Triggers panic in the direction the mook is
+                facing for 5 seconds.
+            </summary>
+            <param name="unit">The alien face hugger performing the insemination</param>
+            <param name="xForce">The horizontal force applied</param>
+            <param name="yForce">The vertical force applied</param>
+            <returns>The result from the base insemination handling</returns>
+        </member>
+        <member name="M:Mook.IsBlind">
+            <summary>
+                Checks if the mook is currently affected by blindness status effect.
+            </summary>
+            <returns>True if blind time is greater than 0</returns>
+        </member>
+        <member name="M:Mook.Panic(System.Boolean)">
+            <summary>
+                Initiates panic state if not restrained or tumbling and not frozen. Attempts to
+                trigger AI panic behavior and sets minimum 0.1 second blind time to ensure visual
+                feedback even if panic fails.
+            </summary>
+            <param name="forgetPlayer">Whether to forget current player target during panic</param>
+        </member>
+        <member name="M:Mook.Panic(System.Single,System.Boolean)">
+            <summary>
+                Initiates timed panic state if not restrained or tumbling and not frozen. Attempts
+                AI panic and sets blind time to maximum of current blind time or specified duration
+                for extended disorientation.
+            </summary>
+            <param name="time">Duration of panic/blind effect in seconds</param>
+            <param name="forgetPlayer">Whether to forget current player target</param>
+        </member>
+        <member name="M:Mook.Panic(System.Int32,System.Single,System.Boolean)">
+            <summary>
+                Initiates directional timed panic if not restrained or tumbling and not frozen. Only
+                triggers AI panic if alive and not already blind, with direction controlling flee
+                direction. Always applies blind duration.
+            </summary>
+            <param name="direction">Panic flee direction (-1 left, 0 random, 1 right)</param>
+            <param name="time">Duration of panic/blind effect in seconds</param>
+            <param name="forgetPlayer">Whether to forget current player target</param>
+        </member>
+        <member name="M:Mook.PanicAI(System.Boolean)">
+            <summary>
+                Attempts to trigger AI panic state using current walk direction if alive, not
+                tumbling/somersaulting, has AI controller, and not frozen. Returns true if panic was
+                successfully initiated.
+            </summary>
+            <param name="forgetPlayer">Whether AI should forget player target</param>
+            <returns>True if panic state was successfully triggered</returns>
+        </member>
+        <member name="M:Mook.PanicAI(System.Int32,System.Boolean)">
+            <summary>
+                Attempts to trigger AI panic in specific direction if alive, not
+                tumbling/somersaulting, has AI controller, and not frozen. Returns success state of
+                panic initiation.
+            </summary>
+            <param name="direction">Direction to panic (-1 left, 1 right)</param>
+            <param name="forgetPlayer">Whether AI should forget player target</param>
+            <returns>True if panic was successfully triggered</returns>
+        </member>
+        <member name="M:Mook.RunBurning">
+            <summary>
+                Updates the burning status effect timer, applying double time reduction when alive.
+                Automatically calls StopBurning when the burn duration expires. Part of the fire
+                damage over time system.
+            </summary>
+        </member>
+        <member name="M:Mook.StopBeingBlind">
+            <summary>
+                Ends the blind status effect and restores normal AI behavior. Notifies the enemy AI
+                to stop blind movement patterns, updates animation frame, stops movement, and sets
+                the firing player number to own player number for targeting purposes.
+            </summary>
+        </member>
+        <member name="M:Mook.StopBeingStunned">
+            <summary>
+                Ends the stunned state for the mook. Clears tear gas choking effect and notifies the
+                AI to stop being blind.
+            </summary>
+        </member>
+        <member name="M:Mook.StopBurning">
+            <summary>
+                Terminates the burning status effect and applies final burn damage. Notifies AI to
+                stop panicking, resets to idle state, updates animation, and deals either full burn
+                damage or reduced damage (1) if impaled. Uses fizzle damage type for the final
+                damage application.
+            </summary>
+        </member>
+        <member name="M:Mook.Stun(System.Single)">
+            <summary>
+                Stuns the mook for specified duration, preventing all actions. Stops movement
+                immediately and calculates vocal delay (0.2-0.7 seconds) for stun sound effects
+                based on stun duration.
+            </summary>
+            <param name="time">Stun duration in seconds</param>
+        </member>
+        <member name="M:Mook.TearGas(System.Single)">
+            <summary>
+                Applies tear gas effect if mook can be affected by gas. Stops movement, applies stun
+                for specified time with choking flag, and blinds AI for additional 0.5 seconds
+                beyond stun duration.
+            </summary>
+            <param name="time">Duration of tear gas effect in seconds</param>
+        </member>
+        <member name="M:Mook.Terrify">
+            <summary>
+                Applies a 1-second fear effect that makes the mook cower in place. Sets scaredTime
+                which affects movement and combat behavior.
+            </summary>
+        </member>
+        <!-- Status Effects Fields -->
+        <member name="F:Mook.blindTime">
+            <summary>
+                The remaining time in seconds that the mook is blinded. Affects AI behavior and
+                movement capabilities.
+            </summary>
+        </member>
+        <member name="F:Mook.canBeSetOnFire">
+            <summary>
+                Determines if this mook can be ignited by fire damage. When true and mook takes fire
+                damage while alive, applies burn damage over time up to 5x the mook's health.
+            </summary>
+        </member>
+        <member name="F:Mook.canBeTearGased">
+            <summary>
+                Determines if this mook type is affected by tear gas attacks. When true, TearGas()
+                method will apply stun effect, set tearGasChoking flag, and blind the mook. When
+                false, mook is immune to tear gas effects.
+            </summary>
+        </member>
+        <member name="F:Mook.fireSpreadCounter">
+            <summary>
+                Protected counter that accumulates time while mook is burning. Increments by
+                deltaTime each frame while on fire. When exceeds fireSpreadRate, triggers
+                BurnOthers() to spread fire to nearby units and resets by subtracting
+                fireSpreadRate. Controls fire propagation timing.
+            </summary>
+        </member>
+        <member name="F:Mook.fireSpreadRate">
+            <summary>
+                Protected rate at which burning mook spreads fire to others. Default value 0.067f
+                means BurnOthers() is called approximately 15 times per second (1/0.067). Lower
+                values spread fire faster, higher values slower. Works with fireSpreadCounter to
+                control fire propagation timing.
+            </summary>
+        </member>
+        <member name="F:Mook.immuneToPlasmaShock">
+            <summary>
+                Makes this mook immune to plasma shock stun effects. When true, plasma damage still
+                applies but the mook won't be stunned or stopped by electric/plasma attacks.
+            </summary>
+        </member>
+        <member name="F:Mook.plasmaFrame">
+            <summary>
+                Animation frame counter for plasma damage effects. Incremented during plasma damage
+                animations and used to alternate between shock animation frames (frame % 2).
+            </summary>
+        </member>
+        <member name="F:Mook.scaredTime">
+            <summary>
+                The remaining time in seconds that the mook is scared. Affects AI decision-making
+                and combat behavior.
+            </summary>
+        </member>
+        <member name="F:Mook.tearGasChoking">
+            <summary>
+                Protected flag indicating mook is currently choking from tear gas. Set to true by
+                TearGas() when canBeTearGased is true. Affects animation states when combined with
+                stunTime &gt; 0. Cleared by Die() method when mook is killed.
+            </summary>
+        </member>
+        <member name="F:Mook.willPanicWhenOnFire">
+            <summary>
+                Controls whether the mook enters panic state when taking fire damage. When true,
+                triggers PanicAI behavior causing the mook to run away from the damage source.
+            </summary>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:Mook.PlayDeathGargleSound">
+            <summary>
+                Plays death gargling sound effect at 35% volume. Uses sound holder's death gargle
+                sounds at the mook's position with standard pitch. Sets flag to prevent repeated
+                playback of the death gargle sound.
+            </summary>
+        </member>
+        <member name="M:Mook.PlayPanicSound">
+            <summary>
+                Plays panic vocalization unless the mook is decapitated or has a face hugger
+                attached. Decapitated units and face hugger victims cannot vocalize panic sounds.
+                Delegates to base implementation for actual sound playback when conditions are met.
+            </summary>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:Mook.dischargedScreamDelay">
+            <summary>
+                Timer controlling when falling sound plays after being discharged from a vehicle.
+                Set to 0.2f on discharge, counts down each frame, and triggers fallingSoundSource
+                when reaching zero.
+            </summary>
+        </member>
+        <member name="F:Mook.fallingSoundSource">
+            <summary>
+                Audio source playing falling/screaming sounds during somersaults and when discharged
+                from vehicles. Pooled for reuse and cleaned up when landing or dying.
+            </summary>
+        </member>
+        <member name="F:Mook.hasPlayedDeathGargle">
+            <summary>
+                Flag preventing multiple death gargle sounds from playing. Set to true after
+                PlayDeathGargleSound is called to ensure the sound only plays once during death
+                animation.
+            </summary>
+        </member>
+        <member name="F:Mook.somersaultScreamDelay">
+            <summary>
+                Timer controlling delayed falling scream during somersaults. Set to 0.03 seconds
+                when starting a somersault or falling. Counts down while airborne with sufficient
+                downward velocity. When reaching zero, triggers fallingSoundSource to play a falling
+                scream sound effect.
+            </summary>
+        </member>
+        <!-- Unit Management Methods -->
+        <member name="M:Mook.IsExitingDoor">
+            <summary>
+                Checks if the mook is currently in the process of exiting a door. Used to prevent
+                interruption of spawn animations and movement. Part of the door spawn system for
+                smooth enemy entrances.
+            </summary>
+            <returns>True if currently exiting a door, false otherwise.</returns>
+        </member>
+        <member name="M:Mook.ReachDoor">
+            <summary>
+                Notifies the mook's damage effect component that it has reached a door, typically
+                for visual effects when entering/exiting doors.
+            </summary>
+        </member>
+        <member name="M:Mook.RegisterFakeDoorExit(System.Single)">
+            <summary>
+                Registers a fake door exit position for the mook to walk toward. Sets exit door
+                coordinates, enables door-exiting state, calculates movement direction, and updates
+                position.
+            </summary>
+            <param name="exitDoorX">The X coordinate of the door to exit toward</param>
+        </member>
+        <member name="M:Mook.RegisterOriginDoor(MookDoor)">
+            <summary>
+                Registers the door that spawned this mook and sets up exit behavior. Handles door
+                positioning offsets, random direction selection for non-sliding doors, ground
+                alignment via raycast, and automatic exit movement setup.
+            </summary>
+            <param name="mookDoor">The door object that spawned this mook</param>
+        </member>
+        <member
+            name="M:Mook.SetSpawnState(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Configures mook spawn state with various initial conditions. Can apply fire damage
+                (3 damage), tumbling state, parachute settings (delayed or immediate), alert state
+                (faces random player), and physics parameters. Enables off-camera components and
+                handles platform layer collision for special spawns.
+            </summary>
+            <param name="_xI">Initial horizontal velocity</param>
+            <param name="_yI">Initial vertical velocity</param>
+            <param name="tumble">Whether to start tumbling</param>
+            <param name="useParachuteDelay">Whether to enable delayed parachute deployment</param>
+            <param name="useParachute">Whether to immediately open parachute</param>
+            <param name="onFire">Whether to spawn on fire (takes damage)</param>
+            <param name="isAlert">Whether to spawn in alert state tracking a player</param>
+        </member>
+        <member
+            name="M:Mook.SetSpawnStateJumping(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+                Sets spawn state for jumping/ejected mooks with initial velocity and effects. Forces
+                jump from vehicles if jumping, applies brief invulnerability (0.05s), can set on
+                fire (3 damage), tumbling, alert state (tracks random player), and plays panic or
+                laughter sounds. Always disables ground spawning and enables off-camera rendering.
+            </summary>
+            <param name="_xI">Initial horizontal velocity</param>
+            <param name="_yI">Initial vertical velocity</param>
+            <param name="jumping">Whether mook is jumping from vehicle</param>
+            <param name="tumble">Whether to start tumbling</param>
+            <param name="onFire">Whether to spawn burning</param>
+            <param name="isAlert">Whether to spawn alerted to players</param>
+            <param name="panicSound">Whether to play panic vocalization</param>
+            <param name="laughSound">Whether to play laughter sound</param>
+        </member>
+        <!-- Unit Management Fields -->
+        <member name="F:Mook.exitDoorDirection">
+            <summary>
+                Direction the mook should move when exiting a door (-1 for left, 1 for right).
+                Calculated as the sign of (exitDoorX - mook's X position) when door exit is
+                initiated.
+            </summary>
+        </member>
+        <member name="F:Mook.exitDoorX">
+            <summary>
+                X-coordinate of the door this mook is exiting through. The mook will move toward
+                this position when exitingDoor is true, and stops exiting once reaching it.
+            </summary>
+        </member>
+        <member name="F:Mook.exitingDoor">
+            <summary>
+                Indicates this mook is currently exiting through a door. While true, overrides
+                normal movement to guide the mook toward the exit position, affects rendering layer,
+                and disables certain behaviors.
+            </summary>
+        </member>
+        <member name="F:Mook.originDoor">
+            <summary>
+                Reference to the MookDoor that spawned this mook. Used to notify the door when the
+                mook dies or is destroyed, allowing proper spawn management and cleanup.
+            </summary>
+        </member>
+        <member name="F:Mook.spawnTime">
+            <summary>
+                Timestamp when this mook was spawned, set to Time.time during initialization. Can be
+                used to track mook age or implement time-based spawn behaviors.
+            </summary>
+        </member>
+        <member name="F:Mook.startOnGround">
+            <summary>
+                Indicates whether this mook should start on the ground when spawned. Default is
+                true, but set to false for airborne spawns or special entry animations. Affects
+                initial positioning logic.
+            </summary>
+        </member>
+        <member name="F:Mook.summonToDirection">
+            <summary>
+                Direction indicator used by spawning systems (like WarlockPortal) to specify which
+                direction a summoned mook should face or move when spawned.
+            </summary>
+        </member>
+        <!-- AI Awareness Methods -->
+        <member name="M:Mook.Alert(System.Single,System.Single)">
+            <summary>
+                Alerts this mook to a sound at the specified position if it has an AI controller, is
+                alive, and not incapacitated. Passes the alert to the enemy AI's HearSound method
+                for investigation behavior.
+            </summary>
+            <param name="alertX">X coordinate of the sound source</param>
+            <param name="alertY">Y coordinate of the sound source</param>
+        </member>
+        <member name="M:Mook.Attract(System.Single,System.Single)">
+            <summary>
+                Attracts this mook to a specific position if it has AI, is alive, and not
+                incapacitated. Used for lures and distractions to draw enemies to locations.
+            </summary>
+            <param name="xTarget">X coordinate of attraction point</param>
+            <param name="yTarget">Y coordinate of attraction point</param>
+        </member>
+        <member name="M:Mook.ForgetPlayer(System.Int32)">
+            <summary>
+                Attempts to make the mook forget about a specific player, typically called when that
+                player dies. Delegates to the enemy AI system if available to remove the player from
+                tracking and targeting lists.
+            </summary>
+            <param name="deadPlayerNum">The player number to forget.</param>
+        </member>
+        <member name="M:Mook.FullyAlert(System.Single,System.Single,System.Int32)">
+            <summary>
+                Fully alerts this mook to a confirmed enemy presence if it has AI, is alive, and not
+                incapacitated. Sets the AI to maximum alert state with specific player tracking.
+            </summary>
+            <param name="x">X coordinate of the enemy</param>
+            <param name="y">Y coordinate of the enemy</param>
+            <param name="playerNum">Player number to track (0-3)</param>
+        </member>
+        <member name="M:Mook.HearSound(System.Single,System.Single)">
+            <summary>
+                Makes this mook hear and investigate a sound if it has AI, is alive, and not
+                incapacitated. For unrevealed enemies, automatically faces toward the sound source.
+                Calls the AI's HearSound method for movement behavior.
+            </summary>
+            <param name="alertX">X coordinate of the sound</param>
+            <param name="alertY">Y coordinate of the sound</param>
+        </member>
+        <member name="M:Mook.PerformHearSoundAnimation">
+            <summary>
+                Plays an animation when the mook hears a sound while hiding. Resets the frame
+                counter and sets the animatingRevealPosition flag to trigger the reveal animation
+                sequence.
+            </summary>
+        </member>
+    </members>
+</doc>

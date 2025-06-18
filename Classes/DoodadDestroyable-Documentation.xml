@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:DoodadDestroyable.FixedUpdate">
+            <summary>
+                Runs burn logic at fixed time intervals. Handles all burning-related mechanics
+                including damage over time, flame particle creation, unit burning propagation, and
+                block burning spread.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Start">
+            <summary>
+                Initializes the doodad's sprite components and sets up collision states. Gets the
+                sprite component and stores initial sprite pixel dimensions for damage state
+                transitions. Activates pristine colliders and deactivates damaged/destroyed
+                colliders. If SnapToGround is enabled, positions the doodad at ground height + 8
+                units.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Update">
+            <summary>
+                Main update loop handling damage delay timing, shaking behavior before falling, and
+                physics for falling objects. Processes shaking animation when about to fall (using
+                sine wave for visual shake), manages gravity-based falling physics with ground
+                collision detection, triggers landing effects when hitting ground, calls crushing
+                logic for units below, and updates position with shake offset. Only processes
+                falling physics when visible to players for performance.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Properties -->
+        <member name="P:DoodadDestroyable.Falling">
+            <summary>
+                Gets whether this doodad is currently falling or shaking before falling. Returns
+                true if the doodad is actively falling due to gravity or is in the pre-fall shaking
+                state.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:DoodadDestroyable.SnapToGround">
+            <summary>
+                When true, automatically positions the doodad on the ground during Start(). Sets Y
+                position to groundHeight + 8 pixels.
+            </summary>
+            <remarks>
+                Useful for doodads that should always start on the ground regardless of their placed
+                position in the level editor.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.collidersDamaged">
+            <summary>
+                GameObject containing the colliders active when the doodad is in its damaged state.
+                Initially set inactive in Start(), then activated in Hurt() when damage is first
+                taken. Deactivated again in Death() when the doodad is destroyed. This defines the
+                physical collision boundaries for the damaged object, typically different from the
+                pristine state.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.collidersDestroyed">
+            <summary>
+                GameObject containing the colliders active when the doodad is in its destroyed
+                state. Initially set inactive in Start(), then activated in Death() when the doodad
+                is fully destroyed. This defines the physical collision boundaries for the destroyed
+                object, typically allowing units to pass through or over the debris.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.collidersPristine">
+            <summary>
+                GameObject containing the colliders active when the doodad is in its undamaged
+                pristine state. Set active in Start() when initialized, then deactivated when the
+                doodad takes damage (Hurt method) or is destroyed (Death method). This defines the
+                physical collision boundaries for the undamaged object.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.heightInBlocks">
+            <summary>
+                The height of this doodad in blocks (16 pixel units). Used for fire spreading and
+                particle generation across the full height.
+            </summary>
+            <remarks>
+                Used by RunBurnLogic() to spread fire to surrounding blocks and CreateFlames() to
+                generate fire particles at each block position. Works in conjunction with
+                widthInBlocks to define the full grid area of the doodad. Default is 1 block.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.prinstineChildren">
+            <summary>
+                Array of child GameObjects that are visible only when the doodad is in its pristine
+                undamaged state. All objects in this array are deactivated when the doodad takes any
+                damage in the Damage method. Used for visual elements like decorations or details
+                that should disappear when damaged.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.sprite">
+            <summary>
+                Reference to the SpriteSM component that handles the visual representation of the
+                doodad. Used to change sprite frames to show damage states (pristine, damaged,
+                destroyed) by adjusting the lowerLeftPixel coordinates. Initialized in Start if not
+                already assigned.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.spriteInitialX">
+            <summary>
+                The initial X pixel coordinate of the sprite's lower left corner. Stored during
+                Start to serve as the base offset for calculating damaged and destroyed sprite
+                positions. Used with spritePixelWidth or damageOffsetWidth to show different damage
+                states.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.spritePixelWidth">
+            <summary>
+                The width in pixels of each damage state frame in the sprite sheet. Defaults to 64
+                pixels. Used to calculate sprite offsets when transitioning between pristine,
+                damaged, and destroyed visual states. Set from sprite.pixelDimensions.x during
+                initialization.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.widthInBlocks">
+            <summary>
+                The width of this doodad in blocks (16 pixel units). Used for ground detection,
+                collapse calculations, and particle generation.
+            </summary>
+            <remarks>
+                Used by GetGroundHeight() to check ground support across the entire width,
+                TryCollapseAbove() to check for doodads above, RunBurnLogic() to spread fire across
+                all blocks, and CreateFlames() to generate fire effects. Default is 1 block.
+            </remarks>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:DoodadDestroyable.Burn(DamageObject)">
+            <summary>
+                Applies fire damage to the doodad and manages its burning state. For flammable
+                objects, sets burn time to 8 seconds and accumulates burn damage that can trigger
+                collapse. For heatable objects, extends burn time by 0.5 seconds and increments burn
+                damage. For explosive objects, immediately applies damage. The method checks if
+                accumulated burn damage exceeds the collapse threshold and triggers destruction if
+                so.
+            </summary>
+            <param name="damgeObject">The damage object containing fire damage information and damage amount to apply</param>
+        </member>
+        <member name="M:DoodadDestroyable.BurnCollapsePoint">
+            <summary>
+                Calculates the burn damage threshold at which a burning doodad will collapse.
+                Returns the doodad's maximum health multiplied by 3, meaning the doodad can
+                accumulate burn damage up to three times its health before collapsing from fire
+                damage.
+            </summary>
+            <returns>The burn damage value that will trigger a collapse (health * 3)</returns>
+        </member>
+        <member name="M:DoodadDestroyable.CreateBloodOnDeath">
+            <summary>
+                Creates red blood particle effects when the doodad dies. This virtual method spawns
+                20 blood particles at the doodad's position with the particle velocity influenced by
+                the object's current movement (xI, yI). Typically overridden in derived classes to
+                customize the blood effect appearance or behavior.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.CreateExplosion">
+            <summary>
+                Creates an explosion effect when the doodad is destroyed. This method generates a
+                visual explosion centered on the doodad with size based on its width and height,
+                burns units within a 64-unit radius, deals explosive damage to units within 48
+                horizontal and 32 vertical units (dealing 12 damage with 200 horizontal and 300
+                vertical knockback), and disturbs wildlife within a 130-unit radius. This is
+                typically called when willExplode is true during the death sequence.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.CreateFlames(UnityEngine.Vector3)">
+            <summary>
+                Creates flame visual effects across the entire surface of the burning doodad. Spawns
+                flames at each block position (16x16 units) that the doodad occupies, with the flame
+                positions offset by the provided direction vector and the
+                burningFlamesScatterDistance for visual variation.
+            </summary>
+            <param name="direction">Random direction offset to scatter the flame positions for more realistic fire effects</param>
+        </member>
+        <member name="M:DoodadDestroyable.CreateLeafBurstDamaged">
+            <summary>
+                Creates a small leaf particle effect when vegetation doodads are damaged. Generates
+                20 leaves spreading from the center with minimal upward velocity (5 units + 30% of
+                downward velocity) and slight horizontal spread based on current X velocity.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.CreateLeafBurstDeath">
+            <summary>
+                Creates a large leaf particle effect when vegetation doodads are destroyed.
+                Generates leaves with no initial spread but significant upward velocity (50 units +
+                30% of current Y velocity) and horizontal velocity based on 30% of current X
+                velocity.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.CreateWoodParticleBurst">
+            <summary>
+                Creates wood debris particles when wooden doodads are destroyed. Generates 24 wood
+                fragments spreading from the center with upward velocity between 0-140 units and
+                random rotation, contained within the doodad's width.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Damage(DamageObject)">
+            <summary>
+                Processes damage to the doodad and manages state transitions. Handles alien blood
+                effects if configured, scorches the sprite for fire damage, manages health reduction
+                and damage states (pristine → damaged → destroyed), triggers burning for flammable
+                objects when hit by fire, initiates falling if fallOnReceivingAnyDamage is set, and
+                collapses chain anchors. Returns true if the damage resulted in death.
+            </summary>
+            <param name="damageObject">The damage information including amount, type, and force direction</param>
+            <returns>True if the doodad was destroyed, false otherwise</returns>
+        </member>
+        <member name="M:DoodadDestroyable.DamageOptional(DamageObject,System.Boolean@)">
+            <summary>
+                Optional damage entry point that always shows bullet hit effects. Clears the
+                waitForDamageToFall flag and delegates to the main Damage method. Always sets
+                showBulletHit to true.
+            </summary>
+            <param name="damageObject">The damage information including amount, type, and force direction</param>
+            <param name="showBulletHit">Always set to true to display bullet impact effects</param>
+            <returns>True if the damage was processed, false otherwise</returns>
+        </member>
+        <member name="M:DoodadDestroyable.Death">
+            <summary>
+                Handles the complete destruction of the doodad. Marks as dead and registers with
+                game systems, deactivates pristine/damaged colliders and activates destroyed
+                colliders, disables main collider, limits burn time to 0.4 seconds, initiates
+                falling if canFall is true, creates death effects (particles, explosions, etc.),
+                triggers collapse of doodads above, and either changes sprite to destroyed state or
+                deactivates the GameObject based on configuration.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Hurt">
+            <summary>
+                Transitions the doodad from pristine to damaged state. Changes the sprite offset to
+                show damage visuals (shifts sprite by damageOffsetWidth or spritePixelWidth),
+                creates damage particle effects, swaps collider sets from pristine to damaged, and
+                marks the doodad as damaged. Called when health drops below death threshold but
+                above zero.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.MakeEffectsDamaged">
+            <summary>
+                Creates visual effects when the doodad is damaged but not destroyed. Generates
+                effects based on lastDamageObject force values including leaf bursts for tree-type
+                doodads, blood effects if createBloodOnDeath is enabled, and glass shards with
+                force-based velocities if createGlassFragmentsOnDeath is enabled.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.MakeEffectsDeath">
+            <summary>
+                Creates comprehensive visual and audio effects when the doodad is destroyed.
+                Disables colliders, drops gibs if configured, creates material-specific particles
+                (wood, metal, barbed wire), handles explosion effects if willExplode is true
+                (including blast damage and unit burning), creates sparks and glass fragments with
+                physics, generates leaf bursts for vegetation, creates blood effects, and disturbs
+                nearby wildlife. Effect intensity varies based on damage force.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.RunBurnLogic">
+            <summary>
+                Executes the burning logic for flammable, heatable, or explosive doodads during
+                FixedUpdate. For flammable objects, it decrements burn time, creates flame effects
+                at regular intervals, burns nearby units and blocks, and triggers damage when burn
+                time expires. For heatable objects, it gradually reduces burn damage and spreads
+                fire to adjacent blocks. For explosive objects, it immediately triggers damage. The
+                burn damage accumulates and can cause the doodad to collapse when reaching the burn
+                collapse point.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.SetAlight_Local">
+            <summary>
+                Sets a flammable doodad on fire locally without networking. If the doodad is not
+                dead and is flammable, sets the burn time to 8 seconds and ensures burn damage is at
+                least 1 to start the burning process. This method is typically called by
+                environmental fire spreading mechanics.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:DoodadDestroyable.CreateLeavesOnDeath">
+            <summary>
+                When true, creates leaf burst particle effects when the doodad is damaged or
+                destroyed. Calls CreateLeafBurstDamaged on damage and CreateLeafBurstDeath on
+                destruction, with different particle velocities for each state.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.acceptDamageCalls">
+            <summary>
+                Controls whether this doodad can receive damage. When false, Damage() returns
+                immediately without processing.
+            </summary>
+            <remarks>
+                Can be used to make doodads temporarily or permanently invulnerable. Default is true
+                (accepts damage).
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.burnCounter">
+            <summary>
+                Timer for spreading fire to surrounding blocks. Triggers block burning every 3
+                seconds while the doodad burns.
+            </summary>
+            <remarks>
+                Incremented by Time.fixedDeltaTime in RunBurnLogic(). When exceeding 1 second,
+                subtracts 3 and calls Map.BurnBlocksAround() for all blocks occupied by this doodad.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.burnDamage">
+            <summary>
+                Accumulated fire damage that increases while burning. When it exceeds
+                BurnCollapsePoint() (health * 3), triggers destruction.
+            </summary>
+            <remarks>
+                Incremented by fire damage in Burn(), decremented when heatable objects cool down.
+                Checked against BurnCollapsePoint() to determine when burning should cause collapse.
+                Also used as damage amount when burn time expires.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.burnTime">
+            <summary>
+                Remaining burn duration in seconds. While positive, the doodad burns with fire
+                effects and damage spreading.
+            </summary>
+            <remarks>
+                Set to 8 seconds when ignited, counts down in RunBurnLogic(). When it reaches 0,
+                triggers final fire damage. Clamped to maximum 0.4 seconds in Death() to ensure
+                burning stops quickly when destroyed.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.burnUnitsCounter">
+            <summary>
+                Timer for burning nearby units. Triggers unit burning every 0.25 seconds while the
+                doodad burns.
+            </summary>
+            <remarks>
+                Incremented by Time.fixedDeltaTime in RunBurnLogic(). When exceeding 0.25 seconds,
+                calls Map.BurnUnitsAround_Local() to damage nearby units with fire.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.burningFlamesScatterDistance">
+            <summary>
+                Maximum random offset for flame particle positions in pixels. Creates visual
+                variation in fire effects. Default is 6 pixels.
+            </summary>
+            <remarks>
+                Used as multiplier for Random.insideUnitCircle to offset flame positions in
+                CreateFlames(). Also added to Y position as base height offset. Creates more
+                realistic scattered flame appearance.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.cannotBeTotallyDestroyed">
+            <summary>
+                Unused field. May have been intended to prevent complete destruction, but has no
+                implementation in the code.
+            </summary>
+            <remarks>
+                This field is never referenced in any method. Likely deprecated or planned for
+                future use.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.changeSpriteToShowDamage">
+            <summary>
+                Determines whether the sprite visual should change to show damage states. When true
+                (default), the sprite's lowerLeftPixel is adjusted to show damaged or destroyed
+                frames when the doodad takes damage. Set to false for doodads that don't have damage
+                state sprites.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createBarbedWireParticlesOnDeath">
+            <summary>
+                When true, creates barbed wire particle effects when the doodad is destroyed. Spawns
+                15 barbed wire particles scattered across the doodad's dimensions with upward
+                velocity and random rotation.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createBloodOnDeath">
+            <summary>
+                When true, creates blood particle effects when the doodad is damaged, destroyed, or
+                collapses. Calls the CreateBloodOnDeath method to spawn red blood particles. Used
+                for organic or gore-themed destructibles.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createGlassFragmentsOnDeath">
+            <summary>
+                When true (default), creates glass shard particle effects when the doodad is damaged
+                or destroyed. The number and velocity of shards varies based on whether the doodad
+                explodes (14 shards with high velocity) or is normally destroyed (24 shards).
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createSandParticlesOnFall">
+            <summary>
+                When true, creates sand particle effects when the doodad lands after falling. Spawns
+                30 sand particles at the landing position with horizontal spread of 48 units and
+                minimal upward velocity (40 units).
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createSparksOnDeath">
+            <summary>
+                When true, creates spark particle effects when the doodad is destroyed. Spawns 30
+                spark particles scattered across half the doodad's width with short lifespans
+                (0.25-0.3 seconds). Also checked during plasma bolt ground impacts.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createWoodParticlesOnDeath">
+            <summary>
+                When true, creates wood particle effects when the doodad is destroyed. Triggers
+                CreateWoodParticleBurst method which spawns 24 wood particles with similar physics
+                to metal particles. Used for wooden destructible objects.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.createmetalParticlesOnDeath">
+            <summary>
+                When true, creates metal particle effects when the doodad is destroyed. Spawns 24
+                metal particles scattered across the doodad's width and height with upward velocity
+                between 0-140 units and random rotation.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.damageOffsetWidth">
+            <summary>
+                Custom pixel offset width for damage state transitions. When non-zero, this value is
+                used instead of spritePixelWidth to calculate the sprite offset for damaged and
+                destroyed states. Allows fine-tuning of sprite positioning for non-standard sprite
+                sheets.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.deregisterDoodadOnDeath">
+            <summary>
+                When true, removes this doodad from the map's destroyable doodad list upon death.
+                Default is true.
+            </summary>
+            <remarks>
+                Checked in Death() - calls Map.RemoveDestroyableDoodad() to clean up map references.
+                Set to false for doodads that should remain registered even after destruction.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.destroyOnDeath">
+            <summary>
+                When true, the sprite's lower left pixel is shifted to show the destroyed sprite
+                variant in Death(). When false (default behavior), the doodad remains visible after
+                death. This does not actually destroy the GameObject - use disableOnDeath
+                (inherited) for that behavior.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.explosive">
+            <summary>
+                When true, fire damage immediately triggers a damage call instead of starting a
+                burn. Used for volatile objects.
+            </summary>
+            <remarks>
+                Checked in Burn() - if true, immediately calls Damage() with the current burnDamage
+                instead of starting a fire.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.fallOnReceivingAnyDamage">
+            <summary>
+                When true, causes the doodad to start falling immediately upon taking any damage.
+                Checked in Damage() method - if true, collapses any attached chain anchor and calls
+                StartFalling(false). Used for precariously balanced objects.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.flamable">
+            <summary>
+                Determines if this doodad can catch fire when damaged by fire. Enables full burning
+                behavior with spreading and flame effects.
+            </summary>
+            <remarks>
+                When true, fire damage starts an 8-second burn that spreads to nearby units and
+                blocks, creates flame particles, and accumulates burn damage until destruction. Used
+                by Damage(), Burn(), SetAlight_Local(), and RunBurnLogic().
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.flameCounter">
+            <summary>
+                Timer for creating visual flame particles. Generates flame effects approximately
+                every 0.05 seconds while burning.
+            </summary>
+            <remarks>
+                Controls the frequency of CreateFlames() calls to generate fire particle effects.
+                Different rates for flamable objects (0.04s + deltaTime) versus other burning
+                objects (0.05s).
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.heatable">
+            <summary>
+                Allows the doodad to heat up from fire damage without actually burning. Used for
+                metal objects that conduct heat.
+            </summary>
+            <remarks>
+                When true, fire damage increases burnTime by 0.5 seconds and increments burnDamage,
+                but doesn't create flames or spread fire. The heat dissipates over time. Mutually
+                exclusive with flamable behavior.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.isDamaged">
+            <summary>
+                Protected flag indicating whether this doodad has taken damage but is not yet
+                destroyed. Set to true in Hurt() when first damaged, and checked in SubMergesUnit()
+                to determine if units should merge with this object. When true, prevents unit
+                merging.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.makeAlienBloodOnHit">
+            <summary>
+                When true, creates green alien blood effects when the doodad takes damage. Used for
+                organic alien structures.
+            </summary>
+            <remarks>
+                Checked in Damage() - creates two identical green blood gush effects using the
+                damage force values. The duplication appears intentional for extra visual impact.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.scorchDamage">
+            <summary>
+                Controls sprite darkening when tintScorchedSprite is true. Starts at 1.0 (no tint)
+                and decreases with fire damage.
+            </summary>
+            <remarks>
+                Reduced by 0.1 per fire damage, clamped between 0.2 (maximum darkening) and 1.0 (no
+                tint). Multiplied with white color to create the darkening effect applied to the
+                sprite.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.screenShakeAmountOnFall">
+            <summary>
+                The intensity of screen shake when this doodad hits the ground after falling.
+                Default value is 0.3. Passed to SortOfFollow.Shake() in the Land() method. Higher
+                values create more dramatic impact effects when heavy objects hit the ground.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.settled">
+            <summary>
+                Indicates whether the doodad has settled after falling or is stable. Defaults to
+                true. Set to false when the doodad begins falling or shaking. Reset to true when the
+                doodad lands and comes to rest. Used to prevent redundant fall initiation.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.shakeBeforeFalling">
+            <summary>
+                Determines whether the doodad should shake for 0.3 seconds before falling. When true
+                (default), adds a visual warning before the doodad falls. The shake is triggered
+                when falling conditions are met but the doodad is still settled.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.shakeTime">
+            <summary>
+                Time remaining for the shaking animation before falling. When greater than 0, the
+                doodad shakes horizontally using a sine wave pattern. Decrements each frame, and
+                when it reaches 0, triggers falling and attempts to collapse doodads above. Also
+                affects the Falling property.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.takeDamageOnFall">
+            <summary>
+                When true, the doodad will call Death() if it hits the ground with sufficient
+                velocity (yI &lt; -40). Checked in the Update() falling logic when the doodad lands
+                on the ground. Allows doodads to be destroyed by falling from height.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.tintScorchedSprite">
+            <summary>
+                When true, fire damage progressively darkens the sprite to show scorching. Uses
+                scorchDamage to control tint darkness.
+            </summary>
+            <remarks>
+                Each fire damage reduces scorchDamage by 0.1 (clamped between 0.2 and 1.0), which is
+                then applied as a color multiplier to darken the sprite, creating a visual scorching
+                effect.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.waitForDamageToFall">
+            <summary>
+                When true, prevents the doodad from falling even if falling is true, until it takes
+                damage. Reset to false in both Damage() and DamageOptional() methods, and in
+                Disturb(). Checked in Update() to gate the falling physics. Used for doodads that
+                should remain suspended until damaged.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.willExplode">
+            <summary>
+                Determines whether this doodad creates an explosion when destroyed. When true in
+                MakeEffectsDeath(), calls CreateExplosion() which creates explosion effects, burns
+                nearby units, and damages units with explosion damage. When false, creates
+                non-explosive death effects instead.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:DoodadDestroyable.Bounce">
+            <summary>
+                Resets the doodad's falling state after landing. Sets vertical velocity to zero,
+                marks as settled (no longer falling), and clears the falling flag. Can be overridden
+                for custom bounce behavior.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Disturb">
+            <summary>
+                Disturbs the doodad, potentially causing it to fall. Calls the base class Disturb
+                method first, then if fallOnDisturb is true, triggers any attached chain anchor to
+                collapse, clears the waitForDamageToFall flag, and initiates falling without forcing
+                disturbance of objects above. This override extends the base behavior to add falling
+                mechanics for disturbed doodads.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.GetGroundHeight">
+            <summary>
+                Calculates the highest ground point beneath the doodad using raycasts. Casts rays
+                downward at 16-unit intervals across the doodad's width, finds the highest hit point
+                as ground height, damages terrain blocks if less than 50% have solid ground beneath
+                (crushing weak supports), and initiates falling if no ground is detected. Uses the
+                doodad's width in blocks to determine raycast positions.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.GroundBelowInadiquate(System.Single)">
+            <summary>
+                Determines if the ground support beneath the doodad is insufficient. Returns true if
+                50% or less of the doodad's width has solid ground support, indicating unstable
+                foundation that should be crushed.
+            </summary>
+            <param name="hitRatio">Ratio of successful ground hits to total width in blocks (0.0 to 1.0)</param>
+            <returns>True if ground support is inadequate (50% or less), false otherwise</returns>
+        </member>
+        <member name="M:DoodadDestroyable.HitUnits">
+            <summary>
+                Checks for and damages units beneath the falling doodad. Only active during edit
+                mode or when falling. Attempts to crush units with two different damage values (15
+                and -1) within a 6-unit high area below the doodad. Calls Bloody() on successful
+                hits. Respects dontCrushOnceDestroyed flag to prevent dead doodads from crushing.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.Land">
+            <summary>
+                Handles all effects and mechanics when a falling doodad hits the ground. Creates
+                sand particles if configured, fires plasma projectiles in multiple directions if
+                shootPlasmaBoltsOnGroundImpact is set, triggers screen shake based on
+                screenShakeAmountOnFall, plays impact sound effects, destroys the doodad if
+                destroyDoodadOnFall is true, and calls Bounce to handle velocity changes. Plasma
+                bolts are fired at 100, 200, and 300 units/second in both directions.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.RunXMovement(System.Single)">
+            <summary>
+                Updates the doodad's horizontal position based on X velocity. Calculates movement
+                distance from velocity and deltaTime, then adds it to current X position. Used for
+                horizontal movement when falling or being pushed.
+            </summary>
+            <param name="t">Delta time for this frame</param>
+        </member>
+        <member name="M:DoodadDestroyable.SetPosition(System.Single)">
+            <summary>
+                Sets the doodad's transform position with an optional X offset. Updates the
+                GameObject transform to the current X + offset and Y coordinates. Typically used to
+                apply shake effects.
+            </summary>
+            <param name="xOffset">Horizontal offset to add to base position, usually for shake effects</param>
+        </member>
+        <member name="M:DoodadDestroyable.SetXY(System.Single,System.Single)">
+            <summary>
+                Sets the position of the doodad and marks it as needing a position update. Calls the
+                base SetXY method to update the internal position, then sets xyDirty to true to
+                ensure the visual transform is updated in the next Update cycle. This override
+                ensures position changes are properly synchronized with the visual representation.
+            </summary>
+            <param name="x">The new X coordinate for the doodad</param>
+            <param name="y">The new Y coordinate for the doodad</param>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:DoodadDestroyable.bottomLeftOffset">
+            <summary>
+                Vector3 offset from the transform position to the bottom-left corner of the doodad.
+                Used in GetGroundHeight() as the starting point for ground detection raycasts across
+                the width of the doodad. Also used in CreateFlames() for flame effect positioning.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.canFall">
+            <summary>
+                Master flag controlling whether this doodad can fall at all. When false, prevents
+                all falling behavior in Update() and StartFalling(). When true (default), allows
+                normal falling physics. Also checked in Collapse() and Death() methods.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.falling">
+            <summary>
+                Indicates whether this doodad is currently falling. Set to true by StartFalling(),
+                in Death(), and when shakeTime expires. Set to false in Bounce() when landing. The
+                Falling property returns true if either this field is true or shakeTime &gt; 0.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.groundHeight">
+            <summary>
+                The Y position of the ground below this doodad, calculated by GetGroundHeight()
+                using raycasts. Updated each frame when falling to determine landing position. Used
+                in Update() to check if the doodad has reached the ground (Y &lt;= groundHeight +
+                8f).
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.previousXOffset">
+            <summary>
+                Cached horizontal shake offset from previous frame. Used to detect when position
+                needs updating due to shake changes.
+            </summary>
+            <remarks>
+                Compared with current shake offset in Update() to determine if SetPosition() needs
+                to be called. Initialized to -1 to ensure first frame always updates. Prevents
+                unnecessary transform updates when shake offset hasn't changed.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.raycastHit">
+            <summary>
+                Primary RaycastHit used for ground detection in GetGroundHeight(). Stores the result
+                of downward raycasts from each block width position to find the highest ground
+                point. Also used in TryCollapseAbove() for upward raycasts to find objects to
+                collapse.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.raycastHitLeft">
+            <summary>
+                Currently unused RaycastHit field. Likely intended for additional ground detection
+                on the left side of multi-block wide doodads, but not implemented in current code.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.raycastHitRight">
+            <summary>
+                Currently unused RaycastHit field. Likely intended for additional ground detection
+                on the right side of multi-block wide doodads, but not implemented in current code.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.topLeftOffset">
+            <summary>
+                Vector3 offset from the transform position to the top-left corner of the doodad.
+                Used in TryCollapseAbove() as the starting point for upward raycasts to detect and
+                collapse doodads or blocks positioned above this one.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.xyDirty">
+            <summary>
+                Flag indicating the position has changed and needs to be updated this frame. Set
+                when physics or external changes occur.
+            </summary>
+            <remarks>
+                Set to true when falling (Y movement), in SetXY(), or after collision. Checked along
+                with previousXOffset in Update() to trigger SetPosition(). Reset to false after
+                position update.
+            </remarks>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:DoodadDestroyable.Collapse">
+            <summary>
+                Handles collapse mechanics for the doodad with different behaviors based on state.
+                If the doodad can fall and isn't already falling, broadcasts StartFalling via RPC.
+                Otherwise forces destruction by dealing crushing damage exceeding max health,
+                creates leaf effects if configured, creates blood effects if configured, and marks
+                as dead. Overrides base Doodad.Collapse to add falling mechanics.
+            </summary>
+        </member>
+        <member name="M:DoodadDestroyable.OnCollisionEnter(UnityEngine.Collision)">
+            <summary>
+                Unity collision callback for when the doodad collides with other objects. Currently
+                empty but virtual, allowing derived classes to implement custom collision responses.
+            </summary>
+            <param name="collisio">The collision data from Unity's physics system</param>
+        </member>
+        <member name="M:DoodadDestroyable.StartFalling(System.Boolean)">
+            <summary>
+                Initiates the falling sequence for this doodad. Sets the falling flag if canFall is
+                true, and optionally triggers collapse of objects above. If shakeBeforeFalling is
+                enabled and forceDisturbAbove is false, delays the collapse trigger until after
+                shaking completes.
+            </summary>
+            <param name="forceDisturbAbove">If true, immediately triggers collapse of objects above regardless of shake settings</param>
+        </member>
+        <member name="M:DoodadDestroyable.SubMergesUnit">
+            <summary>
+                Determines if units can partially merge with this doodad for visual depth. Returns
+                true (allowing merging) only when the doodad is pristine - neither dead nor damaged.
+                Used for visual layering of units behind environmental objects.
+            </summary>
+            <returns>True if units can merge with this doodad, false if damaged or dead</returns>
+        </member>
+        <member name="M:DoodadDestroyable.TryCollapseAbove">
+            <summary>
+                Attempts to trigger falling or collapse of doodads and blocks directly above this
+                one. Only executes if CollapseDoodadsAboveWhenDestroyed is true. Casts rays upward
+                at 16-unit intervals across the doodad's width, triggers Collapse on any Doodad
+                within 9 units above, calls Disturb on FallingBlocks to start their fall sequence,
+                and disturbs self when affecting FallingBlocks. Used to create chain reaction
+                collapses.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:DoodadDestroyable.CollapseDoodadsAboveWhenDestroyed">
+            <summary>
+                When true, triggers collapse of doodads directly above this one when destroyed or
+                shaking. Creates chain reaction collapses.
+            </summary>
+            <remarks>
+                Used by TryCollapseAbove() which raycasts upward across the doodad's width to find
+                and collapse nearby doodads and falling blocks above. Useful for support structures
+                that should cause cascading destruction.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.collapseOnLanding">
+            <summary>
+                When true, automatically triggers Collapse() when the doodad lands after falling.
+                Default is true.
+            </summary>
+            <remarks>
+                Checked in Update() after landing detection. Only triggers if not already collapsed.
+                Ensures falling doodads break apart on impact rather than settling intact.
+            </remarks>
+        </member>
+        <member name="F:DoodadDestroyable.crushUnitsAndTerrain">
+            <summary>
+                Enables crushing damage to units below when falling. When true in HitUnits(),
+                performs two damage checks using Map.HitUnits() with DamageType.Crush. Only applies
+                damage if the doodad is above ground level or (if dontCrushOnceDestroyed is true)
+                not yet dead.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.destroyDoodadOnFall">
+            <summary>
+                When true, immediately destroys the GameObject when the doodad lands after falling.
+                Checked in Land() method and calls UnityEngine.Object.Destroy(gameObject). Used for
+                objects that should disappear completely upon impact.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.dontCrushOnceDestroyed">
+            <summary>
+                Modifies crushing behavior when crushUnitsAndTerrain is true. When this is true,
+                crushing damage only occurs if the doodad is not dead (!isDead). When false,
+                crushing occurs whenever the doodad is above ground height. Checked in HitUnits()
+                method.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.fallOnDisturb">
+            <summary>
+                When true, causes the doodad to start falling when Disturb() is called. Collapses
+                any attached chain anchor, sets waitForDamageToFall to false, and calls
+                StartFalling(false). Used for objects triggered by nearby disturbances rather than
+                direct damage.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.plasmaProjectile">
+            <summary>
+                The projectile prefab used when shootPlasmaBoltsOnGroundImpact is true. Spawned 6
+                times in Land() method with different velocities (±100, ±200, ±300 X velocity) from
+                the left and right edges of the doodad.
+            </summary>
+        </member>
+        <member name="F:DoodadDestroyable.shootPlasmaBoltsOnGroundImpact">
+            <summary>
+                When true, spawns 6 plasma projectiles in different directions upon landing. Set to
+                false after firing in Land(). Uses the plasmaProjectile field as the projectile
+                template. Creates spark particle effects if createSparksOnDeath is also true.
+            </summary>
+        </member>
+    </members>
+</doc>

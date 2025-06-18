@@ -1,0 +1,856 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:FallingBlock.FirstFrame">
+            <summary>
+                Initializes the falling block on its first frame of existence. Sets up initial
+                physics values, rotation angles, shake timers, and stores the original position and
+                grid coordinates for later reference. This method ensures proper initialization
+                happens only once.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.HideSurroundingDecorations">
+            <summary>
+                Hides decorative elements on adjacent blocks that would visually conflict with this
+                falling block. Uses raycasting to find blocks above and below, then hides their
+                bottom and top decorations respectively if the hideSurroundingDecorationsAtStart
+                flag is set.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.ResetBlock">
+            <summary>
+                Resets the falling block to its original state when the level is restarted or reset.
+                Restores position, rotation, visual state, and all physics properties to their
+                initial values. Clears any disturbance or damage states and re-enables the block for
+                normal operation.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.SetupBlock(System.Int32,System.Int32,Block,Block)">
+            <summary>
+                Overrides the base block setup to clear the setupBlockAtStart flag and delegate to
+                base implementation. Ensures that automatic start setup doesn't occur after manual
+                setup has been called.
+            </summary>
+            <param name="row">The grid row position</param>
+            <param name="collumn">The grid column position</param>
+            <param name="aboveBlock">Reference to the block above (if any)</param>
+            <param name="belowBlock">Reference to the block below (if any)</param>
+        </member>
+        <member name="M:FallingBlock.SetupBlockAtStart">
+            <summary>
+                Performs initial setup for blocks that need special initialization at level start.
+                Updates position from transform, hides surrounding decorations if configured, sets
+                up the block in the map grid, and ensures no duplicate blocks exist at the same
+                position.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.ShouldEnable">
+            <summary>
+                Determines whether this block should be enabled for updates. Always returns true for
+                falling blocks, ensuring they remain active to process physics and interactions even
+                when off-screen.
+            </summary>
+            <returns>Always returns true to keep the block active</returns>
+        </member>
+        <member name="M:FallingBlock.Update">
+            <summary>
+                Main update loop that handles the entire lifecycle of a falling block. Manages
+                shaking animations when disturbed, physics-based falling with acceleration and
+                collision detection, rolling mechanics when pushed, and various environmental
+                interactions like quicksand and wind. Updates position, rotation, and handles state
+                transitions throughout the block's existence.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:FallingBlock.DamageInternal(System.Int32,System.Single,System.Single)">
+            <summary>
+                Processes damage dealt to the falling block, potentially triggering it to fall.
+                Handles different damage thresholds, applies push forces for horizontal impacts, and
+                initiates collapse when health drops below the collapse threshold. Prioritizes
+                falling for strong downward impacts.
+            </summary>
+            <param name="damage">The amount of damage to apply</param>
+            <param name="xI">The horizontal impact force</param>
+            <param name="yI">The vertical impact force</param>
+        </member>
+        <member name="M:FallingBlock.HitUnits">
+            <summary>
+                Damages units and doodads beneath the falling block when it's moving fast enough.
+                Applies crushing damage in an area based on the block's velocity, with special
+                handling for destructible doodads that can slow the block's fall.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:FallingBlock.bounceDamage">
+            <summary>
+                Damage dealt to the block itself when it bounces in sandstorm conditions. Only
+                applied when the value is greater than 0, representing wear from repeated impacts
+                during extended bouncing sequences.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.collapseHealthPoint">
+            <summary>
+                The health threshold below which the block will collapse and be destroyed. When
+                health drops to or below this value (default -15), the block enters its destruction
+                sequence. Negative values allow the block to take some damage before breaking.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.landDamage">
+            <summary>
+                The amount of crushing damage dealt to blocks beneath when this block lands after
+                falling. Default value of 1 applies minor impact damage to whatever it lands on.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.otherShrpnelPrefab">
+            <summary>
+                Optional prefab for creating additional shrapnel effects when the block is
+                destroyed. Can be configured to spawn different visual debris for variety.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.shakeAmountOnLand">
+            <summary>
+                The intensity of camera shake when the block lands or bounces (default 0.2). Higher
+                values create more dramatic impact effects, with the shake centered on the block's
+                position for proper directional feedback.
+            </summary>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:FallingBlock.Bounce">
+            <summary>
+                Processes bouncing behavior when the block hits a surface with sufficient velocity.
+                Reverses and dampens velocity based on bounce settings, triggers camera shake, plays
+                sound effects, and handles special physics for sandstorm conditions or very bouncy
+                blocks.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.ClampToBounds(System.Single@,System.Single@)">
+            <summary>
+                Constrains both horizontal and vertical movement to keep the block within valid
+                bounds. Uses raycasting in opposite directions to detect boundaries and adjusts
+                movement deltas to prevent clipping through obstacles on any side.
+            </summary>
+            <param name="offSetX">Reference to the horizontal offset, modified if bounds are hit</param>
+            <param name="offsetY">Reference to the vertical offset, modified if bounds are hit</param>
+        </member>
+        <member name="M:FallingBlock.ClampToCeiling(System.Single@)">
+            <summary>
+                Constrains upward movement to prevent the falling block from passing through
+                ceilings. Uses raycasting to detect solid obstacles above and adjusts the vertical
+                movement delta to stop at the ceiling surface, accounting for the block's
+                half-height.
+            </summary>
+            <param name="yIT">Reference to the vertical movement delta in pixels, modified if a ceiling is hit</param>
+            <returns>True if movement was clamped due to ceiling collision, false if no collision occurred</returns>
+        </member>
+        <member name="M:FallingBlock.ClampToGround(System.Single@)">
+            <summary>
+                Constrains downward movement to prevent the falling block from passing through
+                ground. Uses raycasting to detect solid surfaces below and adjusts the vertical
+                movement delta to stop at the ground surface. Also handles special interactions with
+                AssMouthOrifice objects that can consume the block and sets up parent transform
+                relationships for moving platforms.
+            </summary>
+            <param name="yIT">Reference to the vertical movement delta in pixels, modified if ground is hit</param>
+            <returns>True if movement was clamped due to ground collision, false if no collision occurred</returns>
+        </member>
+        <member name="M:FallingBlock.ClampToWalls(System.Single@)">
+            <summary>
+                Constrains horizontal movement to prevent the falling block from passing through
+                walls. Uses raycasting to detect solid obstacles in the direction of movement and
+                adjusts the movement delta to stop at the wall surface, accounting for the block's
+                half-width on each side.
+            </summary>
+            <param name="xIT">Reference to the horizontal movement delta in pixels, modified if a wall is hit</param>
+            <returns>True if movement was clamped due to wall collision, false if no collision occurred</returns>
+        </member>
+        <member name="M:FallingBlock.ClearBlock">
+            <summary>
+                Removes this block from the map grid at its current column and row position. Ensures
+                the grid cell is marked as empty so other objects can occupy the space and collision
+                detection works properly.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.FinishRoll(System.Single)">
+            <summary>
+                Completes the rolling animation and settles the block in its new position. Adjusts
+                the X coordinate based on roll direction, sends network updates if the local player
+                initiated the roll, and triggers the settling process with appropriate offsets.
+            </summary>
+            <param name="final_zAngle">The final rotation angle after rolling (typically a multiple of 90 degrees)</param>
+        </member>
+        <member name="M:FallingBlock.GetExtraFallSpeed">
+            <summary>
+                Returns additional fall speed to be added to the base maximum fall speed. Virtual
+                method that can be overridden by derived classes to implement variable falling
+                speeds based on block type or environmental conditions.
+            </summary>
+            <returns>Extra fall speed to add (default is 0)</returns>
+        </member>
+        <member name="M:FallingBlock.Land">
+            <summary>
+                Handles the landing sequence when a falling block comes to rest on a solid surface.
+                Resets velocities, updates grid position, assigns the block back to the map, applies
+                landing damage to blocks below, and handles special cases like landing in quicksand
+                or transforming into a boulder.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.RollOverRPC(System.Int32)">
+            <summary>
+                Network-synchronized method that initiates the block rolling animation in response
+                to a push. Sets up the rolling state, calculates pivot points for rotation, and
+                triggers the animation sequence. Automatically clears the block from its current
+                position and prepares it to move to the adjacent grid cell.
+            </summary>
+            <param name="direction">The roll direction - positive (1) for right, negative (-1) for left</param>
+        </member>
+        <member name="M:FallingBlock.SetPosition(System.Single)">
+            <summary>
+                Updates the block's visual position with an optional horizontal offset for shake
+                effects. Sets the transform position and applies the offset to the sprite renderer,
+                rounding to pixel-perfect positions for clean visual presentation.
+            </summary>
+            <param name="xOffset">The horizontal offset to apply for shake animation</param>
+        </member>
+        <member name="M:FallingBlock.SetRotation">
+            <summary>
+                Applies the current rotation angle to the block's transform. Updates the Euler
+                angles to match the internal zAngle value, used during rolling and spinning
+                animations.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.SetRotation(System.Single)">
+            <summary>
+                Sets a new rotation angle for the block and immediately applies it to the transform.
+                Used for instant rotation changes without animation.
+            </summary>
+            <param name="newAngle">The new rotation angle in degrees</param>
+        </member>
+        <member name="M:FallingBlock.SetSpeed(System.Single,System.Single)">
+            <summary>
+                Directly sets the velocity of the falling block and immediately triggers it to start
+                falling. Used when external forces need to launch the block with specific speeds,
+                bypassing the normal shaking phase.
+            </summary>
+            <param name="xi">The horizontal velocity to apply</param>
+            <param name="yi">The vertical velocity to apply</param>
+        </member>
+        <member name="M:FallingBlock.SetVerticalShakePosition(System.Single)">
+            <summary>
+                Updates the block's visual position with a vertical offset for chain shake effects.
+                Used when the block is attached to chains and shakes vertically rather than
+                horizontally, applying rounded pixel-perfect offsets to the sprite.
+            </summary>
+            <param name="yOffset">The vertical offset to apply for shake animation</param>
+        </member>
+        <member
+            name="M:FallingBlock.Settle(System.Single,System.Single,System.Int32,System.Single)">
+            <summary>
+                Completes the settling process after a block finishes rolling or falling. Updates
+                the block's position and rotation, checks for solid ground beneath, assigns it back
+                to the map grid if stable, and triggers appropriate sound effects. If no solid
+                ground is found, the block continues falling.
+            </summary>
+            <param name="newX">The new X coordinate for the block's center position</param>
+            <param name="newY">The new Y coordinate for the block's center position</param>
+            <param name="colOffset">Column offset applied during settling (-1 for left roll, 1 for right roll, 0 for vertical drop)</param>
+            <param name="final_zAngle">The final rotation angle to apply to the block</param>
+        </member>
+        <member
+            name="M:FallingBlock.SettleBlockAfterRoll(System.Single,System.Single,System.Int32,System.Single,System.Double,Networking.PID)">
+            <summary>
+                Network-synchronized settling method called after a block completes its roll
+                animation. Validates the timestamp to prevent out-of-order updates, settles the
+                block at the new position, and clears the pushing player reference if they initiated
+                the roll.
+            </summary>
+            <param name="X">The new X coordinate for the block</param>
+            <param name="Y">The new Y coordinate for the block</param>
+            <param name="colOffset">Column offset from the roll direction</param>
+            <param name="final_zAngle">The final rotation angle</param>
+            <param name="photonTimeStamp">Network timestamp for synchronization ordering</param>
+            <param name="sender">The player ID who initiated the roll</param>
+        </member>
+        <member name="M:FallingBlock.StartFalling">
+            <summary>
+                Initiates the falling state of the block after the shaking phase completes. Clears
+                the block from its grid position, removes any parent transform relationships, hides
+                attached decorations if configured, and triggers surrounding blocks to potentially
+                collapse.
+            </summary>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:FallingBlock.Rotation">
+            <summary>
+                Gets the current rotation angle of the block as an integer. Returns the internal
+                zAngle value cast to int for simplified rotation state checking.
+            </summary>
+        </member>
+        <!-- Position & Physics Fields -->
+        <member name="F:FallingBlock.bounceThreshold">
+            <summary>
+                The minimum downward velocity required for the block to bounce when hitting the
+                ground. When falling slower than this threshold (default -200), the block will
+                bounce instead of landing solidly. Also bypassed when a parachute is active,
+                allowing bouncing at any speed.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.forceRequiredToRoll">
+            <summary>
+                The accumulated horizontal push force threshold required to initiate rolling
+                (default 0.1). When pushForce exceeds this value in either direction and there's
+                clear space, the block begins its rolling animation. Lower values make blocks easier
+                to push.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.halfHeight">
+            <summary>
+                Half of the block's pixel height (default 8), calculated from pixelHeight. Used
+                frequently in collision calculations to determine the block's center-to-edge
+                distances.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.maxFallSpeed">
+            <summary>
+                The maximum downward velocity the block can achieve while falling (default -1200).
+                This terminal velocity caps the acceleration from gravity to prevent excessive
+                speeds. Can be modified by GetExtraFallSpeed() for special block types.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.minSpinAmount">
+            <summary>
+                The minimum rotation speed maintained while spinning. Prevents the spin from slowing
+                below this threshold, ensuring continuous rotation for blocks configured to spin
+                during their fall.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.parentedToTransform">
+            <summary>
+                Reference to a moving platform or object this block is resting on. When set, the
+                block follows the transform's movement to stay attached to moving surfaces like
+                elevators or vehicles.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.parentedToTransformLastPosition">
+            <summary>
+                The previous frame's position of the parent transform. Used to calculate the delta
+                movement each frame and apply it to the block's position, ensuring smooth following
+                of moving platforms.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.pixelHeight">
+            <summary>
+                The height of the block in pixels (default 16). Used for collision detection,
+                raycasting distances, and determining the block's physical boundaries.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.rollingPivot">
+            <summary>
+                The world position point around which the block rotates when rolling. Set to the
+                bottom corner of the block in the direction of roll (8 units horizontally from
+                center, 8 units below center). Used as the rotation center for the rolling animation
+                to simulate realistic physics.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.spinAmount">
+            <summary>
+                The current rotation speed for spinning blocks. Decreases over time and controls how
+                fast the block rotates around its pivot point when shouldSpin is true. Measured in
+                degrees per second.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.startY">
+            <summary>
+                The original Y coordinate where the block started, stored during initialization.
+                Used to detect if the block has moved significantly from its starting position when
+                checking if it's still stable.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.xFallingSpeed">
+            <summary>
+                Horizontal acceleration applied while falling. Allows blocks to drift sideways
+                during their fall, though this value is typically 0 for standard falling blocks
+                unless affected by external forces.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.yFallingSpeed">
+            <summary>
+                Vertical acceleration rate while falling (default -1000). This gravity value is
+                applied each frame to increase downward velocity until maxFallSpeed is reached.
+                Negative values indicate downward acceleration.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.zAngle">
+            <summary>
+                The current rotation angle of the block in degrees around the Z-axis. Updated
+                continuously during rolling animations and used to set the transform's rotation.
+                Normalized to stay within reasonable ranges by subtracting 360 when exceeding 180
+                degrees.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.zAngleI">
+            <summary>
+                The angular velocity in degrees per second for rotation animations. During rolling,
+                this value accelerates from ±420 to ±1200 degrees/second to create a realistic
+                rolling motion. Positive values rotate counterclockwise, negative values clockwise.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.zAngleTarget">
+            <summary>
+                The target rotation angle the block is animating towards during rolling. When
+                rolling left, this is increased by 90 degrees; when rolling right, decreased by 90.
+                The animation completes when zAngle reaches this target value.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.zOffset">
+            <summary>
+                Z-axis position offset applied to the block's transform. Used to adjust rendering
+                depth, particularly when the block enters quicksand (set to 8) to make it appear
+                partially submerged.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:FallingBlock.AssignBlockToMap">
+            <summary>
+                Assigns this falling block to its current grid position in the map. Virtual method
+                that updates the map's block grid to reference this block at its current column and
+                row coordinates.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.CollapseSurroundingBackgroundBlocks">
+            <summary>
+                Triggers collapse on all background blocks adjacent to this falling block's
+                position. Affects blocks directly above, below, left, and right to create a more
+                dynamic destruction effect.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.CollapseSurroundingBlocksOnFall">
+            <summary>
+                Comprehensive method that triggers various collapse effects when the block starts
+                falling. Disturbs blocks above, collapses nearby cages and cage bars, triggers
+                background block collapse if enabled, and crumbles adjacent bridges.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.CrumbleBridge(System.Single)">
+            <summary>
+                Handles crumble effects when this block is part of a bridge structure. If the chance
+                exceeds 0.4, triggers collapse with 80% of the original chance value to create a
+                weakening cascade effect.
+            </summary>
+            <param name="chance">The crumble chance factor (0 to 1)</param>
+        </member>
+        <member name="M:FallingBlock.CrumbleSurroundingBridges">
+            <summary>
+                Sends crumble messages to bridge blocks adjacent to this falling block. Uses both
+                raycasting and direct grid lookups to find bridges to the left and right, applying a
+                reduced collapse chance to create a ripple effect.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.DelayedCollapseAbove">
+            <summary>
+                Handles delayed collapse effects for blocks above this one. Resets the collapse
+                chance to maximum before delegating to the base implementation, ensuring maximum
+                cascade potential.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.InformSurroundingBlocksOfCollapse">
+            <summary>
+                Notifies surrounding blocks about this block's collapse, unless it's currently in
+                quicksand. Overrides base behavior to prevent cascade effects when sinking in
+                quicksand.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.RollOnToUnits">
+            <summary>
+                Checks for and damages units in the path of a rolling block. Called during the
+                rolling animation to crush units that would be hit by the rotating block edge.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.StepOn(TestVanDammeAnim)">
+            <summary>
+                Handles when a unit steps on this block. Stores reference to the stepping unit and
+                triggers the step-on behavior if the unit belongs to the player or is an enemy, and
+                the block isn't already disturbed, invulnerable, or in edit mode.
+            </summary>
+            <param name="unit">The unit that stepped on the block</param>
+        </member>
+        <member name="M:FallingBlock.StepOn(Grenade)">
+            <summary>
+                Handles when a grenade lands on this block. Triggers the step-on behavior if the
+                grenade belongs to the player and the block isn't already disturbed, invulnerable,
+                or in edit mode.
+            </summary>
+            <param name="grenade">The grenade that landed on the block</param>
+        </member>
+        <member name="M:FallingBlock.StepOnBlock">
+            <summary>
+                Standard step-on behavior that extends the shake time before falling. Only triggers
+                if the block is configured to be disturbed by impacts, increasing shake duration by
+                42.5% to give players more warning time.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.StepOnBlockForced">
+            <summary>
+                Forced step-on behavior that bypasses invulnerability. Clears invulnerable state,
+                extends shake time by 42.5%, and always triggers disturbance through network
+                synchronization.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.StepOnBlockImmediate">
+            <summary>
+                Immediate step-on behavior that triggers instant falling. Clears invulnerability and
+                sets shake time to zero, causing the block to skip the warning phase and fall
+                immediately.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.SupportedByDoodad(Doodad)">
+            <summary>
+                Handles special support relationships when this block is held up by a doodad.
+                Specifically checks for chain doodads and stores a reference for chain-specific
+                shaking behavior when disturbed.
+            </summary>
+            <param name="doodad">The doodad providing support to this block</param>
+        </member>
+        <!-- Environmental Interaction Fields -->
+        <member name="F:FallingBlock.chainAttachmentSupport">
+            <summary>
+                Reference to a chain doodad that's supporting this block. When set, the block
+                exhibits special shaking behavior (vertical instead of horizontal) and can pull on
+                the chain when disturbed before falling.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.collapseBackgroundBlocks">
+            <summary>
+                Controls whether background layer blocks are affected when this block falls (default
+                true). When enabled, background blocks at and around the falling block's position
+                will also collapse, creating more thorough destruction.
+            </summary>
+        </member>
+        <!-- State & Behavior Methods -->
+        <member name="M:FallingBlock.AboutToHitFloor">
+            <summary>
+                Checks if the block is within 1 unit of hitting the floor below. Uses downward
+                raycasting to detect imminent ground collision, used for preemptive collision
+                handling.
+            </summary>
+            <returns>True if ground is detected within 1 unit below</returns>
+        </member>
+        <member name="M:FallingBlock.AboutToHitWall">
+            <summary>
+                Checks if the block is within 1 unit of hitting a wall on either side. Uses
+                raycasting left and right to detect imminent wall collisions, primarily used for
+                very bouncy blocks to preemptively stop movement.
+            </summary>
+            <returns>True if a wall is detected within 1 unit to the left or right</returns>
+        </member>
+        <member name="M:FallingBlock.Collapse(System.Single,System.Single,System.Single)">
+            <summary>
+                Initiates or updates the collapse sequence for the block. If the block still has
+                health above the collapse threshold, it becomes disturbed (starts shaking).
+                Otherwise, delegates to the base collapse behavior to destroy the block.
+            </summary>
+            <param name="xI">The horizontal force of the collapse trigger</param>
+            <param name="yI">The vertical force of the collapse trigger</param>
+            <param name="chance">The probability factor for collapse (lower values are stored as higher priority)</param>
+        </member>
+        <member name="M:FallingBlock.CollapseForced(System.Single,System.Single,System.Single)">
+            <summary>
+                Forces the block to collapse immediately, bypassing normal health checks. Delegates
+                directly to the base implementation for immediate destruction.
+            </summary>
+            <param name="xI">The horizontal force of the collapse</param>
+            <param name="yI">The vertical force of the collapse</param>
+            <param name="chance">The collapse chance factor</param>
+        </member>
+        <member name="M:FallingBlock.DestroyBlockInternal(System.Boolean)">
+            <summary>
+                Internal method that handles the actual destruction of the block. Ensures
+                surrounding blocks are notified to potentially collapse if this is the first
+                destruction call and the parameter allows it.
+            </summary>
+            <param name="CollapseBlocksAround">Whether to trigger collapse checks on surrounding blocks</param>
+        </member>
+        <member name="M:FallingBlock.Disturb">
+            <summary>
+                Triggers the block to enter a disturbed state and begin shaking before falling.
+                Checks various conditions including invulnerability and support status. If supported
+                by chains, triggers chain shaking instead. Plays effort sounds and initiates the
+                shake-to-fall sequence.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.IsBelowBlockSolid">
+            <summary>
+                Determines if there's a solid, stable block directly below this one. Uses raycasting
+                to find blocks below and verifies they are enabled, not falling, not rolling, and
+                not ladder-type blocks. Also checks for solid falling doodads.
+            </summary>
+            <returns>True if a solid, stable block exists below</returns>
+        </member>
+        <member name="M:FallingBlock.IsSolid">
+            <summary>
+                Indicates whether this block acts as a solid obstacle for movement and collision.
+                Always returns false for falling blocks, allowing units to pass through them (though
+                they may take damage).
+            </summary>
+            <returns>Always returns false as falling blocks are not solid obstacles</returns>
+        </member>
+        <member name="M:FallingBlock.NotBroken">
+            <summary>
+                Checks if the block is still in a stable, unbroken state. Returns true if the block
+                hasn't been disturbed, is still supported by a solid block below, hasn't moved
+                significantly from its starting position, and hasn't been destroyed.
+            </summary>
+            <returns>True if the block is stable and unbroken, false otherwise</returns>
+        </member>
+        <member name="M:FallingBlock.NotRolling">
+            <summary>
+                Checks if the block is currently in a stable state and not rolling in either
+                direction. Used to determine if the block can accept new interactions or forces.
+            </summary>
+            <returns>True if not rolling left or right, false if currently rolling</returns>
+        </member>
+        <member name="M:FallingBlock.Push(System.Single)">
+            <summary>
+                Applies horizontal push force to potentially make the block roll sideways.
+                Accumulates force over time and triggers rolling when the threshold is exceeded,
+                checking for clear space and ability to roll onto units in the target direction.
+            </summary>
+            <param name="xINormalized">The normalized horizontal force to apply (positive for right, negative for left)</param>
+            <returns>True if the push triggered a roll, false otherwise</returns>
+        </member>
+        <member name="M:FallingBlock.RollOver(System.Int32)">
+            <summary>
+                Initiates the rolling animation in the specified direction. Clears parent transform
+                relationships and triggers network synchronization if not already being pushed by a
+                player.
+            </summary>
+            <param name="direction">The roll direction (1 for right, -1 for left)</param>
+        </member>
+        <member name="M:FallingBlock.Rotate(System.Int32)">
+            <summary>
+                Instantly rotates the block by 90-degree increments in the specified direction.
+                Updates both the current angle and target angle, then applies the rotation to the
+                transform.
+            </summary>
+            <param name="direction">The number of 90-degree rotations to apply (positive for counterclockwise)</param>
+        </member>
+        <!-- State & Behavior Properties -->
+        <member name="P:FallingBlock.beingPushedByPlayerTimeStamp">
+            <summary>
+                Gets or sets the network timestamp when a player started pushing this block to roll.
+                Used for synchronization to ensure proper ordering of roll commands and prevent
+                conflicts when multiple players interact with the same block. Set to
+                double.PositiveInfinity when no player is pushing.
+            </summary>
+        </member>
+        <member name="P:FallingBlock.lastSettleTime">
+            <summary>
+                Gets or sets the network timestamp of when this block last settled after rolling.
+                Used to track the most recent settle operation and prevent out-of-order network
+                updates from reverting the block to previous positions.
+            </summary>
+        </member>
+        <!-- State & Behavior Fields -->
+        <member name="F:FallingBlock.becomeBoulderOnLand">
+            <summary>
+                Transforms this falling block into a boulder doodad upon landing. When true, the
+                block is destroyed and replaced with a BoulderBlock at the landing position, already
+                in a disturbed (rolling) state.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.beingPushedByPlayer">
+            <summary>
+                Network player ID of the player currently pushing this block to roll. Used for
+                network synchronization to ensure the pushing player has authority over the roll
+                action and its completion.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.bounceOffWalls">
+            <summary>
+                Determines whether the block bounces horizontally when hitting walls. When true,
+                horizontal velocity is reversed and dampened on wall impact. When false, the block
+                stops immediately on wall contact.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.chainShakeTime">
+            <summary>
+                Separate shake timer used when the block is supported by chains. Creates a vertical
+                shaking effect instead of horizontal, with a shorter duration than normal shaking.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.disturbedByImpact">
+            <summary>
+                Determines whether this block responds to being stepped on or hit (default true).
+                When false, the block ignores step-on events and won't start shaking from impacts,
+                useful for blocks that should only fall from direct damage.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.hasCollapsedSurroundingBlocks">
+            <summary>
+                Flag preventing multiple collapse cascade triggers. Set to true after the first
+                collapse of surrounding blocks to ensure the cascade effect only happens once per
+                fall event, preventing infinite collapse loops.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.hideSurroundingDecorationsAtStart">
+            <summary>
+                Configuration flag that determines whether decorations on adjacent blocks should be
+                hidden during setup. When true, removes visual decorations from blocks above and
+                below to prevent clipping or visual conflicts.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.invulnerable">
+            <summary>
+                Flag indicating whether the block is currently immune to being disturbed (default
+                true). Prevents the block from shaking or falling due to damage or impacts while
+                active, typically set during initialization.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.invulnerableTime">
+            <summary>
+                Duration in seconds that the block remains invulnerable to disturbance after certain
+                events (default 0.5). Countdown timer that prevents the block from being triggered
+                immediately after spawning or resetting.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.isInQuicksand">
+            <summary>
+                Tracks whether the block is currently falling through quicksand. Used to prevent
+                duplicate splash effects and modify physics behavior while in quicksand, including
+                reduced fall speed and special visual effects.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.looseXVelocityOnBounce">
+            <summary>
+                Controls whether horizontal velocity is reduced when bouncing off the ground. When
+                true, the block loses sideways momentum on each bounce, eventually falling straight
+                down. Particularly relevant for veryBouncy blocks.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.originalCollumn">
+            <summary>
+                The block's starting grid column position, stored during initialization. Used to
+                restore the block to its original location when the level is reset or restarted.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.originalRow">
+            <summary>
+                The block's starting grid row position, stored during initialization. Used alongside
+                originalCollumn to restore the block's position during reset operations.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.originalShakeTime">
+            <summary>
+                The initial shake duration value (default 0.5), stored during initialization. Used
+                to reset shakeTime to its original value and to calculate extended shake times when
+                stepped on.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.rollingLeft">
+            <summary>
+                Flag indicating the block is currently rolling to the left. When true, the block is
+                in the middle of a 90-degree counterclockwise rotation animation moving one grid
+                space left. Mutually exclusive with rollingRight.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.rollingRight">
+            <summary>
+                Flag indicating the block is currently rolling to the right. When true, the block is
+                in the middle of a 90-degree clockwise rotation animation moving one grid space
+                right. Mutually exclusive with rollingLeft.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.setupBlockAtStart">
+            <summary>
+                Flag indicating whether this block needs special setup when the level starts. When
+                true, triggers SetupBlockAtStart() during the first Update() call to handle
+                positioning and decoration hiding.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.shakeCounter">
+            <summary>
+                Running counter that tracks shake animation progress. Incremented each frame during
+                shaking and used with sine functions to create the visual shake effect before
+                falling.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.shakeTime">
+            <summary>
+                The duration in seconds that the block shakes before starting to fall (default 0.5).
+                When disturbed, this countdown begins and the block falls when it reaches zero.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.shouldHideAttatchments">
+            <summary>
+                Determines whether decorative attachments above the block should be hidden when it
+                starts falling (default true). Prevents visual glitches with attached decorations
+                that would otherwise float in the air.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.shouldSpin">
+            <summary>
+                Enables rotation animation while the block is falling. When true, the block spins
+                around its center based on spinAmount and movement direction, creating a tumbling
+                effect during the fall.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.snapToMap">
+            <summary>
+                Forces the block to align precisely to the grid after settling. When true, the
+                block's position is snapped to exact grid coordinates (multiples of 16) at the end
+                of each update, ensuring pixel-perfect alignment.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.steppedOnBy">
+            <summary>
+                Stores a reference to the unit that most recently stepped on this block. Set when a
+                unit triggers the StepOn method, allowing the block to track which specific unit
+                caused it to potentially fall. Used for attribution of the falling trigger.
+            </summary>
+        </member>
+        <member name="F:FallingBlock.veryBouncy">
+            <summary>
+                Special physics mode for blocks that bounce multiple times before settling. When
+                true, applies different velocity calculations, maintains momentum longer, and allows
+                repeated bouncing with reduced damping compared to normal blocks.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:FallingBlock.CalculateAboveBlock">
+            <summary>
+                Uses raycasting to find and cache a reference to the block directly above this one.
+                Used to trigger cascade effects when this block falls or is destroyed.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.ClearBlockOnRoll">
+            <summary>
+                Handles cleanup when a block starts rolling, including repositioning oil pools to
+                the new location. Clears the block from its current grid position, updates oil pool
+                positions if present, and triggers collapse on any blocks directly above.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.PlayEffortSound">
+            <summary>
+                Plays the straining/effort sound effect when the block is disturbed or shaking. Uses
+                the configured effort sounds from the sound holder at 30% volume with 3D
+                positioning.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.PlayHitSound">
+            <summary>
+                Plays the impact sound effect when the block hits a surface. Uses the configured hit
+                sounds from the sound holder at 30% volume with 3D positioning.
+            </summary>
+        </member>
+        <member name="M:FallingBlock.PlaySplashSound">
+            <summary>
+                Plays the splash sound effect when the block enters quicksand or liquid. Uses the
+                configured splash gunk sound from the sound holder at 50% volume with 3D
+                positioning.
+            </summary>
+        </member>
+    </members>
+</doc>

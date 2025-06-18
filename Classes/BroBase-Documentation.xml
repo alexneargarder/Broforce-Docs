@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <doc>
     <assembly>
         <name>Assembly-CSharp</name>
@@ -1041,8 +1041,7 @@
                 Gets whether new voice lines should be bypassed for this bro. Combines a static
                 class-wide bypass flag with an instance-specific bypass flag.
             </summary>
-            <returns>True if voices should be bypassed globally or for this specific bro; otherwise,
-                false.</returns>
+            <returns>True if voices should be bypassed globally or for this specific bro; otherwise, false.</returns>
         </member>
         <member name="P:BroBase.SoundHolderVoice">
             <summary>

@@ -576,8 +576,8 @@ def process_single_xml_file(xml_file, output_dir, class_files):
         class_files[class_name] = filename
 
 def main():
-    # Set output directory to ../Broforce-Docs.wiki
-    output_dir = Path("../Broforce-Docs.wiki")
+    # Set output directory to ../GitHub.wiki
+    output_dir = Path("../GitHub.wiki")
     
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)

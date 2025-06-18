@@ -102,236 +102,6 @@
                 Initialized to -1 until properly set during Awake.
             </summary>
         </member>
-        <!-- Character & Hero Control Methods -->
-        <member name="M:Player.AssignCharacter(TestVanDammeAnim)">
-            <summary>
-                Assigns a hero character to this player and clears pending state flags. Sets the
-                character reference and resets awaitingHeroTypeFromServer and RescueInProgress flags
-                to false.
-            </summary>
-            <param name="character">The hero character to assign to this player.</param>
-        </member>
-        <member name="M:Player.BoostHero(System.Single)">
-            <summary>
-                Applies a speed boost to the player's hero character for the specified duration. If
-                the player has an active character, calls the character's Boost method which
-                increases movement speed temporarily. This is typically used for power-ups or
-                special abilities that enhance hero mobility.
-            </summary>
-            <param name="time">The duration in seconds for which the speed boost should last.</param>
-        </member>
-        <member name="M:Player.DeRegisterMinion(Unit)">
-            <summary>
-                Removes a unit from this player's minion list. If the unit is currently registered
-                as a minion, removes it from the tracking list. This is typically called when a
-                minion dies or is no longer under the player's control.
-            </summary>
-            <param name="minion">The unit to remove from this player's minion list.</param>
-        </member>
-        <member name="M:Player.InstantiateHero(HeroType,System.Int32,System.Int32)">
-            <summary>
-                Creates and initializes a new hero instance for the local player only. Instantiates
-                the hero prefab via networking, sets up the hero with player data, calculates spawn
-                position, configures death match HUD if needed, and applies any flex powers. Returns
-                null for non-local players. Note: ProcGenGameMode references are for an unfinished
-                feature.
-            </summary>
-            <param name="heroTypeEnum">The type of hero to instantiate.</param>
-            <param name="PlayerNum">The player number who owns this hero.</param>
-            <param name="ControllerNum">The controller number assigned to this player.</param>
-            <returns>The instantiated hero character, or null if not the local player.</returns>
-        </member>
-        <member name="M:Player.ReRequestHeroTypeFromMasterOnServerMigration">
-            <summary>
-                Re-requests hero type information from the new master after server migration.
-                Currently empty implementation - appears to be a stub for handling host migration
-                scenarios.
-            </summary>
-        </member>
-        <member name="M:Player.RegisterMinion(Unit)">
-            <summary>
-                Registers a unit as a minion controlled by this player. Adds the unit to the
-                player's minions list if not already present. Minions are AI-controlled units that
-                fight alongside the player, such as rescued animals or summoned allies.
-            </summary>
-            <param name="minion">The unit to register as a minion of this player.</param>
-        </member>
-        <member name="M:Player.RespawnBro(System.Boolean)">
-            <summary>
-                Initiates the respawn process for the player's hero. Sets awaitingHeroTypeFromServer
-                flag and requests a hero type from the master/host. The swappingBro parameter
-                indicates if this is a hero swap rather than a death respawn. This is an RPC method
-                that only executes for the local player.
-            </summary>
-            <param name="swappingBro">If true, indicates this is a hero swap rather than a death respawn.</param>
-        </member>
-        <member name="M:Player.SetHeroType(HeroType)">
-            <summary>
-                Sets the current hero type and updates the HUD avatar display. Changes the HUD
-                avatar and grenade material to match the specified hero type and sets the avatar to
-                calm state.
-            </summary>
-            <param name="heroTypeEnum">The hero type to set as current.</param>
-        </member>
-        <member name="M:Player.SetInvulnerable(System.Single)">
-            <summary>
-                Sets the hero character to be invulnerable for the specified duration. Calls the
-                character's SetInvulnerable method with the fadeIn parameter set to true and the
-                showSmoke parameter set to false. This provides temporary protection from damage,
-                typically used after spawning or during special events.
-            </summary>
-            <param name="time">The duration in seconds for which the character should be invulnerable.</param>
-        </member>
-        <member
-            name="M:Player.SetSpawnPositon(TestVanDammeAnim,Player.SpawnType,System.Boolean,UnityEngine.Vector3)">
-            <summary>
-                RPC method that sets the spawn position and state for a hero character. Applies the
-                calculated position, enables parachute if spawning via air drop, plays spawn sounds
-                for non-first deployments, and grants temporary invulnerability. Updates rescue and
-                hero request flags to false.
-            </summary>
-            <param name="bro">The hero character being spawned.</param>
-            <param name="spawnType">The type of spawn scenario being used.</param>
-            <param name="spawnViaAirDrop">Whether the hero should spawn with a parachute.</param>
-            <param name="pos">The world position where the hero should spawn.</param>
-        </member>
-        <member name="M:Player.SpawnHero(HeroType)">
-            <summary>
-                Spawns a new hero of the specified type for this player. Recalls any existing living
-                hero, handles cutscene loading for newly played heroes, unlocks heroes in campaign
-                mode, and calls InstantiateHero to create the actual character. Updates player
-                progress for unlocked heroes.
-            </summary>
-            <param name="nextHeroType">The type of hero to spawn.</param>
-        </member>
-        <member name="M:Player.TimeBroBoostHero(System.Single)">
-            <summary>
-                Applies a TimeBro-specific boost effect to the player's hero character. If the
-                player has an active character, calls the character's TimeBroBoost method which
-                provides special time-manipulation abilities. This boost is specific to TimeBro's
-                unique gameplay mechanics.
-            </summary>
-            <param name="time">The duration in seconds for which the TimeBro boost should last.</param>
-        </member>
-        <member name="M:Player.WorkOutSpawnPosition(TestVanDammeAnim)">
-            <summary>
-                Calculates and sets the spawn position for a hero based on the determined spawn
-                scenario. Evaluates the spawn type, retrieves the appropriate position (checkpoint,
-                cage, transport, etc.), and calls SetSpawnPositon via RPC to synchronize the
-                position across all clients. Handles special cases like air drops and level editor
-                reloads.
-            </summary>
-            <param name="bro">The hero character to position for spawning.</param>
-        </member>
-        <member name="M:Player.WorkOutSpawnScenario">
-            <summary>
-                Determines the appropriate spawn scenario based on current game state and player
-                conditions. Evaluates various factors including rescue status, game mode, checkpoint
-                activation, and initial deployment to select the correct SpawnType. Returns Unknown
-                type for explosion run mode without first deployment.
-            </summary>
-            <returns>The SpawnType enum value indicating how the player should spawn.</returns>
-        </member>
-        <!-- Character & Hero Control Properties -->
-        <member name="P:Player.character">
-            <summary>
-                Gets or sets the current hero character (TestVanDammeAnim) controlled by this
-                player. This is the actual bro/character unit in the game world that the player
-                controls. Setting this property also updates internal state tracking.
-            </summary>
-        </member>
-        <!-- Character & Hero Control Fields -->
-        <member name="F:Player._character">
-            <summary>
-                The current hero character (TestVanDammeAnim) instance controlled by this player.
-                This is the actual bro unit in the game world. Can be null when the player is dead
-                or waiting to spawn. Accessed through the character property which provides
-                additional logic when setting.
-            </summary>
-        </member>
-        <member name="F:Player._forceFlexPowerupSpawn">
-            <summary>
-                Private field storing a flex power type to be automatically granted when the player
-                spawns a new hero. Set by ForceRespawnWithFlexPower and checked during
-                InstantiateHero to apply the power immediately after spawning. Reset to
-                PickupType.None after use.
-            </summary>
-        </member>
-        <member name="F:Player.heroType">
-            <summary>
-                The HeroType enum value of the player's current hero. Used for HUD avatar display
-                and tracking which bro the player is currently playing as. Set to HeroType.None when
-                no hero is active. Updated when spawning a new hero via SetHeroType method.
-            </summary>
-        </member>
-        <member name="F:Player.minions">
-            <summary>
-                List of AI-controlled units that fight alongside this player. Includes rescued
-                animals, summoned allies, or other units under the player's control. Units are added
-                via RegisterMinion and removed via DeRegisterMinion. Used to track and manage AI
-                companions.
-            </summary>
-        </member>
-        <member name="F:Player.recentlyUnlockedHeros">
-            <summary>
-                List of hero types that were recently unlocked but not yet used by the player. This
-                field appears to be defined but not actively used in the current implementation.
-                Likely intended for tracking newly unlocked bros for UI notifications or
-                achievements.
-            </summary>
-        </member>
-        <!-- Character & Hero Control - Flex Power System Methods -->
-        <member name="M:Player.AddFlexPower(PickupType,System.Boolean)">
-            <summary>
-                Adds a flex power pickup to the player's inventory. Flex powers are temporary
-                power-ups that grant special abilities like invulnerability, air jump, teleport, or
-                golden light. If forced is true, overwrites any existing flex power. If forced is
-                false, only adds if the player has no current flex power. This is an RPC method for
-                network synchronization.
-            </summary>
-            <param name="pickup">The type of flex power pickup to add (e.g., FlexInvulnerability, FlexAirJump, FlexTeleport, FlexGoldenLight).</param>
-            <param name="forced">If true, replaces any existing flex power. If false, only adds if no flex power is currently active.</param>
-        </member>
-        <member name="M:Player.ClearFlexPower">
-            <summary>
-                Removes the player's current flex power. Calls PlayerInventory.HeroHasDied which
-                clears the flex power from the global inventory. This is typically called when the
-                player dies to ensure flex powers don't persist between lives in campaign mode.
-            </summary>
-        </member>
-        <member name="M:Player.ForceRespawnWithFlexPower(PickupType,System.Boolean)">
-            <summary>
-                Sets a flex power to be automatically applied when the player respawns. Stores the
-                specified pickup type in _forceFlexPowerupSpawn field, which is checked during hero
-                instantiation to grant the power immediately upon spawning. The respawnWithFlexPower
-                parameter is not used in the current implementation.
-            </summary>
-            <param name="pickup">The flex power pickup type to grant on respawn.</param>
-            <param name="respawnWithFlexPower">Unused parameter in current implementation.</param>
-        </member>
-        <member name="M:Player.GetFlexPower">
-            <summary>
-                Gets the player's currently active flex power type. Retrieves the flex power from
-                PlayerInventory for this player number.
-            </summary>
-            <returns>The PickupType of the current flex power, or PickupType.None if no power is
-                active.</returns>
-        </member>
-        <member name="M:Player.HasFlexPower(PickupType)">
-            <summary>
-                Checks if the player currently has a specific type of flex power. Compares the
-                player's current flex power in PlayerInventory against the specified type.
-            </summary>
-            <param name="flexType">The flex power type to check for.</param>
-            <returns>True if the player has the specified flex power type, false otherwise.</returns>
-        </member>
-        <member name="M:Player.HasFlexPower">
-            <summary>
-                Checks if the player currently has any flex power active. Returns true if the
-                player's flex power in PlayerInventory is not None.
-            </summary>
-            <returns>True if the player has any flex power, false otherwise.</returns>
-        </member>
         <!-- Lives & Respawn System Methods -->
         <member name="M:Player.AddLife">
             <summary>
@@ -907,6 +677,234 @@
                 1.5 seconds by default. After a player dies, the camera continues following their
                 position for this duration before switching to other players. This provides visual
                 continuity and lets players see the immediate aftermath of their death.
+            </summary>
+        </member>
+        <!-- Character & Hero Control Methods -->
+        <member name="M:Player.AddFlexPower(PickupType,System.Boolean)">
+            <summary>
+                Adds a flex power pickup to the player's inventory. Flex powers are temporary
+                power-ups that grant special abilities like invulnerability, air jump, teleport, or
+                golden light. If forced is true, overwrites any existing flex power. If forced is
+                false, only adds if the player has no current flex power. This is an RPC method for
+                network synchronization.
+            </summary>
+            <param name="pickup">The type of flex power pickup to add (e.g., FlexInvulnerability, FlexAirJump, FlexTeleport, FlexGoldenLight).</param>
+            <param name="forced">If true, replaces any existing flex power. If false, only adds if no flex power is currently active.</param>
+        </member>
+        <member name="M:Player.AssignCharacter(TestVanDammeAnim)">
+            <summary>
+                Assigns a hero character to this player and clears pending state flags. Sets the
+                character reference and resets awaitingHeroTypeFromServer and RescueInProgress flags
+                to false.
+            </summary>
+            <param name="character">The hero character to assign to this player.</param>
+        </member>
+        <member name="M:Player.BoostHero(System.Single)">
+            <summary>
+                Applies a speed boost to the player's hero character for the specified duration. If
+                the player has an active character, calls the character's Boost method which
+                increases movement speed temporarily. This is typically used for power-ups or
+                special abilities that enhance hero mobility.
+            </summary>
+            <param name="time">The duration in seconds for which the speed boost should last.</param>
+        </member>
+        <member name="M:Player.ClearFlexPower">
+            <summary>
+                Removes the player's current flex power. Calls PlayerInventory.HeroHasDied which
+                clears the flex power from the global inventory. This is typically called when the
+                player dies to ensure flex powers don't persist between lives in campaign mode.
+            </summary>
+        </member>
+        <member name="M:Player.DeRegisterMinion(Unit)">
+            <summary>
+                Removes a unit from this player's minion list. If the unit is currently registered
+                as a minion, removes it from the tracking list. This is typically called when a
+                minion dies or is no longer under the player's control.
+            </summary>
+            <param name="minion">The unit to remove from this player's minion list.</param>
+        </member>
+        <member name="M:Player.ForceRespawnWithFlexPower(PickupType,System.Boolean)">
+            <summary>
+                Sets a flex power to be automatically applied when the player respawns. Stores the
+                specified pickup type in _forceFlexPowerupSpawn field, which is checked during hero
+                instantiation to grant the power immediately upon spawning. The respawnWithFlexPower
+                parameter is not used in the current implementation.
+            </summary>
+            <param name="pickup">The flex power pickup type to grant on respawn.</param>
+            <param name="respawnWithFlexPower">Unused parameter in current implementation.</param>
+        </member>
+        <member name="M:Player.GetFlexPower">
+            <summary>
+                Gets the player's currently active flex power type. Retrieves the flex power from
+                PlayerInventory for this player number.
+            </summary>
+            <returns>The PickupType of the current flex power, or PickupType.None if no power is active.</returns>
+        </member>
+        <member name="M:Player.HasFlexPower(PickupType)">
+            <summary>
+                Checks if the player currently has a specific type of flex power. Compares the
+                player's current flex power in PlayerInventory against the specified type.
+            </summary>
+            <param name="flexType">The flex power type to check for.</param>
+            <returns>True if the player has the specified flex power type, false otherwise.</returns>
+        </member>
+        <member name="M:Player.HasFlexPower">
+            <summary>
+                Checks if the player currently has any flex power active. Returns true if the
+                player's flex power in PlayerInventory is not None.
+            </summary>
+            <returns>True if the player has any flex power, false otherwise.</returns>
+        </member>
+        <member name="M:Player.InstantiateHero(HeroType,System.Int32,System.Int32)">
+            <summary>
+                Creates and initializes a new hero instance for the local player only. Instantiates
+                the hero prefab via networking, sets up the hero with player data, calculates spawn
+                position, configures death match HUD if needed, and applies any flex powers. Returns
+                null for non-local players. Note: ProcGenGameMode references are for an unfinished
+                feature.
+            </summary>
+            <param name="heroTypeEnum">The type of hero to instantiate.</param>
+            <param name="PlayerNum">The player number who owns this hero.</param>
+            <param name="ControllerNum">The controller number assigned to this player.</param>
+            <returns>The instantiated hero character, or null if not the local player.</returns>
+        </member>
+        <member name="M:Player.RegisterMinion(Unit)">
+            <summary>
+                Registers a unit as a minion controlled by this player. Adds the unit to the
+                player's minions list if not already present. Minions are AI-controlled units that
+                fight alongside the player, such as rescued animals or summoned allies.
+            </summary>
+            <param name="minion">The unit to register as a minion of this player.</param>
+        </member>
+        <member name="M:Player.ReRequestHeroTypeFromMasterOnServerMigration">
+            <summary>
+                Re-requests hero type information from the new master after server migration.
+                Currently empty implementation - appears to be a stub for handling host migration
+                scenarios.
+            </summary>
+        </member>
+        <member name="M:Player.RespawnBro(System.Boolean)">
+            <summary>
+                Initiates the respawn process for the player's hero. Sets awaitingHeroTypeFromServer
+                flag and requests a hero type from the master/host. The swappingBro parameter
+                indicates if this is a hero swap rather than a death respawn. This is an RPC method
+                that only executes for the local player.
+            </summary>
+            <param name="swappingBro">If true, indicates this is a hero swap rather than a death respawn.</param>
+        </member>
+        <member name="M:Player.SetHeroType(HeroType)">
+            <summary>
+                Sets the current hero type and updates the HUD avatar display. Changes the HUD
+                avatar and grenade material to match the specified hero type and sets the avatar to
+                calm state.
+            </summary>
+            <param name="heroTypeEnum">The hero type to set as current.</param>
+        </member>
+        <member name="M:Player.SetInvulnerable(System.Single)">
+            <summary>
+                Sets the hero character to be invulnerable for the specified duration. Calls the
+                character's SetInvulnerable method with the fadeIn parameter set to true and the
+                showSmoke parameter set to false. This provides temporary protection from damage,
+                typically used after spawning or during special events.
+            </summary>
+            <param name="time">The duration in seconds for which the character should be invulnerable.</param>
+        </member>
+        <member
+            name="M:Player.SetSpawnPositon(TestVanDammeAnim,Player.SpawnType,System.Boolean,UnityEngine.Vector3)">
+            <summary>
+                RPC method that sets the spawn position and state for a hero character. Applies the
+                calculated position, enables parachute if spawning via air drop, plays spawn sounds
+                for non-first deployments, and grants temporary invulnerability. Updates rescue and
+                hero request flags to false.
+            </summary>
+            <param name="bro">The hero character being spawned.</param>
+            <param name="spawnType">The type of spawn scenario being used.</param>
+            <param name="spawnViaAirDrop">Whether the hero should spawn with a parachute.</param>
+            <param name="pos">The world position where the hero should spawn.</param>
+        </member>
+        <member name="M:Player.SpawnHero(HeroType)">
+            <summary>
+                Spawns a new hero of the specified type for this player. Recalls any existing living
+                hero, handles cutscene loading for newly played heroes, unlocks heroes in campaign
+                mode, and calls InstantiateHero to create the actual character. Updates player
+                progress for unlocked heroes.
+            </summary>
+            <param name="nextHeroType">The type of hero to spawn.</param>
+        </member>
+        <member name="M:Player.TimeBroBoostHero(System.Single)">
+            <summary>
+                Applies a TimeBro-specific boost effect to the player's hero character. If the
+                player has an active character, calls the character's TimeBroBoost method which
+                provides special time-manipulation abilities. This boost is specific to TimeBro's
+                unique gameplay mechanics.
+            </summary>
+            <param name="time">The duration in seconds for which the TimeBro boost should last.</param>
+        </member>
+        <member name="M:Player.WorkOutSpawnPosition(TestVanDammeAnim)">
+            <summary>
+                Calculates and sets the spawn position for a hero based on the determined spawn
+                scenario. Evaluates the spawn type, retrieves the appropriate position (checkpoint,
+                cage, transport, etc.), and calls SetSpawnPositon via RPC to synchronize the
+                position across all clients. Handles special cases like air drops and level editor
+                reloads.
+            </summary>
+            <param name="bro">The hero character to position for spawning.</param>
+        </member>
+        <member name="M:Player.WorkOutSpawnScenario">
+            <summary>
+                Determines the appropriate spawn scenario based on current game state and player
+                conditions. Evaluates various factors including rescue status, game mode, checkpoint
+                activation, and initial deployment to select the correct SpawnType. Returns Unknown
+                type for explosion run mode without first deployment.
+            </summary>
+            <returns>The SpawnType enum value indicating how the player should spawn.</returns>
+        </member>
+        <!-- Character & Hero Control Properties -->
+        <member name="P:Player.character">
+            <summary>
+                Gets or sets the current hero character (TestVanDammeAnim) controlled by this
+                player. This is the actual bro/character unit in the game world that the player
+                controls. Setting this property also updates internal state tracking.
+            </summary>
+        </member>
+        <!-- Character & Hero Control Fields -->
+        <member name="F:Player._character">
+            <summary>
+                The current hero character (TestVanDammeAnim) instance controlled by this player.
+                This is the actual bro unit in the game world. Can be null when the player is dead
+                or waiting to spawn. Accessed through the character property which provides
+                additional logic when setting.
+            </summary>
+        </member>
+        <member name="F:Player._forceFlexPowerupSpawn">
+            <summary>
+                Private field storing a flex power type to be automatically granted when the player
+                spawns a new hero. Set by ForceRespawnWithFlexPower and checked during
+                InstantiateHero to apply the power immediately after spawning. Reset to
+                PickupType.None after use.
+            </summary>
+        </member>
+        <member name="F:Player.heroType">
+            <summary>
+                The HeroType enum value of the player's current hero. Used for HUD avatar display
+                and tracking which bro the player is currently playing as. Set to HeroType.None when
+                no hero is active. Updated when spawning a new hero via SetHeroType method.
+            </summary>
+        </member>
+        <member name="F:Player.minions">
+            <summary>
+                List of AI-controlled units that fight alongside this player. Includes rescued
+                animals, summoned allies, or other units under the player's control. Units are added
+                via RegisterMinion and removed via DeRegisterMinion. Used to track and manage AI
+                companions.
+            </summary>
+        </member>
+        <member name="F:Player.recentlyUnlockedHeros">
+            <summary>
+                List of hero types that were recently unlocked but not yet used by the player. This
+                field appears to be defined but not actively used in the current implementation.
+                Likely intended for tracking newly unlocked bros for UI notifications or
+                achievements.
             </summary>
         </member>
     </members>
