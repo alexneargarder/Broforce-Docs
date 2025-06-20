@@ -2377,5 +2377,97 @@
                 corresponding HeroDefinition data for serialization and configuration management.
             </summary>
         </member>
+        <!-- Player Management Section -->
+        <member name="M:HeroController.GetPlayerNums(PID)">
+            <summary>
+                Gets all player numbers associated with a specific player ID. Iterates through all 4
+                possible player slots and returns a list of player numbers where the PID matches.
+                Used for finding which player slots belong to a specific connected player.
+            </summary>
+            <param name="playerID">The player ID to search for.</param>
+            <returns>List of player numbers (0-3) that match the given player ID.</returns>
+        </member>
+        <member name="F:HeroController.heroList">
+            <summary>
+                Serializable list of hero setup data using the HeroSetupKeyPair inner class. This
+                list is populated during OnBeforeSerialize from the internal _heroData dictionary
+                and restored during OnAfterDeserialize. Used for Unity's serialization system to
+                persist hero configuration data.
+            </summary>
+        </member>
+        <member name="F:HeroController.deathmatchSpawnQueue">
+            <summary>
+                Queue of player numbers waiting to spawn in deathmatch mode. When multiple players
+                need to respawn and spawning is limited (e.g., helicopter capacity), this queue
+                tracks the order. The host manages the queue and syncs it to other players via the
+                SyncRespawnQueue RPC.
+            </summary>
+        </member>
+        <member name="F:HeroController._playersToDrop">
+            <summary>
+                Static list of player numbers flagged to be dropped from the game. Players are added
+                to this list via FlagPlayerToDrop and are actually dropped during the next Update
+                cycle. This deferred dropping prevents issues with immediate disconnection.
+            </summary>
+        </member>
+        <member name="F:HeroController.playerDeathOrder">
+            <summary>
+                Tracks the order in which players died during the current game session. Used by the
+                rescue system to determine which player should be revived when a rescue bro is
+                collected. Earlier deaths get priority for revival. Synced across network.
+            </summary>
+        </member>
+        <!-- Player Status Section -->
+        <member name="F:HeroController.heroAlreadyChosenTypes">
+            <summary>
+                Static list tracking which hero types have already been selected during the current
+                game session. Used to prevent duplicate hero selection when spawning new characters,
+                ensuring variety. The list is trimmed when it grows too large relative to active
+                players.
+            </summary>
+        </member>
+        <!-- Rescue System Section -->
+        <member name="F:HeroController.rescueBros">
+            <summary>
+                List of all active rescue bros in the current level. Rescue bros register themselves
+                on Start and are removed when freed or destroyed. Used for proximity checks when
+                players attempt to rescue bros and for finding the nearest rescue bro to players.
+            </summary>
+        </member>
+        <member name="F:HeroController.hiddenExplosives">
+            <summary>
+                Static list of all registered hidden explosives in the game. Hidden explosives
+                register via RegisterHiddenExplosives and are removed via RemoveHiddenExplosives.
+                List is cleared on Awake and OnDestroy. Used for managing special explosive objects.
+            </summary>
+        </member>
+        <!-- Camera System Section -->
+        <member name="F:HeroController.extraFollowPositions">
+            <summary>
+                Static list of additional transform positions for the camera to follow beyond player
+                characters. Objects can register via TryFollow and unregister via StopFollowing.
+                Camera system checks these positions when determining view bounds and focus area.
+            </summary>
+        </member>
+        <!-- Serialization Section -->
+        <member name="M:HeroController.ConvertHeroArrayToIntArray(HeroType[])">
+            <summary>
+                Converts an array of HeroType enums to an array of integers for serialization. Uses
+                Array.ConvertAll with a lambda to cast each HeroType to its integer value. Used when
+                hero type data needs to be transmitted or stored as integers.
+            </summary>
+            <param name="heroArray">The array of HeroType enums to convert.</param>
+            <returns>Array of integers representing the hero types.</returns>
+        </member>
+        <member name="M:HeroController.ConvertIntArrayToHeroArray(System.Int32[])">
+            <summary>
+                Converts an array of integers back to an array of HeroType enums after
+                deserialization. Uses Array.ConvertAll with a lambda to cast each integer to
+                HeroType. Reverse operation of ConvertHeroArrayToIntArray for restoring hero type
+                data.
+            </summary>
+            <param name="intArray">The array of integers to convert.</param>
+            <returns>Array of HeroType enums restored from the integers.</returns>
+        </member>
     </members>
 </doc>

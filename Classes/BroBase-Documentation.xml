@@ -421,6 +421,14 @@
                 Default is Standard type.
             </summary>
         </member>
+        <member name="F:BroBase.pockettedSpecialAmmo">
+            <summary>
+                Stack of special ammunition types collected from crates but not yet used. Functions
+                as LIFO (last-in-first-out) where newest ammo is used first. When non-empty,
+                overrides standard special ammo and displays custom HUD icons. Consumed via
+                ReducePockettedSpecialAmmo when special is triggered.
+            </summary>
+        </member>
         <!-- Position & Physics Methods -->
         <member name="M:BroBase.AddSpeedLeft">
             <summary>
@@ -1273,6 +1281,14 @@
                 Active jetpack thrust duration timer. Set to 0.66 seconds on activation. Different
                 thrust levels: extra boost above 0.36s, normal boost above 0.16s. Controls jetpack
                 physics phases.
+            </summary>
+        </member>
+        <member name="F:BroBase.bros">
+            <summary>
+                Static registry of all active BroBase instances in the game. Automatically managed
+                through Awake/OnDestroy lifecycle. Used by Map.GetNearestHero and other systems for
+                hero detection, targeting, and proximity checks. Essential for multiplayer hero
+                tracking and AI target acquisition.
             </summary>
         </member>
     </members>

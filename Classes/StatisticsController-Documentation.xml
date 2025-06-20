@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:StatisticsController.Awake">
+            <summary>
+                Initializes the singleton instance and creates a new LevelStats object for tracking
+                current level statistics. Sets initial destruction count to 0.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.NotOnGUI">
+            <summary>
+                Debug GUI display method (despite misleading name). Shows current level statistics
+                including destruction count, kills/total enemies, formatted time, rescues/cages,
+                brutality score, and brutality meter with scrollbar. Not actually disabled.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.NotifyPause(System.Boolean)">
+            <summary>
+                Handles pause state notifications for time tracking. Records pause start time when
+                paused. Placeholder for pause duration calculation when unpaused (currently unused).
+            </summary>
+            <param name="paused">True when game is paused, false when resumed</param>
+        </member>
+        <member name="M:StatisticsController.Start">
+            <summary>
+                Initializes statistics tracking for the level start. Resets elapsed time to 0, sets
+                brutality and time percentiles to -1, initializes brutality grace period to 6
+                seconds, resets brutality level to 0, and loads existing campaign brutality totals
+                if brutality scoring is enabled for the current campaign.
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:StatisticsController.pauseTime">
+            <summary>
+                Tracks the timestamp when the game was paused. Set to current Time.time when paused,
+                used for pause duration tracking. Initialized to -1f indicating no pause has
+                occurred yet.
+            </summary>
+        </member>
+        <!-- Networking & RPC Methods -->
+        <member name="M:StatisticsController.DeserializeStats(System.Byte[])">
+            <summary>
+                Deserializes received statistics data from network. Unpacks byte stream to populate
+                current stats including all kill/alert counters, elapsed time, and level attempts.
+                Creates new LevelStats if needed.
+            </summary>
+            <param name="byteStream">The serialized statistics data to unpack</param>
+        </member>
+        <member name="M:StatisticsController.PackState(UnityStream)">
+            <summary>
+                Packs the current elapsed time into a network stream for multiplayer synchronization
+            </summary>
+            <param name="stream">The Unity network stream to serialize data to</param>
+            <returns>The modified stream after serialization</returns>
+            <remarks>
+                This method ensures all players have synchronized elapsed time. If no currentStats
+                exists or instance is null, sends 0 as default time value
+            </remarks>
+        </member>
+        <member name="M:StatisticsController.SerializeStats">
+            <summary>
+                Serializes current level statistics for network transmission. Packs destruction,
+                kills, rescues, alert states, knife kills, unaware kills, elapsed time, and level
+                attempts into byte array. Uses current stats or falls back to last level stats.
+            </summary>
+            <returns>Serialized statistics data as byte array</returns>
+        </member>
+        <member name="M:StatisticsController.UnpackState(UnityStream)">
+            <summary>
+                Unpacks elapsed time from a network stream during multiplayer synchronization
+            </summary>
+            <param name="stream">The Unity network stream to deserialize data from</param>
+            <returns>The stream after deserialization</returns>
+            <remarks>
+                Updates the current statistics elapsed time with the received value from the network
+            </remarks>
+        </member>
+        <!-- Statistics Tracking System Methods -->
+        <member name="M:StatisticsController.CacheStats">
+            <summary>
+                Caches the current level statistics for later aggregation (used by super
+                checkpoints). If no cached stats exist, stores the current stats directly. If cached
+                stats already exist, adds the current stats to them. Creates a new empty LevelStats
+                object for continued tracking.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.CalcAndSubmitCampaignScore">
+            <summary>
+                Calculates total campaign statistics and submits them to leaderboards. Iterates
+                through all level scores to sum brutality and time, then submits to Playtomic if
+                using Badumna connection. Called at campaign completion.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.CalculateTotalTime">
+            <summary>
+                Calculates and synchronizes the total elapsed time across all players. Gets time
+                from current or last level stats and sends RPC to all players if host. Ensures
+                consistent time tracking in multiplayer.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.ClearCachedStats">
+            <summary>
+                Clears the cached statistics buffer. Used to reset temporary stats storage between
+                level attempts or when starting fresh.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.GetCampaignTotalBrotality">
+            <summary>
+                Calculates and returns the total brutality score across all campaign levels. Sums
+                calculated brutality values from each level's statistics. Also builds debug string
+                with detailed breakdowns (unused).
+            </summary>
+            <returns>Total brutality score for the entire campaign</returns>
+        </member>
+        <member name="M:StatisticsController.GetCampaignTotalTime">
+            <summary>
+                Calculates and returns the total time spent across all campaign levels. Iterates
+                through campaign score dictionary summing elapsed times. Also builds detailed debug
+                string with per-level statistics (unused).
+            </summary>
+            <returns>Total elapsed time across all completed campaign levels</returns>
+        </member>
+        <member name="M:StatisticsController.GetDeathsCount">
+            <summary>
+                Returns the total number of recorded deaths from the last completed level's death
+                list.
+            </summary>
+            <returns>The count of death objects in the last level's death list</returns>
+        </member>
+        <member name="M:StatisticsController.GetTime">
+            <summary>
+                Gets the elapsed time from the last completed level's statistics.
+            </summary>
+            <returns>The elapsed time in seconds from the last level stats</returns>
+        </member>
+        <member name="M:StatisticsController.GetTimeString">
+            <summary>
+                Converts the current level's elapsed time into a formatted time string in MM:SS.T
+                format (where T is tenths of seconds).
+            </summary>
+            <returns>Formatted time string showing minutes, seconds, and tenths</returns>
+        </member>
+        <member name="M:StatisticsController.GetTimeString(System.Single)">
+            <summary>
+                Converts a time value in seconds to a formatted string in MM:SS.T format (where T is
+                tenths of seconds).
+            </summary>
+            <param name="time">Time in seconds to format</param>
+            <returns>Formatted time string showing minutes, seconds, and tenths</returns>
+        </member>
+        <member
+            name="M:StatisticsController.LogLevelScore(System.Int32,System.Single,System.Int64,System.Int64,System.Int32,System.Int32)">
+            <summary>
+                Stores level statistics in the campaign score dictionary. Creates the dictionary if
+                needed and replaces existing scores for the same level number. Used internally after
+                level completion.
+            </summary>
+            <param name="levelNum">The level number identifier</param>
+            <param name="time">Time taken to complete the level</param>
+            <param name="brotality">Brutality score (unused in current implementation)</param>
+            <param name="stealth">Stealth score (unused in current implementation)</param>
+            <param name="kills">Number of enemies killed</param>
+            <param name="levelAttempts">Number of attempts to complete the level</param>
+        </member>
+        <member name="M:StatisticsController.NotifyBlockDestroyed(Block)">
+            <summary>
+                Records terrain destruction for brutality scoring. Called when any block is
+                destroyed. Adds 0.1 to totalBrotality and increments destruction counter.
+            </summary>
+            <param name="block">The block that was destroyed</param>
+        </member>
+        <member name="M:StatisticsController.NotifyKnifedMook(Mook)">
+            <summary>
+                Records when a mook is killed by a knife attack. Called from mook damage handling
+                when death is caused by knife damage type. Increments the mooksKnifed statistic for
+                stealth tracking.
+            </summary>
+            <param name="mook">The mook that was knifed</param>
+        </member>
+        <member name="M:StatisticsController.NotifyLevelFinished(LevelResult)">
+            <summary>
+                Handles all statistics processing when a level ends. Records death counts by
+                hero/mook type for campaign tracking, merges cached stats on success, calculates
+                stealth score, logs level score to campaign dictionary, and resets or increments
+                level attempts based on result.
+            </summary>
+            <param name="result">Whether the level was completed successfully or failed</param>
+        </member>
+        <member name="M:StatisticsController.NotifyLevelLoaded">
+            <summary>
+                Records the total number of mooks at level start by storing the current totalMooks
+                count. Called when a level finishes loading to establish the baseline mook count for
+                completion percentage tracking.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.NotifyMookDeath(Mook)">
+            <summary>
+                Records a mook death for statistics tracking. Increments kill count, updates
+                brutality score based on kill timing (combo multiplier if kills within 0.5 seconds),
+                sets brutality grace periods, adds 1 brutality point and 1 music intensity, updates
+                last kill time, and tracks stealth kills if the mook was unaware.
+            </summary>
+            <param name="mook">The mook that died</param>
+        </member>
+        <member name="M:StatisticsController.NotifyMookHeardSound(Mook)">
+            <summary>
+                Increments the count of mooks that have heard suspicious sounds. Only counts living
+                mooks that can be added to statistics.
+            </summary>
+            <param name="mook">The mook that heard a sound</param>
+        </member>
+        <member name="M:StatisticsController.NotifyMookSeenBro(Mook)">
+            <summary>
+                Notifies the statistics system when a mook has seen a bro (player). Called when AI
+                becomes aware of player presence. Increments the mooksHalfAlerted counter if
+                conditions are met.
+            </summary>
+            <param name="mook">The mook that has spotted a bro</param>
+        </member>
+        <member name="M:StatisticsController.NotifyMookTryShootAtBBro(Mook)">
+            <summary>
+                Records when a mook attempts to shoot at a bro. Called by enemy AI when entering
+                shooting state. Increments mooksFullyAlerted to track complete enemy awareness.
+            </summary>
+            <param name="mook">The mook attempting to shoot</param>
+        </member>
+        <member name="M:StatisticsController.NotifyRescue">
+            <summary>
+                Records a prisoner rescue event. Adds 3 brutality points, sets grace period based on
+                current brutality level (unused grace calculation), and increments rescue counter.
+                Called when players free prisoners from cages.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.NotifyTankDeath(Tank)">
+            <summary>
+                Records a tank death for statistics and world map campaign tracking. Updates vehicle
+                death counters in world map saves, sets last kill time, adds 10 brutality points and
+                4 music intensity, and sets brutality grace period to 5 seconds (then immediately to
+                1 second). Tracks as vehicle type in campaign statistics.
+            </summary>
+            <param name="tank">The tank that was destroyed</param>
+        </member>
+        <member name="M:StatisticsController.NotifyTruckDeath(Tank)">
+            <summary>
+                Records a truck death for statistics and world map campaign tracking. Updates
+                vehicle death counters in world map saves, sets last kill time, adds 5 brutality
+                points and 3 music intensity, and sets brutality grace period to 4 seconds (then
+                immediately to 1 second). Tracks as vehicle type in campaign statistics.
+            </summary>
+            <param name="tank">The truck (Tank instance) that was destroyed</param>
+        </member>
+        <member name="M:StatisticsController.RegisterMook(Mook)">
+            <summary>
+                Registers a mook as part of the level's total mook count for statistics tracking.
+                Only counts mooks that return true from CanAddToStatistics().
+            </summary>
+            <param name="mook">The mook instance to register for statistics tracking</param>
+        </member>
+        <member name="M:StatisticsController.RegisterRescueBro">
+            <summary>
+                Increments the total cage/rescue count for the current level statistics. Called when
+                a bro rescue cage is discovered in the level.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.ResetScore">
+            <summary>
+                Resets all campaign scoring data. Clears the campaign score dictionary and
+                deathmatch death objects. Called when starting a new campaign or resetting progress.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.SetTotalTime(System.Single)">
+            <summary>
+                RPC method that sets the synchronized total time value. Called by host to update all
+                players' elapsed time. Updates currentStats.elapsedTime if stats exist.
+            </summary>
+            <param name="totatTime">The synchronized total time value</param>
+        </member>
+        <!-- Statistics Tracking System Fields -->
+        <member name="F:StatisticsController.cachedStats">
+            <summary>
+                Temporary storage for statistics during level transitions or checkpoints
+            </summary>
+            <remarks>
+                Used to preserve statistics across checkpoint restarts. Added back to currentStats
+                upon level completion
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.currentStats">
+            <summary>
+                Active statistics being tracked for the current level in progress
+            </summary>
+            <remarks>
+                Created at level start, updated throughout gameplay, and moved to lastLevelStats
+                upon completion. Null when not in a level
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.efficiencyScore">
+            <summary>
+                Score based on completion efficiency (unused in current implementation)
+            </summary>
+            <remarks>
+                Field exists but is never referenced in the codebase. Likely deprecated in favor of
+                the brutality system
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.killScore">
+            <summary>
+                Score points awarded for kills (unused in current implementation)
+            </summary>
+            <remarks>
+                Field exists but is never referenced in the codebase. Likely deprecated in favor of
+                the brutality system
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.lastLevelStats">
+            <summary>
+                Statistics from the most recently completed level
+            </summary>
+            <remarks>
+                Set when a level is successfully completed. Used by UI screens to display
+                end-of-level statistics
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.rescueScore">
+            <summary>
+                Score points awarded for rescuing bros (unused in current implementation)
+            </summary>
+            <remarks>
+                Field exists but is never referenced in the codebase. Likely deprecated in favor of
+                the brutality system
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.totalMooks">
+            <summary>
+                Running count of total mooks spawned across all levels in the current session
+            </summary>
+            <remarks>
+                Incremented by each mook's Start() method. Used to set mooksAtStart in currentStats
+                when a level begins
+            </remarks>
+        </member>
+        <!-- Brutality Scoring System Methods -->
+        <member name="M:StatisticsController.AddBrotality(System.Int32)">
+            <summary>
+                Adds points to the brutality score and music intensity. Adds the specified amount to
+                totalBrotality and musicIntensity. Sets grace period to 1 second (5+ points) or
+                extends existing grace if less than 1 second (under 5 points).
+            </summary>
+            <param name="extra">The amount of brutality points to add</param>
+        </member>
+        <member name="M:StatisticsController.AddBrotalityGrace(System.Single)">
+            <summary>
+                Extends the brutality grace period timer. Sets grace period to the specified value
+                if greater than current. Grace period prevents brutality score decay temporarily
+                after actions.
+            </summary>
+            <param name="grace">The grace period duration in seconds to potentially set</param>
+        </member>
+        <member name="M:StatisticsController.CalculateBrotality(LevelStats)">
+            <summary>
+                Calculates the final brutality score from level statistics. Subtracts penalties from
+                total, multiplies by 10, rounds up, then multiplies by 10 again. Ensures scores are
+                rounded to nearest 100.
+            </summary>
+            <param name="stats">The level statistics to calculate brutality from</param>
+            <returns>Final brutality score as a long value</returns>
+        </member>
+        <member name="M:StatisticsController.CalculateBrotalityLevel(System.Single)">
+            <summary>
+                Determines brutality level based on current score value. Sets level 0-5 based on
+                thresholds: 0 (≤12), 1 (≤37), 2 (≤87), 3 (≤162), 4 (≤362), 5 (&gt;362). Updates
+                static brotalityLevel field.
+            </summary>
+            <param name="brotalityValue">The current brutality score to evaluate</param>
+        </member>
+        <member name="M:StatisticsController.CalculateStealth">
+            <summary>
+                Placeholder method for stealth score calculation. Currently empty - stealth scoring
+                system not implemented. Intended to evaluate undetected kills and silent
+                progression.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.GetBrotalityLevel">
+            <summary>
+                Returns the current brutality level (0-5). Level determines score decay rate and
+                visual feedback intensity. Static accessor for the private brotalityLevel field.
+            </summary>
+            <returns>Current brutality level from 0 (lowest) to 5 (highest)</returns>
+        </member>
+        <member name="M:StatisticsController.GetBrotalometerValue">
+            <summary>
+                Gets the current brutality meter value, which represents total brutality minus
+                penalties.
+            </summary>
+            <returns>The current brutality meter value as displayed on the HUD</returns>
+        </member>
+        <member name="M:StatisticsController.GetMusicIntensity">
+            <summary>
+                Gets the current music intensity value that drives dynamic music changes based on
+                combat action. Increased by kills and decreased over time when not in combat.
+            </summary>
+            <returns>The current music intensity value</returns>
+        </member>
+        <member name="M:StatisticsController.NotifyCaptureCheckPoint">
+            <summary>
+                Awards brutality bonus for capturing a checkpoint. Adds 3 brutality points and sets
+                brutality grace period to 5 seconds (then immediately to 1 second). Does nothing if
+                level is already finished.
+            </summary>
+        </member>
+        <member name="M:StatisticsController.ShowBrotalityScore">
+            <summary>
+                Determines whether brutality score should be displayed based on current campaign
+                settings. Returns true only if a campaign is loaded with a header that has brutality
+                scoreboard enabled and the game is not in edit mode.
+            </summary>
+            <returns>True if brutality score should be shown, false otherwise</returns>
+        </member>
+        <member name="M:StatisticsController.Update">
+            <summary>
+                Unity Update method that manages brutality scoring mechanics. Handles grace period
+                countdown, brutality decay rates based on level (3-50 per second), applies decay
+                multipliers for extended inactivity (up to 3x), manages music intensity fadeout,
+                calculates brutality meter display value, updates brutality level thresholds, and
+                tracks elapsed time when unpaused.
+            </summary>
+        </member>
+        <!-- Brutality Scoring System Fields -->
+        <member name="F:StatisticsController.brotalitometerValue">
+            <summary>
+                Current visual fill level of the brutality meter UI (unused)
+            </summary>
+            <remarks>
+                Field exists but is never referenced. The Brotalitometer class manages its own
+                display value
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.brotalityFifthBarValue">
+            <summary>
+                Deprecated constant that was likely used for visual brutality bar display. Value of
+                200f represents the fifth threshold level. No longer used in current implementation.
+            </summary>
+        </member>
+        <member name="F:StatisticsController.brotalityFirstBarValue">
+            <summary>
+                Brutality score threshold for filling the first bar of the brutality meter (12
+                points)
+            </summary>
+            <remarks>
+                Used by Brotalitometer UI to determine visual representation of brutality progress
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.brotalityFourthBarValue">
+            <summary>
+                Deprecated constant that was likely used for visual brutality bar display. Value of
+                75f represents the fourth threshold level. No longer used in current implementation.
+            </summary>
+        </member>
+        <member name="F:StatisticsController.brotalityGrace">
+            <summary>
+                Grace period timer for maintaining brutality multiplier chains (unused)
+            </summary>
+            <remarks>
+                Field exists but is never referenced in code. The brutality system instead uses
+                lastKillTime for timing
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.brotalityLevel">
+            <summary>
+                Tracks the current brutality level (0-5) based on brotalitometerValue thresholds.
+                Used by UI elements like MookAlertLevelIndicator to display alert icons. Level 0:
+                &lt;=12, Level 1: &lt;=37, Level 2: &lt;=87, Level 3: &lt;=162, Level 4: &lt;=362,
+                Level 5: &gt;362. Reset to 0 at level start.
+            </summary>
+        </member>
+        <member name="F:StatisticsController.brotalitySecondBarValue">
+            <summary>
+                Deprecated constant that was likely used for visual brutality bar display. Value of
+                25f represents the second threshold level. No longer used in current implementation.
+            </summary>
+        </member>
+        <member name="F:StatisticsController.brotalityThirdBarValue">
+            <summary>
+                Deprecated constant that was likely used for visual brutality bar display. Value of
+                50f represents the third threshold level. No longer used in current implementation.
+            </summary>
+        </member>
+        <member name="F:StatisticsController.lastBrotality">
+            <summary>
+                Previous brutality score value (unused in current implementation)
+            </summary>
+            <remarks>
+                Field exists but is never referenced. Brutality tracking is handled through
+                currentStats instead
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.lastKillTime">
+            <summary>
+                Timestamp of the most recent kill, used for brutality multiplier timing
+            </summary>
+            <remarks>
+                Set by RegisterMookDeath and RegisterTankDeath. Used to determine if kills are
+                within 0.5 seconds for multiplier chains
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.musicIntensity">
+            <summary>
+                Music intensity level based on recent player actions (unused)
+            </summary>
+            <remarks>
+                Field exists but is never referenced. Music intensity is controlled directly by the
+                Sound class instead
+            </remarks>
+        </member>
+        <!-- Death Recording System Methods -->
+        <member name="M:StatisticsController.AddToDeathList(DeathObject)">
+            <summary>
+                Adds a death object to the current level's death list if it doesn't already exist.
+                Checks for null objects and validates that statistics tracking is initialized.
+                Prevents duplicate entries by checking if a death with the same unit ID already
+                exists.
+            </summary>
+            <param name="deathObj">The death object to add to the tracking list</param>
+        </member>
+        <member
+            name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,MookType,System.Single,System.Single)">
+            <summary>
+                RPC method that creates and adds a mook death object to the current level's death
+                list. Called on all clients to synchronize death tracking.
+            </summary>
+            <param name="nid">Network ID of the unit that died</param>
+            <param name="deathType">The type/cause of death</param>
+            <param name="mookType">The type of mook that died</param>
+            <param name="xI">X position where death occurred</param>
+            <param name="yI">Y position where death occurred</param>
+        </member>
+        <member
+            name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,HeroType,System.Single,System.Single)">
+            <summary>
+                RPC method that creates and adds a hero death object to the current level's death
+                list. Called on all clients to synchronize death tracking.
+            </summary>
+            <param name="nid">Network ID of the hero that died</param>
+            <param name="deathType">The type/cause of death</param>
+            <param name="mookType">The type of hero that died (parameter name is legacy)</param>
+            <param name="xI">X position where death occurred</param>
+            <param name="yI">Y position where death occurred</param>
+        </member>
+        <member name="M:StatisticsController.GetDeathObject(System.Int32)">
+            <summary>
+                Retrieves a specific death object from the last level's death list by index. Used by
+                the level over screen to display death replay information.
+            </summary>
+            <param name="deathIndex">The index of the death object to retrieve</param>
+            <returns>The DeathObject at the specified index, or null if index is out of bounds</returns>
+        </member>
+        <member
+            name="M:StatisticsController.NotifyDeathType(NID,MookType,DeathType,System.Single,System.Single)">
+            <summary>
+                Records and broadcasts a death event to all players via RPC. Only processes non-None
+                and non-Unassigned death types when the level is not finished. Sends death
+                information including unit ID, type, death cause, and position.
+            </summary>
+            <param name="nid">Network ID of the unit that died</param>
+            <param name="mookType">The type of mook that died</param>
+            <param name="deathType">The type/cause of death</param>
+            <param name="xI">X position where death occurred</param>
+            <param name="yI">Y position where death occurred</param>
+        </member>
+        <member name="M:StatisticsController.NotifyMookDeathType(Mook,DeathType)">
+            <summary>
+                Records and broadcasts a mook death with specific death type to all players via RPC.
+                Extracts mook properties (ID, type, position) and sends death notification if death
+                type is valid and level is not finished.
+            </summary>
+            <param name="mook">The mook that died</param>
+            <param name="deathType">The type/cause of death</param>
+        </member>
+        <member name="M:StatisticsController.NotifyMookDeathType(TestVanDammeAnim,DeathType)">
+            <summary>
+                Records and broadcasts a hero (bro) death with specific death type to all players
+                via RPC. Extracts hero properties (ID, type, position) and sends death notification
+                if death type is valid and level is not finished.
+            </summary>
+            <param name="vanDamme">The hero/bro that died</param>
+            <param name="deathType">The type/cause of death</param>
+        </member>
+        <!-- Deathmatch Statistics Methods -->
+        <member name="M:StatisticsController.AddDeathmatchDeathObject(System.Int32,DeathObject)">
+            <summary>
+                Records a death event in deathmatch mode, tracking which player scored the kill
+            </summary>
+            <param name="killer">The player index who scored the kill (0-3)</param>
+            <param name="deathObject">The death object containing information about the death event</param>
+            <remarks>
+                Initializes the deathmatchDeathObjects array if not already created. Each player has
+                their own list of kills tracked separately
+            </remarks>
+        </member>
+        <member name="M:StatisticsController.ClearDeathmatchDeathObjects">
+            <summary>
+                Clears all recorded deathmatch kills for all players
+            </summary>
+            <remarks>
+                Called when resetting deathmatch statistics or starting a new match. Safely handles
+                null checks before clearing
+            </remarks>
+        </member>
+        <member name="M:StatisticsController.GetDeathmatchKillObjects(System.Int32)">
+            <summary>
+                Retrieves all death objects (kills) recorded for a specific player in deathmatch
+            </summary>
+            <param name="player">The player index (0-3) to get kills for</param>
+            <returns>List of death objects representing kills by this player, or null if no data exists</returns>
+        </member>
+        <!-- Campaign Progress System Fields -->
+        <member name="F:StatisticsController.brotalityPercentile">
+            <summary>
+                The percentile ranking for brutality score (0-100, where 0 means top percentile)
+            </summary>
+            <remarks>
+                Set to -1 when no data available. Used by LevelOverScreen to display "Top X%"
+                messages when player rank is outside top 10
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.brotalityRank">
+            <summary>
+                The player's global rank for brutality score on the current campaign leaderboard
+            </summary>
+            <remarks>
+                Initialized to 9999 when no rank data is available. Updated by PlaytomicController
+                when leaderboard data is retrieved. Lower numbers indicate better rank (1 = first
+                place)
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.levelAttempts">
+            <summary>
+                Tracks the number of attempts made on the current level before successful completion
+            </summary>
+            <remarks>
+                Incremented on each level failure, reset to 0 after successful completion. Saved to
+                LogLevelScore for analytics
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.stealthPercentile">
+            <summary>
+                The percentile ranking for stealth score (0-100, where 0 means top percentile)
+            </summary>
+            <remarks>
+                Set to -1 when no data available. Used by LevelOverScreen to display "Top X%"
+                messages when player rank is outside top 10
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.stealthRank">
+            <summary>
+                The player's global rank for stealth score on the current campaign leaderboard
+            </summary>
+            <remarks>
+                Initialized to 9999 when no rank data is available. Updated by PlaytomicController
+                when leaderboard data is retrieved. Lower numbers indicate better rank (1 = first
+                place)
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.timePercentile">
+            <summary>
+                The percentile ranking for completion time (0-100, where 0 means top percentile)
+            </summary>
+            <remarks>
+                Set to -1 when no data available. Used by LevelOverScreen to display "Top X%"
+                messages when player rank is outside top 10
+            </remarks>
+        </member>
+        <member name="F:StatisticsController.timeRank">
+            <summary>
+                The player's global rank for completion time on the current campaign leaderboard
+            </summary>
+            <remarks>
+                Initialized to 9999 when no rank data is available. Updated by PlaytomicController
+                when leaderboard data is retrieved. Lower numbers indicate better rank (1 = first
+                place)
+            </remarks>
+        </member>
+    </members>
+</doc>

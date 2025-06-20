@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:CheckPoint.Awake">
+            <summary>
+                Registers this checkpoint with the Map system and initializes position coordinates.
+                Called when the checkpoint GameObject is first created.
+            </summary>
+        </member>
+        <member name="M:CheckPoint.OnDestroy">
+            <summary>
+                Removes the steel replacement flag from ground blocks below and adjacent to the
+                checkpoint position. This reverses the ground reinforcement applied during setup,
+                using raycasts to find the affected blocks.
+            </summary>
+        </member>
+        <member name="M:CheckPoint.Start">
+            <summary>
+                Hides the flag GameObject initially and disables the flag renderer for invisible
+                checkpoints. Called after Awake on the first frame when the checkpoint becomes
+                active.
+            </summary>
+        </member>
+        <member name="M:CheckPoint.Update">
+            <summary>
+                Handles one-time setup when not in edit mode, reinforces nearby ground blocks,
+                detects blocking units, and manages the deactivation delay timer. For non-invisible
+                checkpoints, this method raycast-checks blocks directly below the checkpoint and its
+                adjacent positions, marking them to be replaced with steel blocks if they collapse
+                (excluding cage and sandbag blocks).
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:CheckPoint.isSetup">
+            <summary>
+                Tracks whether the one-time setup in Update() has been completed. Prevents repeated
+                setup operations and ground reinforcement checks after initial configuration.
+            </summary>
+        </member>
+        <!-- Checkpoint Activation & State Methods -->
+        <member name="M:CheckPoint.ActivateInternal">
+            <summary>
+                Activates the checkpoint, raising the flag, playing sound effects, setting it as the
+                current spawn point, and triggering end-level sequences for final checkpoints.
+                Notifies statistics controller of checkpoint capture and handles special behavior
+                for Hell theme levels (portal) vs normal levels (helicopter).
+            </summary>
+        </member>
+        <member name="M:CheckPoint.DelayDeactivate(System.Single)">
+            <summary>
+                Sets a timer to automatically deactivate the checkpoint after the specified delay.
+                Used for temporary checkpoint states or special game modes.
+            </summary>
+            <param name="time">Time in seconds before the checkpoint deactivates</param>
+        </member>
+        <member name="M:CheckPoint.IsBlockedByUnit">
+            <summary>
+                Checks if an evil unit is preventing checkpoint activation by being alive and within
+                96 units distance. Final checkpoints detect blocking units during setup to determine
+                end-level trigger behavior.
+            </summary>
+            <returns>True if a living evil unit is within blocking range, false otherwise</returns>
+        </member>
+        <member name="M:CheckPoint.ReactivateInternal">
+            <summary>
+                Sets this checkpoint as the current spawn point without triggering activation
+                effects. Used to restore checkpoint state when loading saved games or synchronizing
+                multiplayer state.
+            </summary>
+        </member>
+        <!-- Checkpoint Activation & State Fields -->
+        <member name="F:CheckPoint.activated">
+            <summary>
+                Current activation state of the checkpoint. When true, the flag is raised and this
+                serves as a valid spawn point. Synchronized across network for multiplayer games.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.blockingUnit">
+            <summary>
+                Reference to the nearest evil unit found during setup. Used to determine if
+                checkpoint activation should be blocked and whether this is a final checkpoint that
+                triggers level completion.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.deactivateDelay">
+            <summary>
+                Countdown timer in seconds for automatic deactivation. When greater than zero,
+                decrements each frame and deactivates the checkpoint when reaching zero.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.flag">
+            <summary>
+                Reference to the FlagFlap component that handles the visual flag raising animation.
+                The flag GameObject is initially inactive and shown when the checkpoint activates.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.isFinal">
+            <summary>
+                Marks this as the level's final checkpoint. When activated, triggers level
+                completion sequence (helicopter extraction or hell portal depending on theme). Set
+                during setup if evil units are nearby.
+            </summary>
+        </member>
+        <!-- Configuration & Properties Fields -->
+        <member name="F:CheckPoint.airDropCheckPoint">
+            <summary>
+                Determines if players respawn via airdrop parachute animation when spawning at this
+                checkpoint. Map system checks this flag when determining spawn method for revived
+                players.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.airDropExtraHeight">
+            <summary>
+                Additional height offset in units added to airdrop spawn position when
+                airDropCheckPoint is true. Default value of 128 units provides clearance for
+                parachute deployment animation.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.checkPointID">
+            <summary>
+                Unique identifier assigned by Map.RegisterCheckPoint() based on registration order.
+                Used to track which checkpoint is currently active and for save/load functionality.
+                Default value of -1 indicates unregistered.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.invisibleCheckPoint">
+            <summary>
+                When true, all renderers are disabled making the checkpoint completely invisible to
+                players. Invisible checkpoints skip ground reinforcement and blocking unit detection
+                during setup.
+            </summary>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:CheckPoint.flagRaiseAudioClip">
+            <summary>
+                Custom audio clip played when the checkpoint activates and raises its flag. If null,
+                no additional sound is played beyond the standard spatial sound component.
+            </summary>
+        </member>
+        <member name="F:CheckPoint.yeahVolume">
+            <summary>
+                Volume level for celebration sound effects. Default 0.5f provides balanced audio.
+                Currently unused in the implementation but available for modders to implement custom
+                sounds.
+            </summary>
+        </member>
+        <!-- Networking & State Synchronization Methods -->
+        <member name="M:CheckPoint.PackState(UnityStream)">
+            <summary>
+                Serializes the checkpoint's activation state for network synchronization. Only the
+                activated boolean is transmitted to keep bandwidth usage minimal.
+            </summary>
+            <param name="stream">Stream to write the serialized state data</param>
+            <returns>The stream after serialization for method chaining</returns>
+        </member>
+        <member name="M:CheckPoint.UnpackState(UnityStream)">
+            <summary>
+                Deserializes checkpoint state from network data, restoring activation status and
+                triggering visual updates. For activated final checkpoints, also restores the
+                helicopter/portal state.
+            </summary>
+            <param name="stream">Stream containing the serialized state data</param>
+            <returns>The stream after deserialization for method chaining</returns>
+        </member>
+    </members>
+</doc>

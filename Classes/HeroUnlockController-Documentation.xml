@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Hero Unlock System Methods -->
+        <member name="M:HeroUnlockController.AreAnyMoreBrosAvailableToBeSavedInHardcoreMode">
+            <summary>
+                Checks if there are any heroes left to rescue in hardcore mode. Compares all
+                unlocked heroes against those already available or dead in the current hardcore save
+                to determine if more can be rescued.
+            </summary>
+            <returns>True if there are heroes that can still be rescued in hardcore mode, false if all are either available or dead.</returns>
+        </member>
+        <member name="M:HeroUnlockController.CheckFreedBrosUnlocks(System.Boolean)">
+            <summary>
+                Checks if the current freed prisoner count has reached any hero unlock thresholds
+                and unlocks the appropriate heroes. Also sets the next hero type for immediate
+                availability.
+            </summary>
+            <param name="announce">If true, displays an announcement when heroes are unlocked.</param>
+        </member>
+        <member name="M:HeroUnlockController.ClearHeroUnlockIntervals">
+            <summary>
+                Clears the cached hero unlock interval data and forces it to regenerate. The method
+                also accesses the first unlock interval to trigger regeneration of the dictionary.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.ClearUnlocks">
+            <summary>
+                Resets all hero unlocks and clears the unlock progression data. If in exhibition
+                build mode, also clears the cached unlock intervals to force regeneration.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.FreeBro">
+            <summary>
+                Handles the rescue of a prisoner and associated hero unlock progression. In hardcore
+                mode, randomly selects an available hero to add to the player's roster. In normal
+                mode, increments the freed prisoner counter through PlayerProgress.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.GetNextHeroToBeUnlocked">
+            <summary>
+                Determines which hero will be unlocked next based on the current rescue count.
+                Iterates through the unlock intervals to find the next hero that hasn't been reached
+                yet.
+            </summary>
+            <returns>The HeroType that will be unlocked next, or HeroType.None if all heroes are unlocked.</returns>
+        </member>
+        <member name="M:HeroUnlockController.GetNumberOfRescuesFromSinceUnlock">
+            <summary>
+                Calculates how many rescues have been performed since the last hero was unlocked.
+                Used for tracking progress between unlock milestones.
+            </summary>
+            <returns>The number of rescues since the last unlock, or 0 if no unlocks have occurred yet.</returns>
+        </member>
+        <member name="M:HeroUnlockController.GetNumberOfRescuesToNextUnlock">
+            <summary>
+                Calculates how many more prisoner rescues are needed to unlock the next hero. Used
+                by the level complete screen to show unlock progress to players.
+            </summary>
+            <returns>The number of rescues needed until the next hero unlock, or -1 if all heroes are unlocked.</returns>
+        </member>
+        <member name="M:HeroUnlockController.GetUnlockedHeroes(System.Boolean)">
+            <summary>
+                Gets a list of all currently unlocked heroes available for selection. Filters out
+                heroes that aren't compatible with certain game modes (death match, explosion run,
+                etc.) and optionally excludes heroes that haven't been played yet.
+            </summary>
+            <param name="ignoreYetToBeSeenHeroes">If true, excludes newly unlocked heroes that haven't been played yet.</param>
+            <returns>A list of HeroType values representing all unlocked and available heroes.</returns>
+        </member>
+        <member name="M:HeroUnlockController.Initialize">
+            <summary>
+                Initializes the hero unlock system at game start. Removes any unlocked heroes that
+                aren't available in the current campaign, checks for any new unlocks based on freed
+                prisoner count, and preserves the next hero selection if valid.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.IsAvailableInCampaign(HeroType)">
+            <summary>
+                Checks if a specific hero can be unlocked in the current campaign mode. Heroes must
+                be part of the unlock progression to be available (some heroes like Expendabros are
+                special unlocks).
+            </summary>
+            <param name="hero">The hero type to check for campaign availability.</param>
+            <returns>True if the hero can be unlocked through normal campaign progression, false otherwise.</returns>
+        </member>
+        <member name="M:HeroUnlockController.IsExpendaBro(HeroType)">
+            <summary>
+                Determines if a hero is one of the Expendabros characters (special cross-promotion
+                heroes from The Expendables movie franchise). These heroes have special unlock
+                conditions.
+            </summary>
+            <param name="hero">The hero type to check.</param>
+            <returns>True if the hero is an Expendabro (LeeBroxmas, BroneyRoss, etc.), false otherwise.</returns>
+        </member>
+        <member
+            name="M:HeroUnlockController.MakeSureTheresEnoughUnlockedBrosForAllTheJoinedPlayers">
+            <summary>
+                Ensures that enough heroes are unlocked to support all joined players. In exhibition
+                builds, unlocks 4 specific heroes. In normal gameplay, automatically increases the
+                freed prisoner count to unlock enough heroes for the player count.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.UnlockAllBros">
+            <summary>
+                Debug method that instantly unlocks all heroes by setting the freed prisoner count
+                to 99999 and checking for unlocks. Used for testing purposes.
+            </summary>
+        </member>
+        <member name="M:HeroUnlockController.UnlockEverythingButBroheart">
+            <summary>
+                Debug method that unlocks all heroes except BroveHeart by setting the freed prisoner
+                count to 399. BroveHeart requires 400 rescues, so this leaves only that hero locked.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:HeroUnlockController.IsDeathMatchBro(HeroType)">
+            <summary>
+                Determines if a hero is available for selection in death match and similar
+                competitive game modes. Most heroes are available except for a few special cases
+                like CaseyBroback.
+            </summary>
+            <param name="nextHeroType">The hero type to check for death match availability.</param>
+            <returns>True if the hero can be used in death match modes, false otherwise.</returns>
+        </member>
+    </members>
+</doc>

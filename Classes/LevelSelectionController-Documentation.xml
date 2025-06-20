@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Level Loading & Transitions Methods -->
+        <member name="M:LevelSelectionController.GetCurrentMap">
+            <summary>
+                Retrieves the MapData for the current level based on the game's load mode and
+                settings. This is the primary method for obtaining level data and handles all
+                different load scenarios.
+            </summary>
+            <returns>The MapData for the current level, or null if no valid level data could be loaded.</returns>
+            <remarks>
+                This method handles multiple loading scenarios: - Campaign mode: Loads from the
+                current campaign's level array - LoadFromMapdata: Uses the pre-set MapDataToLoad -
+                LoadFromFile: Loads individual level files from disk - Generated: Creates
+                procedurally generated levels The method also handles initial setup when loadMode is
+                NotSet, including editor test levels and last played custom levels. This is called
+                by Map.LoadMap to get the level data.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.GetMapDataForCampaign">
+            <summary>
+                Loads map data for the current campaign based on game mode and level number. Handles
+                special cases for BroDown mode (player count based levels), versus modes with
+                rotation, and victory screen for completed campaigns.
+            </summary>
+            <returns>The MapData for the current level, or victory screen data if the campaign is complete.</returns>
+        </member>
+        <member name="M:LevelSelectionController.GetMapDataFromFile">
+            <summary>
+                Loads map data from a file on disk. Attempts to load as a campaign first, falling
+                back to single level loading if that fails. Updates the level file name tracking.
+            </summary>
+            <returns>The loaded MapData, or null if no valid file name is set.</returns>
+        </member>
+        <member name="M:LevelSelectionController.GotoNextCampaignScene">
+            <summary>
+                Handles the transition to the next scene in the campaign sequence, including special
+                handling for the helicopter intro cutscene at the start of the main campaign.
+            </summary>
+            <remarks>
+                This method has special logic for the campaign start: - If at level 0 (campaign
+                start) and haven't shown the helicopter intro for non-custom campaigns, it loads the
+                "MissionScreenVietnam" intro scene first - Otherwise, it loads the standard campaign
+                scene The method sets the appropriate scene in GameState and calls
+                GameModeController.LoadNextScene to handle the actual transition. Used when starting
+                a new campaign from menus.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.GotoNextLevel">
+            <summary>
+                Advances to the next level in the current campaign by incrementing the level number
+                and reloading the current scene. Resets to level 0 if past the end of the campaign.
+            </summary>
+        </member>
+        <member name="M:LevelSelectionController.ResetLevelAndGameModeToDefault">
+            <summary>
+                Resets all level selection and game mode settings to their default values. This
+                comprehensive reset is called when returning to the main menu or starting a fresh
+                game session.
+            </summary>
+            <remarks>
+                This method performs a complete reset of the game state including: - Setting current
+                level to 0 and clearing fail counts - Resetting all campaign loading flags and modes
+                - Clearing custom campaign and workshop data - Resetting player wins and statistics
+                - Clearing triggered once-only triggers - Setting the default campaign based on
+                build type (Expendabros, Exhibition, or standard) This ensures a clean slate when
+                starting new game sessions.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.RestartCampaignScene">
+            <summary>
+                Initiates a restart of the current campaign scene by triggering a fade transition.
+                This method is called when the player chooses to retry a failed level.
+            </summary>
+            <remarks>
+                The method triggers a 2-second solid fade effect. The actual scene reload is handled
+                by the fade system once the fade completes. This is typically called from the level
+                failure screen when the player chooses to retry instead of returning to the menu.
+            </remarks>
+        </member>
+        <!-- Campaign Management Methods -->
+        <member name="M:LevelSelectionController.CompleteCurrentLevel">
+            <summary>
+                Marks the current level as complete by incrementing the level number and saving
+                progress for online campaigns. Resets the helicopter intro flag for the next level.
+            </summary>
+        </member>
+        <member name="M:LevelSelectionController.DmRotationLevelLoadComplete(Campaign)">
+            <summary>
+                Called when a deathmatch rotation level finishes downloading. Assigns the campaign
+                to the appropriate rotation slot and initiates download of the next level if needed.
+            </summary>
+            <param name="campaign">The downloaded campaign to add to the rotation.</param>
+        </member>
+        <member name="M:LevelSelectionController.FindOnlineDeathmatchLevels">
+            <summary>
+                Queries Steam Workshop for deathmatch levels using either vote ranking (70% chance)
+                or trend ranking (30% chance). Initiates the asynchronous query and sets up the
+                callback handler.
+            </summary>
+        </member>
+        <member name="M:LevelSelectionController.GetFormattedCampaignName(System.String)">
+            <summary>
+                Formats a campaign file name into a display name by converting to uppercase,
+                removing prefixes, and looking up formatted names. Used for campaign display in UI
+                and presence text.
+            </summary>
+            <param name="campaignFileName">The raw campaign file name to format (e.g., "WM_Mission1").</param>
+            <returns>The formatted campaign name (e.g., "2" for "MISSION1") or the cleaned uppercase name if no lookup exists.</returns>
+        </member>
+        <member name="M:LevelSelectionController.LoadNextVersusCampaign">
+            <summary>
+                Loads the next campaign in the versus rotation system. Handles both online
+                deathmatch rotation with Steam Workshop levels and offline rotation with local
+                campaigns. Manages the campaign queue and initiates downloads for upcoming levels.
+            </summary>
+        </member>
+        <member name="M:LevelSelectionController.SetLevelPresence">
+            <summary>
+                Sets the platform-specific presence text based on the current campaign and level.
+                Displays different text for challenge levels, arcade levels, and campaign levels.
+            </summary>
+        </member>
+        <member
+            name="M:LevelSelectionController.UGC_UGCQueryCompleted(Steamworks.SteamUGCQueryCompleted_t,System.Boolean)">
+            <summary>
+                Callback handler for Steam Workshop queries. Processes the returned deathmatch
+                levels, creates WorkshopLevelDetails objects, and selects levels for the current and
+                next rotation slots.
+            </summary>
+            <param name="value">The Steam UGC query result containing workshop level information.</param>
+            <param name="ioFailure">Whether the query failed due to an IO error.</param>
+        </member>
+        <!-- Campaign Management Properties -->
+        <member name="P:LevelSelectionController.campaignToLoad">
+            <summary>
+                Gets or sets the name of the campaign that should be loaded. This property stores
+                and retrieves the campaign name from the GameState singleton instance, ensuring that
+                the campaign name persists across scene transitions.
+            </summary>
+            <remarks>
+                This is a key property used throughout the game to determine which campaign should
+                be loaded. It's set by various menu systems (CustomCampaignMenu,
+                HeroSelectController, etc.) and read by the level loading system. The value is
+                stored in GameState.Instance.campaignName to maintain consistency across the game
+                session.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.currentCampaign">
+            <summary>
+                Gets or sets the currently loaded Campaign object containing all level data for the
+                active campaign. Setting this property also updates the campaign name in GameState
+                for persistence.
+            </summary>
+            <remarks>
+                This property holds the actual Campaign object with all its levels, header
+                information, and metadata. When set, it automatically updates
+                GameState.Instance.campaignName with either the header name (if available) or the
+                campaign's base name. This is the primary way to access level data for the current
+                campaign. Setting to null clears the campaign name in GameState.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.levelFileNameToLoad">
+            <summary>
+                Gets or sets the name of the level file to be loaded. This property is used when
+                loading individual level files from disk rather than campaign files. The property
+                acts as a wrapper around the internal _levelFileNameToLoad field.
+            </summary>
+            <remarks>
+                This property is typically set in the GetMapDataFromFile method to store the
+                filename of the level that should be loaded. It's used by various game components
+                like MainMenu, QuickLauncher, and SelectStartingAdvantage to specify which level
+                file should be loaded when the game starts or transitions between scenes.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.loadCustomCampaign">
+            <summary>
+                Gets or sets whether a custom campaign (user-created or downloaded) should be loaded
+                instead of the built-in campaigns. This flag is stored in the GameState singleton
+                and controls the campaign loading behavior.
+            </summary>
+            <remarks>
+                When true, the game will attempt to load campaigns from disk (either user-created or
+                published workshop campaigns) rather than from the built-in resources. This flag is
+                set by custom campaign menus and affects how campaigns are loaded in
+                GetMapDataForCampaign. It's reset to false when returning to main menu or starting
+                standard campaigns.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.returnToWorldMap">
+            <summary>
+                Gets or sets whether the game should return to the world map after completing the
+                current level or campaign. This property controls the flow between the world map
+                mode and individual levels.
+            </summary>
+            <remarks>
+                When true, completing a level will return the player to the 3D world map instead of
+                proceeding to the next level in sequence. This is used for the world map campaign
+                mode where players can choose which territory to tackle next. The value is stored in
+                GameState to persist across scene transitions.
+            </remarks>
+        </member>
+        <!-- Campaign Management Fields -->
+        <member name="F:LevelSelectionController.CurrentCampaign">
+            <summary>
+                Private backing field that stores the currently loaded campaign. Accessed through
+                the currentCampaign property which handles campaign validation and loading.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.DefaultCampaign">
+            <summary>
+                The default campaign to load when no specific campaign is selected. Initialized to
+                the offline campaign ("vietnam") by default.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.ExpendabrosCampaign">
+            <summary>
+                The campaign name for the Expendabros crossover content. Set to
+                "Expendabros_Campaign" to identify and load Expendabros-specific levels.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.MapDataToLoad">
+            <summary>
+                Stores pre-loaded map data to be used when LoadFromMapdata mode is active. Allows
+                external code to set specific map data before level loading.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.OfflineCampaign">
+            <summary>
+                The default campaign name used for offline single-player gameplay. Set to "vietnam"
+                to use the standard Vietnam campaign levels.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.OnlineCampaign">
+            <summary>
+                The default campaign name used for online multiplayer gameplay. Set to
+                "VietnamNetworked" to use the networked version of the Vietnam campaign levels.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController._levelFileNameToLoad">
+            <summary>
+                Internal backing field for the levelFileNameToLoad property. Stores the file name of
+                a level to be loaded from disk.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.currentVSRotationCampaign">
+            <summary>
+                Stores the current campaign in the versus mode rotation for online deathmatch games.
+                When using online deathmatch level rotation, this holds the campaign that is
+                currently active. Gets set when a deathmatch rotation level completes loading via
+                DmRotationLevelLoadComplete. Used by LoadNextVersusCampaign to determine which
+                campaign to load as the current campaign.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.currentWorkshopLevel">
+            <summary>
+                Stores details about the currently loaded Steam Workshop level. Used when playing
+                custom user-created content from the Workshop. Null when playing built-in campaigns.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.defaultDeathmatchCampaignIncludedInRotation">
+            <summary>
+                Whether the default deathmatch campaign should be included in the versus rotation.
+                Allows the built-in deathmatch maps to be part of the rotation.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.defaultRaceCampaignIncludedInRotation">
+            <summary>
+                Whether the default race campaign should be included in the versus rotation. Allows
+                the built-in race maps to be part of the rotation.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.haveSetListCallResult">
+            <summary>
+                Private flag tracking whether the Steam Workshop query callback has been
+                initialized. Prevents duplicate callback registration when querying Workshop
+                content.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.isOnlineCampaign">
+            <summary>
+                Flag indicating whether the currently loaded campaign is an online multiplayer
+                campaign. Used to determine networking behavior and level selection logic.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.lastVersusCampaign">
+            <summary>
+                Private field tracking the index of the last versus campaign played. Initialized to
+                -100 to ensure no campaign matches on first selection. Used to prevent immediate
+                repetition of versus campaigns.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.levelDetailsCurrentVSRotationCampaign">
+            <summary>
+                Stores the workshop level details for the current campaign in the versus rotation.
+                Contains metadata about the current online deathmatch level including file ID and
+                creator info. Set when online VS levels are loaded from Steam Workshop query
+                results. Used to track which specific workshop level is currently active in the
+                rotation.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.levelDetailsNextVSRotationCampaign">
+            <summary>
+                Stores the workshop level details for the next campaign queued in the versus
+                rotation. Contains metadata about the next online deathmatch level to be loaded
+                after the current one. Set when selecting random levels from the online VS levels
+                list during Steam query processing. Cleared when the next level is promoted to
+                current in LoadNextVersusCampaign.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.listCallResult">
+            <summary>
+                Private Steam API callback result for Workshop content queries. Used internally when
+                fetching lists of available Workshop levels for versus mode or custom campaigns.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.loadPublishedCampaign">
+            <summary>
+                Flag indicating whether the game should load a published campaign from the Workshop
+                or other external source. Checked during campaign loading to determine the source.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.nextVSRotationCampaign">
+            <summary>
+                Stores the next campaign queued in the versus mode rotation for online deathmatch
+                games. When the current VS rotation campaign ends, this campaign becomes the new
+                current campaign. Gets set by DmRotationLevelLoadComplete when a second campaign
+                loads while one is already current. Cleared after being promoted to current campaign
+                in LoadNextVersusCampaign.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.onlineVSLevels">
+            <summary>
+                Private list storing available online versus mode levels from the Workshop. Used to
+                randomly select levels for versus mode rotation without repeating recently played
+                levels.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.usingOnlineDMLevelRotation">
+            <summary>
+                Indicates whether the game is currently using online deathmatch level rotation mode.
+                When true, LoadNextVersusCampaign will use the VS rotation campaign fields instead
+                of standard progression. Set to false during initialization and controlled by the
+                deathmatch menu system. Determines whether to use rotation-based campaign loading
+                for versus mode.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.versusRotationList">
+            <summary>
+                List of campaign file names included in the versus mode rotation. Used for offline
+                deathmatch and race modes to cycle through available maps.
+            </summary>
+        </member>
+        <!-- Level Progression Properties -->
+        <member name="P:LevelSelectionController.CurrentLevelNum">
+            <summary>
+                Gets or sets the current level number (index) within the active campaign. This
+                property wraps GameState.Instance.levelNumber for consistency.
+            </summary>
+            <remarks>
+                This zero-based index indicates which level in the campaign array is currently
+                active. It's incremented when completing levels and reset when starting new
+                campaigns. The value persists in GameState across scene transitions.
+            </remarks>
+        </member>
+        <!-- Level Progression Fields -->
+        <member name="F:LevelSelectionController.exhibitionCount">
+            <summary>
+                Counter for exhibition mode levels. Initialized to -1, likely incremented during
+                exhibition gameplay to track progress or determine exhibition-specific behavior.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.levelNumBrodownBurningJungle">
+            <summary>
+                Constant defining the level number for the Brodown Burning Jungle level. Set to 1,
+                used for identifying this specific level in campaigns or level sequences.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.levelNumBrodownCity">
+            <summary>
+                Constant defining the level number for the Brodown City level. Set to 2, used for
+                identifying this specific level in campaigns or level sequences.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.shownHelicopterIntro">
+            <summary>
+                Flag tracking whether the helicopter intro sequence has been shown to the player.
+                Prevents the intro from playing multiple times when starting campaigns from the
+                beginning.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.totalNumberOfArcadeLevels">
+            <summary>
+                The total number of levels available in arcade mode. Set to 63, used to determine
+                when players have completed all arcade content and for progress tracking.
+            </summary>
+        </member>
+        <!-- Campaign State Queries Methods -->
+        <member name="M:LevelSelectionController.GetCurrentCampaignLength">
+            <summary>
+                Gets the total number of levels in the current campaign based on the game mode.
+            </summary>
+            <returns>The number of levels in the current campaign. Returns 1 for cutscene mode, 0 if no campaign is loaded, or the actual campaign length for other modes.</returns>
+            <remarks>
+                This method handles special cases: - Cutscene mode always returns 1 (single scene) -
+                Returns 0 if currentCampaign is null - Otherwise returns the Length property of the
+                current campaign Used for determining when the player has completed a campaign and
+                for progress tracking.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.IsCustomCampaign">
+            <summary>
+                Determines whether the currently loaded campaign is a custom campaign (user-created
+                or from Steam Workshop).
+            </summary>
+            <returns>True if either loadCustomCampaign or isOnlineCampaign flags are set, false for built-in campaigns.</returns>
+            <remarks>
+                This method is used throughout the game to determine if special handling is needed
+                for custom content, such as different victory screens, achievement restrictions, or
+                save game behavior. Custom campaigns include both locally created campaigns and
+                those downloaded from Steam Workshop.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.IsInProcGenCampaign">
+            <summary>
+                Determines whether the game is currently playing procedurally generated levels
+                rather than pre-designed campaign levels.
+            </summary>
+            <returns>True if not in world map mode and the load mode is set to Generated, false otherwise.</returns>
+            <remarks>
+                Procedurally generated campaigns create levels on the fly using the map generation
+                system. This mode is mutually exclusive with world map campaigns and affects how
+                levels are loaded and progressed through.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.IsInWorldMapCampaign">
+            <summary>
+                Determines whether the game is currently in world map campaign mode where players
+                progress through a 3D world map selecting territories.
+            </summary>
+            <returns>True if the returnToWorldMap flag is set, false otherwise.</returns>
+            <remarks>
+                World map campaigns use a different progression system where players return to a 3D
+                world map between levels to choose their next territory. This affects save systems,
+                progression tracking, and scene transitions.
+            </remarks>
+        </member>
+        <member name="M:LevelSelectionController.SpawnAsheAndHisCar">
+            <summary>
+                Determines whether Ash Williams and his car should spawn in the current level. This
+                is used for special Evil Dead crossover content in specific levels.
+            </summary>
+            <returns>True if the current level's description contains "deep throat" (case-insensitive), false otherwise.</returns>
+            <remarks>
+                This method checks the level description for a specific keyword to enable special
+                Evil Dead content. The check is case-insensitive. This appears to be an Easter egg
+                or special crossover feature that spawns Ash Williams (from Evil Dead) and his
+                iconic car in certain levels.
+            </remarks>
+        </member>
+        <!-- Scene Management Properties -->
+        <member name="P:LevelSelectionController.CurrentGameModeScene">
+            <summary>
+                Gets the appropriate scene name for the current game mode. Different game modes use
+                different scenes to handle their specific gameplay requirements.
+            </summary>
+            <remarks>
+                Returns the scene name based on GameModeController.GameMode: - ExplosionRun: Returns
+                ExplosionRunSceneName - DeathMatch: Returns DeathmatchSceneName - SuicideHorde:
+                Returns SuicideHordeSceneName - Race: Returns RaceRunSceneName - Default: Returns
+                CampaignScene All non-campaign modes currently use "Test Evan2" as their scene name.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.CustomCampaignVictoryScene">
+            <summary>
+                Gets the name of the victory scene to use when completing a custom campaign. Returns
+                different scene names based on whether Steam is enabled to handle different victory
+                screen requirements.
+            </summary>
+            <remarks>
+                Returns "VictoryCustomCampaignSteam" when Steam is enabled (for Steam Workshop
+                integration and leaderboards), or "VictoryCustomCampaign" for non-Steam builds. This
+                allows custom campaigns to have appropriate victory screens with or without Steam
+                features.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.ExhibitionCampaign">
+            <summary>
+                Gets the name of the campaign to use in exhibition mode, which varies based on demo
+                settings and current scene. This property determines which special campaign should
+                be loaded for exhibition/demo builds.
+            </summary>
+            <remarks>
+                The property returns different campaigns based on the current state: - "Victory" if
+                already in the Victory scene - "AlienExhibition" if the alien demo is selected -
+                "BossRushCampaign" if the boss rush demo is selected -
+                "VIETNAM_EXHIBITION_TWITCHCON" as the default exhibition campaign This is primarily
+                used for special demo builds shown at conventions or events.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.MainMenuScene">
+            <summary>
+                Gets the appropriate main menu scene name based on the build type. Returns different
+                scene names for the Expendabros promotional build versus the standard Broforce
+                build.
+            </summary>
+            <remarks>
+                Returns "MainMenuExpendabros" for Expendabros builds (a special promotional version
+                of the game), or "MainMenu" for standard Broforce builds. This allows the game to
+                have different main menus for different versions while using the same codebase.
+            </remarks>
+        </member>
+        <!-- Scene Management Fields -->
+        <member name="F:LevelSelectionController.BrodownSceneName">
+            <summary>
+                The scene name used for brodown game mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.CampaignScene">
+            <summary>
+                The current scene name used for campaign mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.CampaignSceneDefault">
+            <summary>
+                The default scene name for campaign mode. Used as a fallback when no specific
+                campaign scene is set. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.DeathmatchSceneName">
+            <summary>
+                The scene name used for deathmatch game mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.ExplosionRunSceneName">
+            <summary>
+                The scene name used for explosion run game mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.GameOverScene">
+            <summary>
+                The scene name for the game over cutscene. Set to "CutsceneGameOver" which plays
+                when all players have died and no lives remain.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.HellArcade">
+            <summary>
+                The scene name for the Hell-themed arcade mode. Set to "WM_Hell" which represents
+                the Hell world map used in arcade gameplay.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.HeroSelectScreen">
+            <summary>
+                The scene name for the hero selection screen. Set to "HeroSelect" which allows
+                players to choose their character before starting gameplay.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.IntroScene">
+            <summary>
+                The scene name for the game's intro cutscene. Set to "Intro" which plays when
+                starting a new campaign from the beginning.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.JoinScene">
+            <summary>
+                The scene name used for joining multiplayer games. Default value is "newJoin".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.MainMenuSceneExpendabros">
+            <summary>
+                The scene name for the Expendabros-specific main menu. Set to "MainMenuExpendabros"
+                to provide a themed menu for the Expendabros crossover content.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.OfflineCustomVictoryScene">
+            <summary>
+                The scene name for the victory screen shown after completing offline custom
+                campaigns. Set to "VictoryCustomCampaign" to provide a different ending for
+                user-created content.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.RaceRunSceneName">
+            <summary>
+                The scene name used for race game mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.SuicideHordeSceneName">
+            <summary>
+                The scene name used for suicide horde game mode. Default value is "Test Evan2".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.VictoryScene">
+            <summary>
+                The scene name for the standard victory screen. Set to "Polaroid" which displays the
+                victory polaroid photo sequence after completing a campaign.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.WorldMapScene">
+            <summary>
+                The scene name for the world map screen. Default value is "WorldMap3D".
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController._MainMenuScene">
+            <summary>
+                Private constant storing the main menu scene name. Set to "MainMenu" and used
+                internally for scene transitions back to the main game menu.
+            </summary>
+        </member>
+        <member name="F:LevelSelectionController.levelNumBrodownJungle">
+            <summary>
+                Constant defining the level number for the Brodown jungle level. Value is 0.
+            </summary>
+        </member>
+        <!-- Scene State Properties -->
+        <member name="P:LevelSelectionController.CurrentlyInGame">
+            <summary>
+                Gets whether the player is currently in an active game (not in the main menu).
+            </summary>
+            <remarks>
+                Returns true if not in the main menu scene, false otherwise. This is a simple helper
+                property that inverts IsMainMenuScene for convenience. Used by various systems to
+                determine if gameplay systems should be active.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.IsCampaignScene">
+            <summary>
+                Gets whether the currently active scene is the campaign gameplay scene.
+            </summary>
+            <remarks>
+                Performs a case-insensitive comparison with the CampaignScene name ("Test Evan2").
+                Returns true when actively playing campaign levels, false in menus or other game
+                modes.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.IsLoadingScene">
+            <summary>
+                Gets whether the currently active scene is the loading screen scene.
+            </summary>
+            <remarks>
+                Checks if the active scene is "LoadingScreen" (case-insensitive). This is displayed
+                during scene transitions and asset loading between gameplay scenes.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.IsMainMenuScene">
+            <summary>
+                Gets whether the currently active scene is the main menu scene.
+            </summary>
+            <remarks>
+                Performs a case-insensitive comparison between the active scene name and the
+                MainMenuScene property. This accounts for different main menu scenes in different
+                builds (standard vs Expendabros). Used to determine if menu-specific behavior should
+                be active.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.IsMainMenuSceneLoading">
+            <summary>
+                Gets whether the main menu scene is currently set to load next (during scene
+                transitions).
+            </summary>
+            <remarks>
+                Checks if GameState.Instance.sceneToLoad matches the main menu scene name
+                (case-insensitive). This is useful for systems that need to prepare for returning to
+                the main menu before the scene actually changes.
+            </remarks>
+        </member>
+        <member name="P:LevelSelectionController.IsWorldMapScene">
+            <summary>
+                Gets whether the currently active scene is the 3D world map scene.
+            </summary>
+            <remarks>
+                Checks if the active scene is "WorldMap3D" (case-insensitive). The world map is used
+                in the world map campaign mode where players select territories to conquer.
+            </remarks>
+        </member>
+    </members>
+</doc>

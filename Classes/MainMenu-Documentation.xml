@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Menu Initialization & Setup Methods -->
+        <member name="M:MainMenu.Awake">
+            <summary>
+                Initializes the main menu when the scene loads, setting up all core menu systems and
+                resetting game state. Performs platform-specific setup, clears player progress data,
+                initializes multiplayer connections, and begins the delayed menu initialization
+                process. Also resets various game states to ensure a clean main menu experience.
+            </summary>
+        </member>
+        <member name="M:MainMenu.DelayInitializeMenu">
+            <summary>
+                Coroutine that delays menu initialization by 3 seconds, then checks for PlayTogether
+                hosting status before initializing. If hosting PlayTogether, it checks multiplayer
+                status with the host user before proceeding. Otherwise, directly calls
+                InitializeMenu() after the delay.
+            </summary>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:MainMenu.InitializeMenu">
+            <summary>
+                Completes the menu initialization process after the initial delay. Activates the
+                menu highlight, sets the menu as active, restores any previously saved highlight
+                index, and transitions to the campaign menu if hosting PlayTogether.
+            </summary>
+        </member>
+        <member name="M:MainMenu.SetupItems">
+            <summary>
+                Dynamically builds the main menu items list based on build configuration and player
+                progress. Adds conditional menu items like Versus, Custom Campaign, Level Editor,
+                and Join Online based on build type. Adjusts between "Start" and "Continue" arcade
+                campaign based on player progress. Handles special logic for procedural generation
+                test builds.
+            </summary>
+        </member>
+        <member name="M:MainMenu.Start">
+            <summary>
+                Called at scene start to finalize initialization. Sets time scale to normal, checks
+                for immediate custom campaign transition if requested, plays the Broforce
+                announcement sound, and stops all controller rumble effects.
+            </summary>
+        </member>
+        <member name="M:MainMenu.Update">
+            <summary>
+                Main update loop that handles initialization checks, editor-specific unlock cheats
+                (F5 key), click-to-start text animation effects, mouse click detection for menu
+                activation, and cheat code input processing.
+            </summary>
+        </member>
+        <!-- Menu Initialization & Setup Fields -->
+        <member name="F:MainMenu.clickToStartMesh">
+            <summary>
+                Text mesh component displaying the "click to start" prompt before the main menu is
+                active.
+            </summary>
+        </member>
+        <member name="F:MainMenu.gameStartedThroughtMainMenu">
+            <summary>
+                Static flag indicating whether the current game session was started through the main
+                menu. Set to true in StartGame() method and used by other systems to determine game
+                initialization context.
+            </summary>
+        </member>
+        <member name="F:MainMenu.hasInitialized">
+            <summary>
+                Tracks whether the menu has completed its initialization process, preventing input
+                processing before initialization.
+            </summary>
+        </member>
+        <member name="F:MainMenu.haveCalibrated">
+            <summary>
+                Flag tracking whether initial calibration has occurred. Checked and set to true
+                during the first Update() call. Purpose appears to be ensuring one-time
+                initialization happens after menu is fully loaded.
+            </summary>
+        </member>
+        <member name="F:MainMenu.instance">
+            <summary>
+                Static singleton instance of the MainMenu class. Set during Start() initialization
+                and used throughout the codebase for global access to main menu functionality.
+                Checked for null in static methods like Reload().
+            </summary>
+        </member>
+        <member name="F:MainMenu.logo">
+            <summary>
+                Reference to the game logo GameObject displayed on the main menu. Animated during
+                menu transitions with scaling effects. Hidden when transitioning to submenus and
+                shown when returning to the main menu.
+            </summary>
+        </member>
+        <member name="F:MainMenu.networkedBuild">
+            <summary>
+                Indicates whether this is a networked build that should transition to the Campaign
+                scene instead of the Join scene.
+            </summary>
+        </member>
+        <member name="F:MainMenu.optionsMenu">
+            <summary>
+                Reference to the options menu that can be accessed from the main menu.
+            </summary>
+        </member>
+        <member name="F:MainMenu.starFieldAnimation">
+            <summary>
+                Animation component for the starfield background effect. Plays default animation on
+                menu show and special "starfieldLobbyTransition" animation when transitioning to
+                lobby or custom campaign screens.
+            </summary>
+        </member>
+        <member name="F:MainMenu.wasShown">
+            <summary>
+                Static flag indicating whether the main menu has been shown at least once during the
+                current game session.
+            </summary>
+        </member>
+        <!-- Menu Navigation & State Methods -->
+        <member name="M:MainMenu.GoBackToMenu">
+            <summary>
+                Returns to the main menu from a submenu, reactivating the main menu and playing a
+                drum sound effect (attack sound at index 1 with 0.25 volume).
+            </summary>
+        </member>
+        <member name="M:MainMenu.GoToOptions">
+            <summary>
+                Transitions from the main menu to the options menu. Deactivates the main menu,
+                activates the options menu, and triggers the options menu transition-in animation.
+            </summary>
+        </member>
+        <member name="M:MainMenu.HideRoutine">
+            <summary>
+                Coroutine that animates hiding the menu with a scaling effect over 1 second. Scales
+                both the menu and optionally the logo from normal size to an enlarged size based on
+                ScaleFactor, then deactivates the GameObjects when complete.
+            </summary>
+            <param name="hideLogo">Whether to also hide and scale the logo GameObject.</param>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:MainMenu.RunInput">
+            <summary>
+                Processes input for menu navigation, disabling up/down movement when transitioning
+                between menus or showing explanations. Overrides base Menu class input handling to
+                prevent navigation during transitions.
+            </summary>
+        </member>
+        <member name="M:MainMenu.Show">
+            <summary>
+                Shows the main menu by activating both the menu and logo GameObjects, then starting
+                the show animation coroutine.
+            </summary>
+        </member>
+        <member name="M:MainMenu.ShowHideMenu">
+            <summary>
+                Manages menu show/hide coroutines, stopping any existing coroutine before starting a
+                new one to prevent animation conflicts.
+            </summary>
+            <param name="showHideMethod">The coroutine method to execute for showing or hiding the menu.</param>
+        </member>
+        <member name="M:MainMenu.ShowRoutine">
+            <summary>
+                Coroutine that animates showing the menu with a scaling effect. Blocks input during
+                animation, plays starfield animation, scales menu and logo from zero to normal size
+                over approximately 1.2 seconds, then plays camera shake and impact sound when
+                complete.
+            </summary>
+            <returns>IEnumerator for coroutine execution.</returns>
+        </member>
+        <member name="M:MainMenu.TransitionToOnlineOrOffline(System.Boolean)">
+            <summary>
+                Static method that transitions from the main menu to either the online/offline
+                selection menu or directly to custom campaign/exhibition mode based on build type
+                and previous menu selections.
+            </summary>
+            <param name="onlineAvalable">Whether online multiplayer is available for the current platform/build.</param>
+        </member>
+        <!-- Menu Navigation & State Fields -->
+        <member name="F:MainMenu.ScaleFactor">
+            <summary>
+                Scale multiplier applied during menu hide animations. Used in the HideRoutine to
+                scale up the menu and logo by this factor (default 1.0) as they fade out. Affects
+                the visual transition effect when hiding menus.
+            </summary>
+        </member>
+        <member name="F:MainMenu._previousHighlightIndex">
+            <summary>
+                Static field that stores the previously highlighted menu option index. Used to
+                restore menu highlight position when returning to the main menu from other screens.
+                Reset to 0 after being applied.
+            </summary>
+        </member>
+        <member name="F:MainMenu.currentInput">
+            <summary>
+                Accumulates keyboard input characters for cheat code detection. Characters are
+                appended as typed and checked against known cheat strings. Initialized to empty
+                string and grows with each character input during gameplay.
+            </summary>
+        </member>
+        <member name="F:MainMenu.deathmatchCampaignSelectMenu">
+            <summary>
+                Reference to the deathmatch campaign selection menu UI element. Used when
+                transitioning to deathmatch mode from various menu navigation paths. Activated and
+                transitioned in when players choose deathmatch game modes.
+            </summary>
+        </member>
+        <member name="F:MainMenu.explanationTime">
+            <summary>
+                Timestamp recording when the transition to the explanation screen began. Initialized
+                to -1.5f.
+            </summary>
+        </member>
+        <member name="F:MainMenu.hasOpenedWebPage">
+            <summary>
+                Flag preventing multiple Steam store page openings in a single session. Set to true
+                after first opening the Steam store URL, preventing subsequent calls to
+                GoToSteamPage from opening duplicate browser tabs.
+            </summary>
+        </member>
+        <member name="F:MainMenu.showHideRoutine">
+            <summary>
+                Coroutine reference for the current menu show/hide animation routine. Stores the
+                active coroutine to allow stopping previous animations before starting new ones. Set
+                to null when animations complete.
+            </summary>
+        </member>
+        <member name="F:MainMenu.transitioning">
+            <summary>
+                Flag indicating the menu is currently transitioning between scenes, preventing input
+                during transitions.
+            </summary>
+        </member>
+        <member name="F:MainMenu.transitioningToExplanation">
+            <summary>
+                Flag indicating the menu is transitioning to the game explanation screen.
+            </summary>
+        </member>
+        <member name="F:MainMenu.worldMapOrArcadeMenu">
+            <summary>
+                Reference to the world map or arcade mode selection menu. Used when transitioning
+                from the main menu to campaign selection screens. Activated and transitioned in when
+                players select campaign or arcade modes.
+            </summary>
+        </member>
+        <!-- Campaign & Level Management Methods -->
+        <member name="M:MainMenu.CustomCampaign">
+            <summary>
+                Initiates transition to custom campaign menu after checking if the primary user has
+                UGC restrictions. Shows an error dialog if restricted, otherwise sets up arcade
+                difficulty mode and transitions to the difficulty menu with custom campaign flag
+                set.
+            </summary>
+        </member>
+        <member name="M:MainMenu.FilmMode">
+            <summary>
+                Opens film mode for creating cinematics by activating the level editor in film mode
+                and loading the FilmScene.
+            </summary>
+        </member>
+        <member name="M:MainMenu.GoToCampaignMenu">
+            <summary>
+                Transitions to the campaign selection menu (world map or arcade). In exhibition
+                build mode, directly starts arcade mode instead. Otherwise deactivates main menu and
+                activates the world map/arcade selection menu.
+            </summary>
+        </member>
+        <member name="M:MainMenu.GoToCampaignMenu">
+            <summary>
+                Navigates to the campaign selection menu. For exhibition builds, directly starts
+                arcade mode. For regular builds, transitions to the world map or arcade menu.
+            </summary>
+        </member>
+        <member name="M:MainMenu.LevelEditor">
+            <summary>
+                Opens the level editor by setting up the game state for level editing mode, loading
+                the last custom level, and transitioning to the campaign scene.
+            </summary>
+        </member>
+        <member name="M:MainMenu.LoadProcGen">
+            <summary>
+                Loads the procedural generation game mode by loading persistent assets and
+                transitioning to the RogueforceStartingPerk scene.
+            </summary>
+        </member>
+        <member name="M:MainMenu.StartArcade">
+            <summary>
+                Starts an arcade campaign by resetting all game state, clearing hero unlocks,
+                initializing the default campaign settings, and transitioning to the online/offline
+                selection screen.
+            </summary>
+        </member>
+        <member name="M:MainMenu.StartDeathMatch">
+            <summary>
+                Opens the deathmatch campaign selection menu and deactivates the main menu.
+            </summary>
+        </member>
+        <member name="M:MainMenu.StartExplosionRun">
+            <summary>
+                Starts the Explosion Run game mode (beta feature) with the DefaultExplosionRun
+                campaign and displays beta feedback text.
+            </summary>
+        </member>
+        <member name="M:MainMenu.StartRace">
+            <summary>
+                Starts the Race game mode (beta feature) with the DefaultRace campaign and displays
+                beta feedback text.
+            </summary>
+        </member>
+        <member name="M:MainMenu.StartSuicideHorde">
+            <summary>
+                Starts the Suicide Horde game mode (beta feature) with the SuibroTest campaign,
+                forcing offline mode, and displays beta feedback text.
+            </summary>
+        </member>
+        <member name="M:MainMenu.TransitionToCustomCampaign">
+            <summary>
+                Performs the visual transition to the custom campaign menu by playing the starfield
+                lobby transition animation, activating the custom campaign menu GameObject, and
+                hiding the main menu with logo.
+            </summary>
+        </member>
+        <member name="M:MainMenu.TransitionToExplanation">
+            <summary>
+                Initiates the transition to the game explanation screen by setting the
+                transitioningToExplanation flag and recording the transition time.
+            </summary>
+        </member>
+        <member name="M:MainMenu.TransitionToGame">
+            <summary>
+                Transitions from the main menu to the game by fading to either the Campaign scene
+                (for networked builds) or the Join scene (for non-networked builds).
+            </summary>
+        </member>
+        <!-- Campaign & Level Management Fields -->
+        <member name="F:MainMenu.customCampaignMenu">
+            <summary>
+                Reference to the new custom campaign menu UI component. Activated when transitioning
+                to custom campaign selection. GameObject is disabled during initialization and
+                enabled when players select custom campaigns.
+            </summary>
+        </member>
+        <member name="F:MainMenu.gameExplanation">
+            <summary>
+                Text UI element displaying beta feature explanations. Updated with beta disclaimer
+                text when entering multiplayer or custom campaign features. Shows feedback request
+                message to players during beta features.
+            </summary>
+        </member>
+        <member name="F:MainMenu.thankYouBetaBackerText">
+            <summary>
+                TextMesh component displaying thank you message to beta backers. Activated alongside
+                beta feature explanations when players access multiplayer or custom campaign
+                features during beta testing.
+            </summary>
+        </member>
+        <!-- Network & Multiplayer Methods -->
+        <member name="M:MainMenu.FindAGameToJoin">
+            <summary>
+                Initiates the process of finding an online multiplayer game to join by calling
+                TryToGoToLobby with Online mode.
+            </summary>
+        </member>
+        <member name="M:MainMenu.FindALocalGameToJoin">
+            <summary>
+                Initiates the process of finding a local wireless multiplayer game to join by
+                calling TryToGoToLobby with LocalWireless mode.
+            </summary>
+        </member>
+        <member name="M:MainMenu.HostAGame">
+            <summary>
+                Initiates the process of hosting an online game by deactivating the main menu and
+                opening the MakeOnlineMenu interface.
+            </summary>
+        </member>
+        <member name="M:MainMenu.RecreateConnectObject">
+            <summary>
+                Recreates the multiplayer connection object if not immediately going to custom
+                campaign or joining through friend invite. Disconnects existing connection, destroys
+                the current Connect singleton if it exists, and instantiates a new connection
+                prefab. Also releases player movement restrictions.
+            </summary>
+        </member>
+        <member name="M:MainMenu.TransitionToLobby">
+            <summary>
+                Performs the visual transition to the multiplayer lobby by playing the starfield
+                lobby transition animation, opening the lobby if it exists, and hiding the main menu
+                with logo.
+            </summary>
+        </member>
+        <member name="M:MainMenu.TryToGoToLobby">
+            <summary>
+                Attempts to transition to the multiplayer lobby after checking the primary user's
+                multiplayer status for the specified mode. Shows a "please wait" overlay during the
+                asynchronous status check, then transitions to lobby on success.
+            </summary>
+            <param name="mode">The multiplayer mode to check status for (Online or LocalWireless).</param>
+        </member>
+        <!-- Network & Multiplayer Fields -->
+        <member name="F:MainMenu.connectPrefab">
+            <summary>
+                Prefab reference for the Connect networking component. Instantiated in
+                RecreateConnectObject() to establish or refresh network connections. Used when
+                starting games or resetting network state from the main menu.
+            </summary>
+        </member>
+        <member name="F:MainMenu.lobby">
+            <summary>
+                Reference to the Lobby component handling multiplayer lobby functionality. Disabled
+                during initialization, then opened via lobby.Open() when transitioning to
+                multiplayer lobby screens from the main menu.
+            </summary>
+        </member>
+        <member name="F:MainMenu.lobbyGUI">
+            <summary>
+                GameObject reference for the lobby GUI interface. Currently unused in the codebase -
+                only the field declaration exists with no implementation references. Likely
+                deprecated or placeholder for future use.
+            </summary>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:MainMenu.PlayImpactSound">
+            <summary>
+                Static method that plays the main menu impact sound effect through the Sound
+                singleton at 0.25 volume if the main menu instance exists.
+            </summary>
+        </member>
+        <!-- Audio System Fields -->
+        <member name="F:MainMenu.CameraShake">
+            <summary>
+                Animation component for camera shake effects during menu transitions. Played after
+                the menu show animation completes to add impact to the menu appearance. Triggered
+                alongside impact sound for dramatic effect.
+            </summary>
+        </member>
+        <member name="F:MainMenu.impactSound">
+            <summary>
+                Audio clip for the impact sound effect played during menu transitions. Played
+                through the Sound singleton at 0.25f volume when menus finish showing. Creates audio
+                feedback for menu animation completion.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:MainMenu.CheckCheatString(System.String)">
+            <summary>
+                Checks if the current input string ends with the specified cheat string, performing
+                a case-insensitive comparison.
+            </summary>
+            <param name="cheatString">The cheat code string to check against the current input.</param>
+            <returns>True if the current input ends with the cheat string (case-insensitive), false otherwise.</returns>
+        </member>
+        <member name="M:MainMenu.CheckCheats">
+            <summary>
+                Monitors keyboard input for letters A through Z and processes each character through
+                the cheat code system by calling ProcessCharacter for each key pressed.
+            </summary>
+        </member>
+        <member name="M:MainMenu.ClearUnlocks">
+            <summary>
+                Clears all hero unlocks through HeroUnlockController and updates the visual
+                appearance of any "RESET" menu items by setting their text color to a dark gray
+                (0.06, 0.06, 0.06, 1.0).
+            </summary>
+        </member>
+        <member name="M:MainMenu.ExitGame">
+            <summary>
+                Exits the game application by calling Application.Quit().
+            </summary>
+        </member>
+        <member name="M:MainMenu.Feedback">
+            <summary>
+                Opens a web browser to navigate to the Broforce game forums feedback page.
+            </summary>
+        </member>
+        <member name="M:MainMenu.GoToSteamPage">
+            <summary>
+                Opens the Steam store page for Broforce in a web browser. Prevents multiple page
+                opens by tracking if the page has already been opened.
+            </summary>
+        </member>
+        <member name="M:MainMenu.ProcessCharacter(System.Char)">
+            <summary>
+                Processes keyboard input characters for cheat code detection. Appends the character
+                to the current input string and checks for various cheat codes including teabagging,
+                unlock all bros, unlock all territories, and special editor modes.
+            </summary>
+            <param name="c">The character input from keyboard.</param>
+        </member>
+        <member name="M:MainMenu.Reload">
+            <summary>
+                Static method that reloads the main menu scene if a main menu instance exists, using
+                GameState.LoadLevel with the main menu scene name from LevelSelectionController.
+            </summary>
+        </member>
+    </members>
+</doc>

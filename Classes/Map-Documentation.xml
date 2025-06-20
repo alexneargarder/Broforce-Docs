@@ -5476,6 +5476,17 @@
                 them to 0 if MapData is null).
             </summary>
         </member>
+        <member name="P:Map.activeTheme">
+            <summary>
+                Gets or sets the currently active theme holder that defines all block prefabs,
+                environmental objects, and visual assets for the current level. This property is set
+                based on the map's theme data during map generation and controls which set of
+                prefabs are used for blocks, backgrounds, crates, vehicles, and other theme-specific
+                elements. The theme determines visual appearance and available prefab types for
+                elements like earth blocks, bridges, cages, and special objects. Common themes
+                include jungle, city, desert, forest, hell, america, and burning jungle variations.
+            </summary>
+        </member>
         <!-- Map Data & State Fields -->
         <member name="F:Map.HalfTileSize">
             <summary>

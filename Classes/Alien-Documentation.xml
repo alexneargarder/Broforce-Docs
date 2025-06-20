@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Alien.Start">
+            <summary>
+                Initializes the alien unit with enhanced mobility settings for wall climbing and
+                jumping
+            </summary>
+            <remarks>
+                Sets specialized alien parameters: - JUMP_TIME to 0.215f for quick, precise jumps -
+                hangGraceTime to 0.6f for extended ceiling/wall hang duration - maxWallClimbYI to
+                250f for fast vertical wall climbing speed - playerNum and firingPlayerNum to -2
+                (alien faction identifier) These settings enable the alien's signature acrobatic
+                movement style
+            </remarks>
+        </member>
+        <member name="M:Alien.Update">
+            <summary>
+                Updates the alien's behavior including panic-inducing presence that affects nearby
+                enemy units
+            </summary>
+            <remarks>
+                When the alien is alive, alert, and not impaired (blind/burning), it periodically
+                causes panic in surrounding mooks within a 36-unit radius. This panic effect: - Only
+                triggers when enemyAI is in Alerted mental state - Has a 0.2 second cooldown between
+                panic pulses (panicSurroundingMooksDelay) - Calls Map.PanicUnits to frighten nearby
+                enemy units - Creates a psychological warfare effect unique to alien enemies
+            </remarks>
+        </member>
+        <!-- Position & Physics Methods -->
+        <member name="M:Alien.AnimateActualJumpingFrames">
+            <summary>
+                Animates jumping frames while maintaining proper vertical scale during acrobatic
+                movements
+            </summary>
+            <remarks>
+                Resets yScale to 1f before calling base jumping animation. This ensures the alien
+                maintains correct orientation during jumps, preventing visual distortion that could
+                occur from wall climbing or ceiling hanging states
+            </remarks>
+        </member>
+        <member name="M:Alien.GetEnemyMovement">
+            <summary>
+                Processes enemy AI movement unless the alien is performing tumbling or somersault
+                maneuvers
+            </summary>
+            <remarks>
+                Disables normal AI movement processing when backTumbling or backSomersaulting flags
+                are active. This prevents AI movement conflicts during special acrobatic states,
+                allowing physics-based tumbling to complete naturally
+            </remarks>
+        </member>
+        <member name="M:Alien.NotPressingJump">
+            <summary>
+                Handles wall climbing state transitions based on directional input when not jumping
+            </summary>
+            <remarks>
+                Complex wall interaction logic: - When NOT wall dragging: calls base jump release
+                behavior - When wall dragging without directional input: disables wall climbing -
+                When pressing down while wall dragging: enables wall climbing and resets
+                wallDragTime - When pressing up while wall dragging: enables wall climbing and
+                resets wallDragTime This allows aliens to seamlessly transition between wall
+                dragging and climbing states
+            </remarks>
+        </member>
+        <!-- Position & Physics Properties -->
+        <member name="P:Alien.WallDrag">
+            <summary>
+                Gets or sets wall dragging state with automatic wall climbing activation based on
+                input
+            </summary>
+            <remarks>
+                Enhanced property that: - Get: Returns base WallDrag value unchanged - Set: Applies
+                base value, then checks conditions for auto-climbing: * If pressing up/down AND not
+                already climbing AND can climb AND anticipating climb * Automatically enables
+                wallClimbing and sets lastKnifeClimbStabY position This creates responsive wall
+                interaction where directional input during wall contact initiates climbing
+            </remarks>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Alien.Death(System.Single,System.Single,DamageObject)">
+            <summary>
+                Handles alien death while ensuring proper sprite scaling is maintained
+            </summary>
+            <param name="xI">Horizontal force applied to the corpse</param>
+            <param name="yI">Vertical force applied to the corpse</param>
+            <param name="damage">The damage object that caused death</param>
+            <remarks>
+                Resets yScale to 1f and applies it to transform.localScale to ensure the death
+                animation displays correctly. This fixes any inverted or distorted scaling from wall
+                climbing or ceiling hanging states
+            </remarks>
+        </member>
+        <member name="M:Alien.FallDamage(System.Single)">
+            <summary>
+                Applies fall damage effects based on fall speed and current acrobatic state
+            </summary>
+            <param name="yI">The vertical impact velocity (negative values indicate downward motion)</param>
+            <remarks>
+                Implements two-tier fall damage system: - Severe falls (yI &lt; maxFallSpeed + 100f)
+                during tumbling: Inflicts lethal damage - Moderate falls (yI &lt; maxFallSpeed +
+                50f): Stuns for 0.4 seconds via AI action queue - Always resets yScale to 1f to fix
+                any visual distortion The tumbling check ensures aliens take extra damage when out
+                of control
+            </remarks>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:Alien.CanPassThroughBarriers">
+            <summary>
+                Determines that aliens can always pass through barrier blocks
+            </summary>
+            <returns>Always returns true, granting aliens unrestricted barrier passage</returns>
+            <remarks>
+                This ability allows aliens to move through barriers that would block other units,
+                enabling more dynamic pathfinding and surprise attacks. Essential for alien AI
+                navigation in complex level layouts
+            </remarks>
+        </member>
+        <member name="M:Alien.Inseminate(AlienFaceHugger,System.Single,System.Single)">
+            <summary>
+                Prevents face hugger insemination of alien units
+            </summary>
+            <param name="unit">The AlienFaceHugger attempting insemination</param>
+            <param name="xForce">Horizontal force component (unused)</param>
+            <param name="yForce">Vertical force component (unused)</param>
+            <returns>Always returns false, making aliens immune to face hugger attacks</returns>
+            <remarks>
+                Provides immunity to face hugger insemination, preventing alien-on-alien parasitic
+                attacks. This maintains game balance and prevents recursive alien spawning scenarios
+            </remarks>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:Alien.IsAboveLadder">
+            <summary>
+                Determines that aliens never detect ladders below them
+            </summary>
+            <returns>Always returns false, preventing downward ladder detection</returns>
+            <remarks>
+                Prevents aliens from detecting or attaching to ladders below, ensuring they rely
+                exclusively on wall climbing mechanics for vertical movement
+            </remarks>
+        </member>
+        <member name="M:Alien.IsNearbyLadder(System.Single,System.Single)">
+            <summary>
+                Determines that aliens never detect nearby ladders regardless of position
+            </summary>
+            <param name="xOffset">Horizontal offset for proximity check (unused)</param>
+            <param name="yOffset">Vertical offset for proximity check (unused)</param>
+            <returns>Always returns false, preventing all ladder proximity detection</returns>
+            <remarks>
+                Completes the ladder immunity system by preventing any form of ladder detection.
+                This ensures aliens exclusively use their superior wall climbing abilities
+            </remarks>
+        </member>
+        <member name="M:Alien.IsOverLadder(System.Single,System.Single@)">
+            <summary>
+                Determines that aliens never interact with ladders when checking overhead positions
+            </summary>
+            <param name="xOffset">Horizontal offset for ladder detection (unused)</param>
+            <param name="ladderXPos">Output parameter for ladder X position (not set)</param>
+            <returns>Always returns false, preventing overhead ladder detection</returns>
+            <remarks>
+                Part of the alien's ladder immunity system. Aliens use wall climbing instead of
+                ladders, so this prevents unintended ladder interactions during ceiling movement
+            </remarks>
+        </member>
+        <!-- Networking & RPC Methods -->
+        <member name="M:Alien.UnpackState(UnityStream)">
+            <summary>
+                Deserializes network state and applies death state if the unit was dead
+            </summary>
+            <param name="stream">The network stream containing serialized state data</param>
+            <returns>The stream after unpacking for potential further processing</returns>
+            <remarks>
+                After unpacking base state data, checks if actionState equals Dead and triggers
+                Death() method with zero forces. This ensures proper death state synchronization
+                across networked games
+            </remarks>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:Alien.lastActionState">
+            <summary>
+                Stores the previous action state for state transition detection
+            </summary>
+            <remarks>
+                Protected field used by derived alien classes to track state changes. Enables
+                detection of state transitions for triggering appropriate animations or behaviors
+            </remarks>
+        </member>
+        <member name="F:Alien.lastWallClimbing">
+            <summary>
+                Tracks the previous frame's wall climbing state for transition detection
+            </summary>
+            <remarks>
+                Protected field that stores whether the alien was wall climbing in the previous
+                update. Enables derived classes to detect climbing state changes for animation or
+                behavior adjustments
+            </remarks>
+        </member>
+        <member name="F:Alien.lastWallDragging">
+            <summary>
+                Tracks the previous frame's wall dragging state for transition detection
+            </summary>
+            <remarks>
+                Protected field that stores whether the alien was wall dragging in the previous
+                update. Used by derived classes to detect when wall dragging starts or stops
+            </remarks>
+        </member>
+        <member name="F:Alien.panicSurroundingMooksDelay">
+            <summary>
+                Countdown timer controlling the panic aura effect frequency in seconds
+            </summary>
+            <remarks>
+                Private field that prevents panic spam by enforcing a 0.2 second cooldown between
+                Map.PanicUnits calls. Decremented each update when alien is alert and unimpaired,
+                reset to 0.2f after each panic pulse
+            </remarks>
+        </member>
+    </members>
+</doc>

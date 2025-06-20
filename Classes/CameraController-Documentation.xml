@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:CameraController.Awake">
+            <summary>
+                Unity Awake lifecycle method that initializes the singleton instance and configures
+                post-processing effects based on quality settings. Sets up the global instance
+                reference and disables performance-intensive effects (displacement and distortion)
+                when ScreenPostFXLevel is less than 1.
+            </summary>
+        </member>
+        <member name="M:CameraController.Update">
+            <summary>
+                Unity Update lifecycle method that maintains camera synchronization. Ensures all
+                cameras maintain matching aspect ratios and orthographic sizes with the main camera.
+                The sky camera receives special handling, with its size interpolated based on the
+                SamRaimiEffectM value to create dynamic atmospheric effects.
+            </summary>
+        </member>
+        <!-- Camera Management Properties -->
+        <member name="P:CameraController.MainCam">
+            <summary>
+                Gets the main camera used for rendering. This property provides static access to
+                either the instance's mainCamera if available, or falls back to Camera.main with
+                frame-based caching for performance optimization. The caching mechanism prevents
+                repeated Camera.main lookups within the same frame.
+            </summary>
+        </member>
+        <!-- Camera Management Fields -->
+        <member name="F:CameraController.backgroundCamera">
+            <summary>
+                Camera dedicated to rendering background elements. Part of the multi-camera layered
+                rendering system that allows separate control over background visuals.
+            </summary>
+        </member>
+        <member name="F:CameraController.displacementCamera">
+            <summary>
+                Camera used for displacement mapping effects. Works in conjunction with
+                displacementScript to create visual distortion effects. Disabled when
+                ScreenPostFXLevel is less than 1.
+            </summary>
+        </member>
+        <member name="F:CameraController.distortionCamera">
+            <summary>
+                Camera for rendering distortion effects. Part of the post-processing pipeline and is
+                disabled when ScreenPostFXLevel is less than 1 to improve performance on lower-end
+                systems.
+            </summary>
+        </member>
+        <member name="F:CameraController.effectsamera">
+            <summary>
+                Camera dedicated to rendering special effects. Note the typo in the field name
+                (effectsamera instead of effectsCamera) is preserved from the original code.
+            </summary>
+        </member>
+        <member name="F:CameraController.foliageCamera">
+            <summary>
+                Camera responsible for rendering foliage and plant elements. This separate camera
+                allows for specialized rendering of vegetation with different settings or effects.
+            </summary>
+        </member>
+        <member name="F:CameraController.groundCamera">
+            <summary>
+                Camera for rendering ground and terrain elements. Part of the layered rendering
+                system that separates terrain from other visual elements.
+            </summary>
+        </member>
+        <member name="F:CameraController.instance">
+            <summary>
+                Singleton instance of the CameraController. Set during Awake() to provide global
+                access to the camera management system. This allows other systems to access camera
+                functionality without needing direct references.
+            </summary>
+        </member>
+        <member name="F:CameraController.lightingCamera">
+            <summary>
+                Camera used for rendering lighting effects. This dedicated camera enables special
+                lighting passes and effects to be composited into the final image.
+            </summary>
+        </member>
+        <member name="F:CameraController.mainCamera">
+            <summary>
+                Reference to the main rendering camera. This is the primary camera that renders the
+                main game view and serves as the reference for synchronizing orthographic sizes
+                across all other cameras in the system.
+            </summary>
+        </member>
+        <member name="F:CameraController.skyCamera">
+            <summary>
+                Camera for rendering sky and atmospheric elements. Its orthographic size is
+                specially adjusted based on the SamRaimiEffectM value to create dynamic sky effects.
+            </summary>
+        </member>
+        <member name="F:CameraController.uiCamera">
+            <summary>
+                Camera dedicated to rendering UI elements. This separation ensures UI renders on top
+                of game elements and isn't affected by game camera effects.
+            </summary>
+        </member>
+        <member name="F:CameraController.uiGameplayCamera">
+            <summary>
+                Camera for rendering gameplay-related UI elements. Separate from the main UI camera
+                to allow different rendering settings for in-game UI versus menu UI.
+            </summary>
+        </member>
+        <member name="F:CameraController.waterCamera">
+            <summary>
+                Camera specifically for rendering water effects and surfaces. Allows specialized
+                water rendering techniques to be applied separately from other elements.
+            </summary>
+        </member>
+        <!-- Camera Configuration Properties -->
+        <member name="P:CameraController.DefaultHalfWidth">
+            <summary>
+                Gets the default half-width value used for calculating the default orthographic
+                size. This constant value (227f) represents half the horizontal view width in world
+                units.
+            </summary>
+        </member>
+        <member name="P:CameraController.DefaultOrthographicSize">
+            <summary>
+                Gets the default orthographic size calculated from the default half-width and
+                current screen aspect ratio. This provides a consistent base size regardless of
+                screen resolution.
+            </summary>
+        </member>
+        <member name="P:CameraController.OrthographicSize">
+            <summary>
+                Gets or sets the orthographic size for all cameras in the system. When set,
+                synchronizes the orthographic size across all 11 cameras (with special handling for
+                skyCamera based on SamRaimiEffectM). This ensures all visual layers maintain
+                consistent scale.
+            </summary>
+        </member>
+        <!-- Visual Effects Properties -->
+        <member name="P:CameraController.SamRaimiEffectM">
+            <summary>
+                Gets or sets the interpolation factor for the "Sam Raimi effect" (named after the
+                filmmaker known for dynamic camera work). This value (0-1) controls special sky
+                camera behavior, with the sky camera's orthographic size interpolating between 128f
+                and the main camera's size based on this factor.
+            </summary>
+        </member>
+        <member name="P:CameraController.ScreenPostFXLevel">
+            <summary>
+                Gets or sets the post-processing effects quality level. This value is stored in
+                PlayerOptions and determines which visual effects are enabled. Values less than 1
+                disable displacement and distortion effects for performance.
+            </summary>
+        </member>
+        <!-- Visual Effects Fields -->
+        <member name="F:CameraController.displacementScript">
+            <summary>
+                Reference to the DisplacementCamera component that handles displacement mapping
+                effects. This script is disabled when ScreenPostFXLevel is less than 1 during
+                initialization for performance optimization.
+            </summary>
+        </member>
+        <member name="F:CameraController.imageDistortionScript">
+            <summary>
+                Reference to the ImageRefractionEffect component that creates image
+                distortion/refraction effects. Disabled when ScreenPostFXLevel is less than 1 to
+                improve performance on lower-end systems.
+            </summary>
+        </member>
+        <member name="F:CameraController.samRaimiEffectM">
+            <summary>
+                Private static backing field for the SamRaimiEffectM property. Stores the
+                interpolation value (0-1) used to create dynamic sky camera effects inspired by Sam
+                Raimi's cinematography style.
+            </summary>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:CameraController.GetCamerasForGIF">
+            <summary>
+                Creates a list containing only the background camera for GIF capture purposes. This
+                method is used by the GIF recording system to capture simplified footage, focusing
+                only on the background layer rather than the full multi-camera composite.
+            </summary>
+            <returns>A new List containing only the backgroundCamera reference.</returns>
+        </member>
+        <!-- Helper & Utility Fields -->
+        <member name="F:CameraController.CurCameraMain">
+            <summary>
+                Cached reference to Camera.main used by the MainCam property. This caching mechanism
+                works with cachedFrame to avoid the performance cost of repeatedly accessing
+                Camera.main within a single frame, only updating when the frame count changes.
+            </summary>
+        </member>
+        <member name="F:CameraController.cachedFrame">
+            <summary>
+                Stores the frame number when Camera.main was last cached. Used in the MainCam
+                property getter to optimize performance by preventing repeated Camera.main lookups
+                within the same frame. Initialized to -1 to ensure the first access triggers a cache
+                update.
+            </summary>
+        </member>
+    </members>
+</doc>

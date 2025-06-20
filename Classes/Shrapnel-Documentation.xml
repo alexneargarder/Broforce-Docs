@@ -53,6 +53,31 @@
                 that must update every frame.
             </summary>
         </member>
+        <member name="P:Shrapnel.DoneFirstUpdate">
+            <summary>
+                Gets or sets whether this effect has completed its first update cycle after being
+                resurrected from an object pool. Used by the pooling system to ensure one-time
+                initialization logic runs only once per resurrection. Set to false when
+                ResurrectForPool is called, and automatically set to true by FirstUpdateFromPool.
+                Part of the IPoolableEffect interface implementation.
+            </summary>
+        </member>
+        <member name="P:Shrapnel.PoolIndex">
+            <summary>
+                Gets or sets the index position of this effect within its parent object pool. Set to
+                -1 when the effect is not part of a pool or has been removed from pooling. Used by
+                the pooling system to efficiently manage and return effects to their designated pool
+                slots. Part of the IPoolableEffect interface implementation.
+            </summary>
+        </member>
+        <member name="P:Shrapnel.ParentPool">
+            <summary>
+                Gets or sets the EffectPool instance that manages this pooled effect. Null when the
+                effect is not pooled. Set by ResurrectForPool when retrieving from a pool. Used to
+                return the effect back to its originating pool when it dies, avoiding garbage
+                collection. Part of the IPoolableEffect interface implementation.
+            </summary>
+        </member>
         <!-- Unity Lifecycle & Setup Fields -->
         <member name="F:Shrapnel.timesliceIndex">
             <summary>
@@ -583,6 +608,17 @@
                 and 0.133 seconds to prevent large time jumps. When time slicing is active, this
                 value is multiplied by the time slice amount to compensate for running fewer updates
                 per second.
+            </summary>
+        </member>
+        <!-- Core System Properties -->
+        <member name="P:Shrapnel.ShouldKillIfNotVisible">
+            <summary>
+                Gets or sets whether this shrapnel should automatically die when it moves
+                off-screen. Defaults to true in Awake for performance optimization. When true,
+                checks visibility in Update using SortOfFollow.IsItSortOfVisible with a 48x48 pixel
+                buffer zone. If not visible and life &gt; 0, immediately sets life to -0.1f to
+                trigger death. Can be overridden (e.g., set to false for cutscene effects that need
+                to persist off-screen).
             </summary>
         </member>
     </members>

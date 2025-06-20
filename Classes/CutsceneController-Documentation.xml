@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:CutsceneController.Awake">
+            <summary>
+                Initializes the CutsceneController singleton instance and subscribes to scene change
+                events
+            </summary>
+        </member>
+        <member name="M:CutsceneController.OnDestroy">
+            <summary>
+                Cleans up the singleton instance and unsubscribes from scene change events
+            </summary>
+        </member>
+        <!-- Unity Lifecycle & Setup Fields -->
+        <member name="F:CutsceneController.letterBoxCamera">
+            <summary>
+                Camera used for letterbox effect during cutscenes
+            </summary>
+        </member>
+        <!-- Cutscene Management Methods -->
+        <member name="M:CutsceneController.CloseAllCutscenes">
+            <summary>
+                Ends all active cutscenes including both bro and boss intro roots
+            </summary>
+        </member>
+        <member name="M:CutsceneController.LoadCutScene(CutsceneName,System.Single)">
+            <summary>
+                Loads and plays a cutscene with an optional delay. Handles pausing and special cases
+                like offline mode
+            </summary>
+            <param name="name">The cutscene to load</param>
+            <param name="delay">Time in seconds to wait before starting the cutscene</param>
+        </member>
+        <member name="M:CutsceneController.LoadCutSceneRoutine(CutsceneName,System.Single)">
+            <summary>
+                Coroutine that handles the actual cutscene loading process, including intro roots
+                and scene loading
+            </summary>
+            <param name="cutsceneName">The cutscene to load</param>
+            <param name="delay">Time in seconds to wait before starting</param>
+            <returns>IEnumerator for coroutine execution</returns>
+        </member>
+        <member
+            name="M:CutsceneController.SceneChange(UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene)">
+            <summary>
+                Handles scene change events by closing any active cutscenes
+            </summary>
+            <param name="oldScene">The scene being unloaded</param>
+            <param name="newScene">The newly loaded scene</param>
+        </member>
+        <!-- Cutscene Management Properties -->
+        <member name="P:CutsceneController.InCutscene">
+            <summary>
+                Gets whether a cutscene is currently in progress
+            </summary>
+        </member>
+        <!-- Cutscene Management Fields -->
+        <member name="F:CutsceneController.bossIntroRoot">
+            <summary>
+                Root object for managing boss intro cutscenes
+            </summary>
+        </member>
+        <member name="F:CutsceneController.broIntroRoot">
+            <summary>
+                Root object for managing bro character intro cutscenes
+            </summary>
+        </member>
+        <member name="F:CutsceneController.cutSceneInProgress">
+            <summary>
+                Static flag indicating whether any cutscene is currently playing
+            </summary>
+        </member>
+        <!-- Boss Cutscenes Methods -->
+        <member name="M:CutsceneController.InstantiateSatanHeliCutScene">
+            <summary>
+                Creates and positions the Satan helicopter cutscene relative to Satan's position
+            </summary>
+        </member>
+        <member name="M:CutsceneController.RevealAlienBoss">
+            <summary>
+                Creates and displays the alien boss reveal cutscene UI element on the UI camera
+            </summary>
+        </member>
+        <!-- Boss Cutscenes Fields -->
+        <member name="F:CutsceneController.revealScene">
+            <summary>
+                Prefab reference for the alien boss reveal cutscene
+            </summary>
+        </member>
+        <member name="F:CutsceneController.satanHeliCutscene">
+            <summary>
+                Prefab reference for the Satan helicopter cutscene
+            </summary>
+        </member>
+        <!-- Player Control Methods -->
+        <member name="M:CutsceneController.HoldPlayersStill(System.Boolean)">
+            <summary>
+                Controls whether players can move during cutscenes
+            </summary>
+            <param name="hold">True to prevent player movement, false to allow it</param>
+        </member>
+        <member name="M:CutsceneController.PlayersCanMove">
+            <summary>
+                Checks if players are allowed to move (not held still by a cutscene)
+            </summary>
+            <returns>True if players can move, false if they're being held still</returns>
+        </member>
+        <!-- Player Control Fields -->
+        <member name="F:CutsceneController.holdPlayersStill">
+            <summary>
+                Static flag controlling whether players are prevented from moving
+            </summary>
+        </member>
+        <!-- Cutscene Types & Mapping Methods -->
+        <member name="M:CutsceneController.GetCustsceneSceneName(CutsceneName)">
+            <summary>
+                Maps a CutsceneName enum value to its corresponding Unity scene name. Handles
+                special cases like hard mode variations
+            </summary>
+            <param name="cutscene">The cutscene enum value to map</param>
+            <returns>The Unity scene name for the cutscene, or empty string if not found</returns>
+        </member>
+        <!-- Singleton Pattern Methods -->
+        <member name="M:CutsceneController.GetPosition">
+            <summary>
+                Gets the world position of the CutsceneController instance
+            </summary>
+            <returns>The transform position of the controller</returns>
+        </member>
+        <member name="M:CutsceneController.HasInstance">
+            <summary>
+                Checks if a CutsceneController instance exists
+            </summary>
+            <returns>True if an instance exists, false otherwise</returns>
+        </member>
+        <!-- Singleton Pattern Properties -->
+        <member name="P:CutsceneController.Instance">
+            <summary>
+                Gets the singleton instance of the CutsceneController
+            </summary>
+        </member>
+        <!-- Singleton Pattern Fields -->
+        <member name="F:CutsceneController.instance">
+            <summary>
+                Protected static reference to the singleton instance
+            </summary>
+        </member>
+    </members>
+</doc>

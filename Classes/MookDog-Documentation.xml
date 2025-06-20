@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:MookDog.Start">
+            <summary>
+                Initializes the MookDog when spawned, handling mega dog transformation if isMegaDog
+                flag is set. Ensures the transformation process starts correctly by resetting flags
+                and calling TransformIntoMegaDog.
+            </summary>
+        </member>
+        <member name="M:MookDog.Update">
+            <summary>
+                Updates the MookDog's state each frame, managing the damagedDisableAttackTime
+                counter that prevents attacks after taking melee damage. Decrements the timer and
+                calls base Update for standard unit behavior.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:MookDog.CreateGibEffects(DamageType,System.Single,System.Single)">
+            <summary>
+                Creates death gibbing effects, using special megaDogGibs if the dog is in mega form.
+                Ensures appropriate visual effects match the current dog variant when destroyed.
+            </summary>
+            <param name="damageType">Type of damage that caused the gibbing</param>
+            <param name="xI">Horizontal force for gib physics</param>
+            <param name="yI">Vertical force for gib physics</param>
+        </member>
+        <member
+            name="M:MookDog.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+            <summary>
+                Processes damage taken by the MookDog, setting a 0.3 second attack disable timer
+                when hit by melee, knife, knock, or blade damage types. This prevents the dog from
+                immediately counter-attacking after being struck in close combat.
+            </summary>
+            <param name="damage">Amount of damage to inflict</param>
+            <param name="damageType">Type of damage being applied</param>
+            <param name="xI">Horizontal knockback force</param>
+            <param name="yI">Vertical knockback force</param>
+            <param name="direction">Direction of the damage source</param>
+            <param name="damageSender">The MonoBehaviour that caused the damage</param>
+            <param name="hitX">X coordinate of the hit location</param>
+            <param name="hitY">Y coordinate of the hit location</param>
+        </member>
+        <member name="M:MookDog.FallDamage(System.Single)">
+            <summary>
+                Applies fall damage to the MookDog with damage reduction in hard mode. This override
+                implements a special damage mitigation system where every other fall damage instance
+                is ignored in hard mode, effectively halving fall damage frequency. Uses a fallCount
+                counter to track the number of fall damage events and only applies damage on
+                even-numbered occurrences when playing in hard mode.
+            </summary>
+            <param name="yI">The vertical impact velocity used to calculate fall damage severity</param>
+        </member>
+        <member name="M:MookDog.Jump(System.Boolean)">
+            <summary>
+                Executes the jump action for the MookDog. This override calls the base jump
+                implementation without any modifications. The method maintains the standard jumping
+                behavior from the parent Mook class while allowing for potential future
+                MookDog-specific jump customizations.
+            </summary>
+            <param name="wallJump">True if performing a wall jump, false for a regular ground jump</param>
+        </member>
+        <member name="M:MookDog.Knock(DamageType,System.Single,System.Single,System.Boolean)">
+            <summary>
+                Applies knockback to the MookDog by calling the base Knock implementation. Maintains
+                standard knockback behavior without any special modifications.
+            </summary>
+            <param name="damageType">Type of damage causing the knockback</param>
+            <param name="xI">Horizontal knockback force</param>
+            <param name="yI">Vertical knockback force</param>
+            <param name="forceTumble">Whether to force the unit into a tumbling state</param>
+        </member>
+        <member name="M:MookDog.RunFiring">
+            <summary>
+                Executes the MookDog's melee bite attack when firing. Temporarily sets invulnerable
+                during the attack, hits living units within 6 units horizontally at Y+4 offset for 3
+                melee damage, and plays attack sound on successful hit.
+            </summary>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:MookDog.damagedDisableAttackTime">
+            <summary>
+                Time remaining during which the MookDog cannot perform attack actions after being
+                damaged by melee attacks. Set to 0.3 seconds when hit by melee, knife, knock, or
+                blade damage types. This timer prevents the dog from immediately counter-attacking
+                when struck by close-range weapons, creating a brief vulnerability window.
+                Decrements each frame and is checked during input processing to disable fire
+                actions.
+            </summary>
+        </member>
+        <member name="F:MookDog.fallCount">
+            <summary>
+                Counter tracking the number of times this MookDog has taken fall damage. Used in
+                conjunction with hard mode difficulty to reduce fall damage frequency. When in hard
+                mode, only even-numbered fall counts (fallCount % 2 == 0) result in actual damage
+                being applied, effectively halving the fall damage rate.
+            </summary>
+        </member>
+        <!-- Special Abilities Methods -->
+        <member name="M:MookDog.PressSpecial">
+            <summary>
+                Handles special ability button press, stopping any howling animation before calling
+                base special press behavior. Ensures howling doesn't interfere with other special
+                actions.
+            </summary>
+        </member>
+        <member name="M:MookDog.StartEatingCorpse">
+            <summary>
+                Begins the corpse eating behavior by resetting the corpseEatingCount to 0. Called
+                when the dog starts consuming a fallen unit to potentially transform into mega form.
+            </summary>
+        </member>
+        <member name="M:MookDog.TransformIntoMegaDog">
+            <summary>
+                Transforms the regular MookDog into a powerful MegaDog variant. Increases sprite
+                size to 48x48, health to 15, movement speed by 30%, jump force by 15%, and adjusts
+                collision bounds. Triggers a howling animation and disturbs nearby wildlife within
+                200 units.
+            </summary>
+        </member>
+        <member name="M:MookDog.UseSpecial">
+            <summary>
+                Empty implementation that prevents any special ability usage. MookDogs don't have
+                active special abilities beyond their passive corpse-eating transformation.
+            </summary>
+        </member>
+        <!-- Special Abilities Fields -->
+        <member name="F:MookDog.corpseEatingCount">
+            <summary>
+                Counter tracking the number of bite actions performed while eating corpses.
+                Increments with each successful bite animation frame during the corpse-eating
+                special ability. When this count reaches corpseEatingSatisfactionCount (default 16),
+                the MookDog transforms into a MegaDog. Resets to 0 when starting to eat a new
+                corpse.
+            </summary>
+        </member>
+        <member name="F:MookDog.corpseEatingSatisfactionCount">
+            <summary>
+                The number of successful corpse bites required to transform into a MegaDog. Defaults
+                to 16 bites. When corpseEatingCount reaches this value during the eating animation,
+                the transformation is triggered. This value can be adjusted to make transformation
+                easier or harder to achieve.
+            </summary>
+        </member>
+        <member name="F:MookDog.isHowling">
+            <summary>
+                Flag indicating whether the MookDog is currently performing its howling animation.
+                Set to true when transforming into a MegaDog to play the transformation howl
+                sequence. During howling, the dog plays a special animation sequence and power-up
+                sound. The howl completes after frame 14 of the animation sequence.
+            </summary>
+        </member>
+        <member name="F:MookDog.isMegaDog">
+            <summary>
+                Flag indicating whether this MookDog has transformed into its more powerful MegaDog
+                variant. When true, the dog has increased health (15), larger size (48x48 sprites),
+                faster movement speed (1.3x multiplier), and uses different death effects.
+                Transformation occurs after eating enough corpses or can be set during
+                initialization.
+            </summary>
+        </member>
+        <member name="F:MookDog.megaDogGibs">
+            <summary>
+                The gib holder containing death particle effects specific to the MegaDog variant.
+                When a MegaDog is destroyed, this gib set is used instead of the standard dog gibs
+                to create appropriately scaled death effects. The system swaps to these gibs in
+                CreateGibEffects when isMegaDog is true.
+            </summary>
+        </member>
+        <member name="F:MookDog.upgradedMaterial">
+            <summary>
+                The material applied to the MookDog's renderer when it transforms into a MegaDog.
+                This material replaces the standard appearance to visually indicate the upgraded
+                state. Applied during the TransformIntoMegaDog process along with other visual
+                changes like increased sprite size.
+            </summary>
+        </member>
+        <!-- Animation & Sprite Systems Methods -->
+        <member name="M:MookDog.AnimateActualIdleDuckingFrames">
+            <summary>
+                Animates the MookDog's idle ducking frames with special handling for hiding and
+                reveal animations. When animatingRevealPosition is true, plays a 15-frame reveal
+                sequence with variable frame rates. When the AI is in hiding state, plays a 12-frame
+                hiding animation loop. Otherwise delegates to the base implementation for standard
+                idle ducking animations. The reveal animation includes pauses at frames 4, 6, and 9
+                for dramatic effect.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateActualIdleFrames">
+            <summary>
+                Animates idle stance, with special electrified animation frames when shocked or
+                under plasma effects. Uses frames 6-7 on row 5 for electrified state, otherwise
+                delegates to base idle animation.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateActualNewRunningFrames">
+            <summary>
+                Animates the MegaDog's running frames using an 8-frame cycle on sprite row 4. Used
+                when the dog is in mega form and actively running.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateActualUnawareRunningFrames">
+            <summary>
+                Animates the unaware running state using an 8-frame cycle on sprite row 2. Used for
+                calm movement when the dog hasn't detected enemies.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateImpaled">
+            <summary>
+                Sets the sprite position for the impaled death animation based on whether this is a
+                regular MookDog or MegaDog. MegaDogs use sprite position (960, 48) while regular
+                dogs use position (638, 32). This provides size-appropriate impalement sprites for
+                both variants.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateRunning">
+            <summary>
+                Manages running animations based on the dog's current state. Adjusts speed and frame
+                rate for: burning/blind/scared (70% speed), alerted (full speed with aware
+                animations), or unaware (slower casual movement). Handles both regular and mega dog
+                sprite variations.
+            </summary>
+        </member>
+        <member name="M:MookDog.AnimateSpecial">
+            <summary>
+                Animates special actions including howling (mega transformation) and corpse eating.
+                Howling uses a 14-frame intro then loops 2 frames. Corpse eating alternates between
+                2 frames, dealing bite damage and creating blood effects every other frame.
+                Transforms to mega dog after eating enough (determined by
+                corpseEatingSatisfactionCount).
+            </summary>
+        </member>
+        <member name="M:MookDog.ChangeFrame">
+            <summary>
+                Updates the current animation frame, switching to death animation if health drops to
+                0 or below. Otherwise delegates to base frame change logic for standard animations.
+            </summary>
+        </member>
+        <!-- Character State & Effects Methods -->
+        <member name="M:MookDog.Dance(System.Single)">
+            <summary>
+                Initiates celebration dance animation, canceling any ongoing howling or corpse
+                eating. Clears AI action queue and resets special ability states before calling base
+                dance behavior.
+            </summary>
+            <param name="time">Duration of the dance animation</param>
+        </member>
+        <!-- Input & Control Methods -->
+        <member name="M:MookDog.CalculateZombieInput">
+            <summary>
+                Calculates AI-controlled zombie movement, making the dog jump forward when
+                attempting to attack. Sets movement direction based on facing and maintains forward
+                momentum during attack sequences with a 0.5 second delay.
+            </summary>
+        </member>
+        <member name="M:MookDog.CheckInput">
+            <summary>
+                Processes input controls, disabling fire/attack input if damagedDisableAttackTime is
+                active. Prevents the dog from attacking immediately after taking melee damage.
+            </summary>
+        </member>
+        <!-- Environmental Interaction Methods -->
+        <member name="M:MookDog.CanPassThroughBarriers">
+            <summary>
+                Determines if the dog can pass through barrier blocks. Returns true when dead,
+                knocked back with sufficient force (&gt;1 horizontal blast), blinded, or scared,
+                allowing passage through normally solid barriers.
+            </summary>
+            <returns>True if the dog can pass through barriers in its current state</returns>
+        </member>
+        <!-- Audio System Methods -->
+        <member name="M:MookDog.PlayGreetingSound">
+            <summary>
+                Plays greeting/alert sound and bothers nearby mooks within 80 horizontal and 32
+                vertical units. Alerts 5 nearby enemies to the player's presence when the dog spots
+                them.
+            </summary>
+        </member>
+        <member name="M:MookDog.PlayJumpSound">
+            <summary>
+                Plays the special2 sound effect when jumping, with randomized pitch between 0.94 and
+                1.06 for variation. Creates more natural jump sound variety.
+            </summary>
+        </member>
+        <!-- Unit Management Methods -->
+        <member name="M:MookDog.RegisterUnit">
+            <summary>
+                Registers this MookDog with the game's unit tracking system. Uses simplified
+                registration without networking features for reliable modding compatibility.
+            </summary>
+        </member>
+        <!-- AI Awareness Methods -->
+        <member name="M:MookDog.FetchObject(UnityEngine.Transform)">
+            <summary>
+                Directs the dog's AI to fetch or pursue a specific object. Delegates the fetch
+                behavior to the enemyAI component if available.
+            </summary>
+            <param name="fetchObject">The transform of the object to fetch</param>
+        </member>
+        <member name="M:MookDog.GetEnemyMovement">
+            <summary>
+                Calculates AI-driven movement patterns, disabling attack behavior if
+                damagedDisableAttackTime is active. Ensures the dog retreats briefly after taking
+                melee damage before resuming pursuit.
+            </summary>
+        </member>
+        <!-- AI Awareness Fields -->
+        <member name="F:MookDog.awareMegaRunSpeed">
+            <summary>
+                Movement speed for MegaDogs when alerted to player presence. Set to 135 units per
+                second. Applied when the enemy AI is alerted and useNewFrames is true (indicating
+                MegaDog status). Slightly faster than regular aware speed to reflect the MegaDog's
+                enhanced capabilities.
+            </summary>
+        </member>
+        <member name="F:MookDog.awareRunSpeed">
+            <summary>
+                Movement speed for regular MookDogs when alerted to player presence. Set to 130
+                units per second. Used when the enemy AI is in an alerted state and useNewFrames is
+                false. This increased speed helps the dog close distance on detected players more
+                effectively than its unaware patrol speed.
+            </summary>
+        </member>
+        <member name="F:MookDog.unawareMegaRunSpeed">
+            <summary>
+                Default patrol movement speed for MegaDogs when not alerted. Set to 125 units per
+                second. Applied during patrol when useNewFrames is true but the AI isn't alerted.
+                Even while unaware, MegaDogs move slightly faster than regular dogs due to their
+                enhanced physical capabilities.
+            </summary>
+        </member>
+        <member name="F:MookDog.unawareRunSpeed">
+            <summary>
+                Default patrol movement speed for regular MookDogs when not alerted. Set to 120
+                units per second. Used during normal patrol behavior when the AI hasn't detected
+                players and useNewFrames is false. This slower speed represents casual movement
+                while searching for threats.
+            </summary>
+        </member>
+    </members>
+</doc>
