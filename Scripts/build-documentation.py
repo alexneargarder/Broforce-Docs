@@ -4,195 +4,115 @@ Broforce Documentation Build Script
 
 Combines individual class XML documentation files into a single Assembly-CSharp.xml
 file that's compatible with .NET tooling (Visual Studio, IntelliSense, etc.).
-Handles all XML tags including remarks while preserving special formatting for
-summary, param, returns, and value tags.
+
+This is the refactored version using xml_utils.
 
 Usage: python build-documentation.py
 """
 
 import os
 import glob
-from xml.etree.ElementTree import Element, SubElement, tostring, parse, ParseError
 import sys
 from pathlib import Path
 
-# Add Scripts directory to path for imports
+# Import from xml_utils
+from xml_utils import XMLFileReader, XMLFileWriter, XMLFormatter, XMLPatterns
+
+# Import format_xml_file with proper path handling
 import importlib.util
 spec = importlib.util.spec_from_file_location("format_xml", Path(__file__).parent / "format-xml.py")
 format_xml = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(format_xml)
 format_xml_file = format_xml.format_xml_file
 
-def escape_xml_text(text):
-    """Escape special XML characters in text content."""
-    if text is None:
-        return ""
-    # Replace XML special characters with their entities
-    text = text.replace("&", "&amp;")
-    text = text.replace("<", "&lt;")
-    text = text.replace(">", "&gt;")
-    return text
-
-def create_master_xml():
-    """Create the master XML structure with assembly information."""
-    root = Element("doc")
-    
-    # Add assembly information
-    assembly = SubElement(root, "assembly")
-    name = SubElement(assembly, "name")
-    name.text = "Assembly-CSharp"
-    
-    # Add members container
-    members = SubElement(root, "members")
-    
-    return root, members
-
-def find_class_xml_files():
+def find_class_xml_files(classes_dir=None):
     """Find all class documentation XML files."""
-    pattern = "../Classes/*-Documentation.xml"
+    if classes_dir is None:
+        classes_dir = "../Classes"
+    pattern = os.path.join(classes_dir, "*-Documentation.xml")
     files = glob.glob(pattern)
     files.sort()  # Ensure consistent ordering
     return files
 
-def extract_members_from_file(filepath):
-    """Extract member elements from a class documentation file."""
+def extract_members_lines_from_file(filepath):
+    """Extract member element lines from a class documentation file."""
     try:
-        tree = parse(filepath)
-        root = tree.getroot()
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
         
-        # Find the members section
-        members_section = root.find("members")
-        if members_section is None:
+        lines = content.split('\n')
+        
+        # Find members section boundaries
+        members_start = -1
+        members_end = -1
+        
+        for i, line in enumerate(lines):
+            if '<members>' in line:
+                members_start = i
+            elif '</members>' in line:
+                members_end = i
+                break
+        
+        if members_start == -1 or members_end == -1:
             print(f"Warning: No <members> section found in {filepath}")
             return []
         
-        return list(members_section)
-    
-    except ParseError as e:
-        print(f"Error parsing {filepath}: {e}")
-        return []
+        # Extract member lines including comments
+        member_lines = []
+        i = members_start + 1
+        
+        while i < members_end:
+            line = lines[i]
+            
+            # Include comments
+            if '<!--' in line:
+                member_lines.append(line)
+            # Include member elements
+            elif '<member' in line:
+                # Start of member element
+                member_element_lines = [line]
+                i += 1
+                
+                # Collect all lines until </member>
+                while i < members_end and '</member>' not in lines[i - 1]:
+                    if i < len(lines):
+                        member_element_lines.append(lines[i])
+                    i += 1
+                
+                # Add all member lines
+                member_lines.extend(member_element_lines)
+                continue
+                
+            i += 1
+            
+        return member_lines
+        
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
         return []
 
-def format_element_generic(element, indent_level=0):
-    """Format any XML element generically with proper indentation."""
-    indent = "    " * indent_level
-    lines = []
-    
-    # Special handling for known tags to match original formatting
-    if element.tag in ['summary', 'remarks']:
-        lines.append(f'{indent}<{element.tag}>')
-        if element.text and element.text.strip():
-            # Handle multi-line text
-            text = element.text.strip()
-            text_lines = text.split('\n')
-            for text_line in text_lines:
-                if text_line.strip():
-                    escaped_line = escape_xml_text(text_line.strip())
-                    lines.append(f'{indent}{escaped_line}')
-        lines.append(f'{indent}</{element.tag}>')
-        return lines
-    
-    elif element.tag == 'param':
-        param_name = element.get('name')
-        param_text = escape_xml_text(element.text.strip() if element.text else "")
-        lines.append(f'{indent}<param name="{param_name}">{param_text}</param>')
-        return lines
-    
-    elif element.tag == 'returns':
-        returns_text = escape_xml_text(element.text.strip() if element.text else "")
-        lines.append(f'{indent}<returns>{returns_text}</returns>')
-        return lines
-    
-    elif element.tag == 'value':
-        value_text = escape_xml_text(element.text.strip() if element.text else "")
-        lines.append(f'{indent}<value>{value_text}</value>')
-        return lines
-    
-    # Generic handling for all other tags (like remarks)
-    # Build opening tag with attributes
-    tag_parts = [element.tag]
-    for attr_name, attr_value in element.attrib.items():
-        tag_parts.append(f'{attr_name}="{attr_value}"')
-    opening_tag = f'{indent}<{" ".join(tag_parts)}>'
-    
-    # Check if element has children or text
-    has_children = len(element) > 0
-    has_text = element.text and element.text.strip()
-    
-    if not has_children and not has_text:
-        # Self-closing tag
-        lines.append(f'{indent}<{" ".join(tag_parts)} />')
-    elif has_text and not has_children:
-        # Simple element with text only
-        text = escape_xml_text(element.text.strip())
-        lines.append(f'{opening_tag}{text}</{element.tag}>')
-    else:
-        # Complex element
-        lines.append(opening_tag)
-        
-        # Add text if present
-        if has_text:
-            # Handle multi-line text
-            text_lines = element.text.strip().split('\n')
-            for text_line in text_lines:
-                if text_line.strip():
-                    escaped_line = escape_xml_text(text_line.strip())
-                    lines.append(f'{indent}    {escaped_line}')
-        
-        # Process child elements
-        for child in element:
-            child_lines = format_element_generic(child, indent_level + 1)
-            lines.extend(child_lines)
-        
-        # Closing tag
-        lines.append(f'{indent}</{element.tag}>')
-    
-    # Handle tail text (text after the element)
-    if element.tail and element.tail.strip():
-        lines.append(escape_xml_text(element.tail.strip()))
-    
-    return lines
-
-def format_xml_clean(root):
-    """Format XML with clean, minimal whitespace."""
-    lines = ['<doc>']
-    lines.append('    <assembly>')
-    lines.append('        <name>Assembly-CSharp</name>')
-    lines.append('    </assembly>')
-    lines.append('    <members>')
-    
-    # Process each member element
-    members = root.find('members')
-    for i, member in enumerate(members):
-        if i > 0:
-            lines.append('')  # Blank line between members
-        
-        # Format member element generically
-        member_lines = format_element_generic(member, 2)
-        lines.extend(member_lines)
-    
-    lines.append('    </members>')
-    lines.append('</doc>')
-    
-    return '\n'.join(lines)
-
-def build_combined_xml():
+def build_combined_xml(classes_dir=None, output_dir=None):
     """Main function to build the combined XML file."""
     print("Building Assembly-CSharp.xml from individual class documentation files...")
     
-    # Create master XML structure
-    root, members_container = create_master_xml()
-    
     # Find all class documentation files
-    class_files = find_class_xml_files()
+    class_files = find_class_xml_files(classes_dir)
     
     if not class_files:
-        print("No class documentation files found (../Classes/*-Documentation.xml)")
+        print(f"No class documentation files found ({os.path.join(classes_dir or '../Classes', '*-Documentation.xml')})")
         return False
     
     print(f"Found {len(class_files)} class documentation files:")
+    
+    # Start building output
+    output_lines = [
+        '<?xml version="1.0" encoding="utf-8"?>',
+        '<doc>',
+        '    <assembly>',
+        '        <name>Assembly-CSharp</name>',
+        '    </assembly>',
+        '    <members>'
+    ]
     
     total_members = 0
     
@@ -200,33 +120,40 @@ def build_combined_xml():
     for filepath in class_files:
         print(f"  Processing {filepath}...")
         
-        # Extract members from this file
-        members = extract_members_from_file(filepath)
+        # Extract member lines from this file
+        member_lines = extract_members_lines_from_file(filepath)
         
-        if members:
-            # Add members to the master document
-            for member in members:
-                members_container.append(member)
+        if member_lines:
+            # Count actual members (not comments)
+            member_count = sum(1 for line in member_lines if '<member' in line)
+            
+            # Add member lines to output
+            output_lines.extend(member_lines)
             
             class_name = os.path.basename(filepath).replace('-Documentation.xml', '')
-            total_members += len(members)
-            print(f"    Added {len(members)} members from {class_name}")
+            total_members += member_count
+            print(f"    Added {member_count} members from {class_name}")
         else:
             print(f"    Warning: No members found in {filepath}")
     
-    # Write the combined XML file
-    output_file = "../Assembly-CSharp.xml"
+    # Close XML structure
+    output_lines.extend([
+        '    </members>',
+        '</doc>'
+    ])
     
-    # Format and write
+    # Write the combined XML file
+    if output_dir is None:
+        output_file = "../Assembly-CSharp.xml"
+    else:
+        output_file = os.path.join(output_dir, "Assembly-CSharp.xml")
+    
     try:
-        formatted_xml = format_xml_clean(root)
-        
         # Write to file
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write('<?xml version="1.0"?>\n')
-            f.write(formatted_xml)
+            f.write('\n'.join(output_lines))
         
-        # Format the XML file
+        # Format the XML file using format-xml.py
         try:
             format_xml_file(output_file)
         except Exception as e:
@@ -248,11 +175,26 @@ def main():
     print("Broforce Documentation Build Script")
     print("=" * 40)
     
-    # Change to script directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
+    # Parse command line arguments
+    classes_dir = None
+    output_dir = None
     
-    success = build_combined_xml()
+    if len(sys.argv) > 1:
+        # Check for environment variable or argument for test mode
+        if sys.argv[1] == '--test' or os.environ.get('BUILD_DOC_TEST_MODE'):
+            # Don't change directory in test mode
+            classes_dir = os.environ.get('BUILD_DOC_CLASSES_DIR', '../Classes')
+            output_dir = os.environ.get('BUILD_DOC_OUTPUT_DIR', '..')
+        else:
+            classes_dir = sys.argv[1]
+            if len(sys.argv) > 2:
+                output_dir = sys.argv[2]
+    else:
+        # Change to script directory for normal operation
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(script_dir)
+    
+    success = build_combined_xml(classes_dir, output_dir)
     
     if success:
         print("\nBuild completed successfully!")

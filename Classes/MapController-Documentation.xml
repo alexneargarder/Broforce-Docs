@@ -12,8 +12,7 @@
             </summary>
         </member>
         <!-- Combat & Damage Methods -->
-        <member
-            name="M:MapController.BurnGround_Local(System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:MapController.BurnGround_Local(System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Burns ground in a circular pattern using raycasts from a central point. Creates 24
                 rays in a circular pattern to detect and burn ground objects within range. The
@@ -24,8 +23,7 @@
             <param name="y">The Y coordinate of the burn center (snapped to 16-unit grid).</param>
             <param name="groundLayer">The layer mask for ground detection (currently unused in the implementation).</param>
         </member>
-        <member
-            name="M:MapController.BurnUnitsAround_NotNetworked(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:MapController.BurnUnitsAround_NotNetworked(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Burns units in an area without network synchronization by delegating to
                 Map.BurnUnitsAround_Local. Used for fire damage effects that don't need to be
@@ -40,8 +38,7 @@
             <param name="penetrates">Whether the fire penetrates through objects.</param>
             <param name="setGroundAlight">Whether to set the ground on fire.</param>
         </member>
-        <member
-            name="M:MapController.DamageBlock(UnityEngine.MonoBehaviour,Block,System.Int32,DamageType,System.Single,System.Single)">
+        <member name="M:MapController.DamageBlock(UnityEngine.MonoBehaviour,Block,System.Int32,DamageType,System.Single,System.Single)">
             <summary>
                 Damages a specific block with network synchronization. This is a convenience method
                 that wraps Damage_Networked for block-specific damage.
@@ -53,8 +50,7 @@
             <param name="forceX">The horizontal force to apply.</param>
             <param name="forceY">The vertical force to apply.</param>
         </member>
-        <member
-            name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+        <member name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
             <summary>
                 Damages ground and damageable objects within a spherical area with network
                 synchronization. This is the standard method for dealing environmental damage that
@@ -70,8 +66,7 @@
             <param name="groundLayerStrict">If true, only damages ground layer objects; if false, damages both ground and damageable objects.</param>
             <returns>True if any objects were damaged, false otherwise.</returns>
         </member>
-        <member
-            name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Boolean,UnityEngine.Collider[])">
+        <member name="M:MapController.DamageGround(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Boolean,UnityEngine.Collider[])">
             <summary>
                 Damages ground and damageable objects within a rectangular area with network
                 synchronization. Uses a larger sphere check for initial object detection, then
@@ -88,8 +83,7 @@
             <param name="ignoreTheseColliders">Optional array of colliders to exclude from damage.</param>
             <returns>True if any objects were damaged, false otherwise.</returns>
         </member>
-        <member
-            name="M:MapController.DamageGroundLocal(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+        <member name="M:MapController.DamageGroundLocal(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
             <summary>
                 Damages ground and damageable objects within a spherical area locally without
                 network synchronization. Primarily used for client-side damage effects that don't
@@ -105,8 +99,7 @@
             <param name="strictlyGround">If true, only damages ground layer objects; if false, damages both ground and damageable objects.</param>
             <returns>True if any objects were damaged, false otherwise.</returns>
         </member>
-        <member
-            name="M:MapController.Damage_Local(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:MapController.Damage_Local(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Applies damage to an object locally without network synchronization. Similar to
                 Damage_Networked but only affects the local client. Includes additional special case
@@ -121,8 +114,7 @@
             <param name="x">The X coordinate where damage occurs.</param>
             <param name="y">The Y coordinate where damage occurs.</param>
         </member>
-        <member
-            name="M:MapController.Damage_Networked(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:MapController.Damage_Networked(UnityEngine.MonoBehaviour,UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Applies damage to an object with network synchronization based on damage policies.
                 This method enforces damage rules between different entity types and handles special
@@ -137,8 +129,7 @@
             <param name="x">The X coordinate where damage occurs.</param>
             <param name="y">The Y coordinate where damage occurs.</param>
         </member>
-        <member
-            name="M:MapController.IsIndestructibleGround(System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
+        <member name="M:MapController.IsIndestructibleGround(System.Single,System.Single,System.Single,UnityEngine.Collider[],System.Boolean)">
             <summary>
                 Checks if there is any indestructible ground (blocks with health greater than 200)
                 within the specified spherical area. Used to determine if an area contains terrain
@@ -170,8 +161,7 @@
             <param name="player">The player ID pushing the block.</param>
             <param name="timeStamp">The timestamp of when the push started.</param>
         </member>
-        <member
-            name="M:MapController.SettleBlockRPC(Block,System.Single,System.Single,System.Int32,System.Single)">
+        <member name="M:MapController.SettleBlockRPC(Block,System.Single,System.Single,System.Int32,System.Single)">
             <summary>
                 Handles the network RPC for settling a falling block after it has been rolled. Only
                 processes the settlement if the RPC sender matches the player who pushed the block
@@ -184,8 +174,7 @@
             <param name="final_zAngle">The final Z-axis rotation angle.</param>
         </member>
         <!-- Entity Spawning Methods -->
-        <member
-            name="M:MapController.SpawnDrone_Networked(Drone,BroBase,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:MapController.SpawnDrone_Networked(Drone,BroBase,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Spawns a drone with network synchronization that follows a specific hero character.
                 The drone is linked to a BroBase instance for following behavior.
@@ -198,8 +187,7 @@
             <param name="yI">The initial vertical velocity.</param>
             <returns>The spawned drone instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnMookJumping_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:MapController.SpawnMookJumping_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Spawns a mook in a jumping state with network synchronization. Includes additional
                 parameters for forced jumping and sound effects on spawn.
@@ -217,8 +205,7 @@
             <param name="laughSound">Whether to play laugh sound on spawn.</param>
             <returns>The spawned mook instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnMook_Local(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:MapController.SpawnMook_Local(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Spawns a mook locally without network synchronization. Used for client-side mook
                 spawning that doesn't need to be replicated.
@@ -235,8 +222,7 @@
             <param name="isAlert">Whether the mook spawns in an alert state.</param>
             <returns>The spawned mook instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnMook_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:MapController.SpawnMook_Networked(Mook,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Spawns a mook with network synchronization. Creates the mook on all connected
                 clients and synchronizes its spawn state including alert status.
@@ -253,8 +239,7 @@
             <param name="isAlert">Whether the mook spawns in an alert state.</param>
             <returns>The spawned mook instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnResource_Networked(System.String,System.Single,System.Single,System.String)">
+        <member name="M:MapController.SpawnResource_Networked(System.String,System.Single,System.Single,System.String)">
             <summary>
                 Spawns a resource by name with network synchronization. Uses the
                 InstantiationController to resolve legacy resource names to prefabs.
@@ -264,8 +249,7 @@
             <param name="y">The Y coordinate to spawn at.</param>
             <param name="tag">Optional tag to assign to the spawned object for later reference (converted to uppercase).</param>
         </member>
-        <member
-            name="M:MapController.SpawnResource_Networked_Block(UnityEngine.GameObject,System.Single,System.Single,System.String)">
+        <member name="M:MapController.SpawnResource_Networked_Block(UnityEngine.GameObject,System.Single,System.Single,System.String)">
             <summary>
                 Spawns a block-based resource with network synchronization. Handles block
                 initialization, immediate step-on notifications, and optional tagging for later
@@ -276,8 +260,7 @@
             <param name="y">The Y coordinate to spawn at.</param>
             <param name="tag">Optional tag to assign to the spawned object for later reference (converted to uppercase).</param>
         </member>
-        <member
-            name="M:MapController.SpawnTestVanDamme_Networked(TestVanDammeAnim,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:MapController.SpawnTestVanDamme_Networked(TestVanDammeAnim,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Spawns a TestVanDammeAnim (hero character) with network synchronization. Creates the
                 character on all connected clients and synchronizes its spawn state.
@@ -293,8 +276,7 @@
             <param name="onFire">Whether the character spawns on fire.</param>
             <returns>The spawned TestVanDammeAnim instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnVehicle_Networked(Tank,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:MapController.SpawnVehicle_Networked(Tank,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Spawns a vehicle (tank) with network synchronization. Creates the vehicle on all
                 connected clients with synchronized movement and alert state.
@@ -307,8 +289,7 @@
             <param name="isAlert">Whether the vehicle spawns in an alert state.</param>
             <returns>The spawned tank instance.</returns>
         </member>
-        <member
-            name="M:MapController.SpawnVillager_Networked(Villager,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
+        <member name="M:MapController.SpawnVillager_Networked(Villager,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
             <summary>
                 Spawns a villager with network synchronization. Includes support for armed villagers
                 that can be associated with a specific player.

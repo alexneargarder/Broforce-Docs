@@ -44,8 +44,7 @@
             </summary>
         </member>
         <!-- Combat & Damage Methods -->
-        <member
-            name="M:EffectsController.CreateAlienParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateAlienParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates alien-themed particle effects. Uses alien earth dots at 1.4x force with half
                 the requested count for extraterrestrial debris or organic alien matter destruction.
@@ -58,8 +57,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateAlienScrapParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateAlienScrapParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates complex alien-themed scrap particles for extraterrestrial destruction
                 effects. Distributes particles across 7 different alien scrap emitters with varying
@@ -85,8 +83,7 @@
             <param name="x">The X coordinate where the blood splat appears.</param>
             <param name="y">The Y coordinate where the blood splat appears.</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBackgroundBloodSpray(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBackgroundBloodSpray(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a background blood spray effect that moves with velocity. This effect
                 appears behind other game elements.
@@ -96,8 +93,7 @@
             <param name="xI">The horizontal velocity of the blood spray.</param>
             <param name="yI">The vertical velocity of the blood spray.</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBackgroundFlameParticle(System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBackgroundFlameParticle(System.Single,System.Single)">
             <summary>
                 Creates a background flame particle at default depth. Randomly selects from four
                 flame sheet variations for visual variety. Calls the z-parameter overload with z =
@@ -106,8 +102,7 @@
             <param name="x">The x-coordinate where the flame appears</param>
             <param name="y">The y-coordinate where the flame appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBackgroundFlameParticle(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBackgroundFlameParticle(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a background flame particle with custom z-depth. Randomly selects from four
                 flame sheet particle variations (flameSheetBackgroundParticle1-4) to add visual
@@ -117,8 +112,7 @@
             <param name="y">The y-coordinate where the flame appears</param>
             <param name="z">The z-coordinate (depth) of the flame particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBackgroundWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBackgroundWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates background wood shrapnel effects. Distributes particles among four different
                 wood shrapnel types, with the first two types getting slightly more particles
@@ -133,8 +127,7 @@
             <param name="xI">The initial x-velocity added to all shrapnel</param>
             <param name="yI">The initial y-velocity added to all shrapnel</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBarbedWireParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBarbedWireParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates barbed wire destruction particles. Combines smaller white dirt particles at
                 1.6x force (half count) with grey tinting for rust/dirt, plus shiny metal particles
@@ -150,8 +143,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning wire pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBlackPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBlackPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates black smoke plume particles with customizable physics and appearance.
                 Randomly selects between two black plume variations for visual variety. Supports
@@ -166,8 +158,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodArteryEffect(BloodColor,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateBloodArteryEffect(BloodColor,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates arterial blood spurting effects with directional spray. Randomly selects
                 between two artery animation variants and rotates based on direction (-90° left, 90°
@@ -179,8 +170,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="direction">Direction of spray: negative = left, positive = right, 0 = upward</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodExplosionSmall(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateBloodExplosionSmall(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,Vector3)">
             <summary>
                 Creates a small blood explosion effect. Randomly selects from three blood gush
                 prefabs, spawns red blood particles, shakes camera, plays wet explosion sound, and
@@ -199,8 +189,7 @@
             <param name="shrapnelForce">The velocity force for blood particles</param>
             <param name="normal">The surface normal direction (unused)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodGushEffect(BloodColor,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:EffectsController.CreateBloodGushEffect(BloodColor,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Creates a comprehensive blood gush effect combining multiple elements. Randomly
                 selects from 3 gush and 3 spurt variations, with optional slime and dot particles.
@@ -215,8 +204,7 @@
             <param name="dots">Whether to include blood dot particles</param>
             <param name="slimes">Whether to include slime particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticles(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticles(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates blood particle effects at the specified position with z-coordinate of 1.
                 This is a convenience overload that delegates to the full version with default
@@ -232,8 +220,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a complete blood splatter effect using multiple particle sizes. Distributes
                 particles across three different emitters: big particles (1/3 of count), small
@@ -251,8 +238,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesBig(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesBig(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates large blood particle effects at the specified position with z-coordinate of
                 1. This is a convenience overload that delegates to the full version with default
@@ -268,8 +254,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesBig(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesBig(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates large blood particle effects with color-specific emitters. Selects
                 appropriate particle emitter based on blood type: sewerage (poop), green, oil
@@ -288,8 +273,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesDots(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesDots(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates blood dot particle effects at the specified position with z-coordinate of 1.
                 This is a convenience overload that delegates to the full version with default
@@ -306,8 +290,7 @@
             <param name="yI">The base vertical velocity component</param>
             <param name="scaleM">The scale multiplier for particle size</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesDots(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesDots(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates blood dot particle effects with clustered spawning and size scaling. Uses
                 color-specific emitters with 50% chance to add one extra particle. Implements
@@ -326,8 +309,7 @@
             <param name="yI">The base vertical velocity component</param>
             <param name="scaleM">The scale multiplier for particle size</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesDrip(System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
+        <member name="M:EffectsController.CreateBloodParticlesDrip(System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
             <summary>
                 Creates a blood drip particle effect at a random position within the specified
                 radius. Selects color-specific drip emitter (green, oil/black, or default red) and
@@ -340,8 +322,7 @@
             <param name="scaleM">The scale multiplier for particle size</param>
             <param name="color">The blood color type (green, oil, or default red)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesSmall(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesSmall(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small blood particle effects at the specified position with z-coordinate of
                 1. This is a convenience overload that delegates to the full version with default
@@ -357,8 +338,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodParticlesSmall(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodParticlesSmall(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small blood particle effects with clustered spawning pattern. Uses
                 color-specific emitters and implements a clustering algorithm where 60% of particles
@@ -376,8 +356,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodSmallSplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodSmallSplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small blood splash effects for minor impacts. Randomly selects between two
                 splash variations with 25% chance each (50% chance of no effect). Used for smaller
@@ -389,8 +368,7 @@
             <param name="xI">The horizontal impact velocity (unused in implementation)</param>
             <param name="yI">The vertical impact velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodSplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodSplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a blood splash impact effect. Randomly selects between two splash variations
                 (50% chance each, with 50% chance of no effect). The blood color parameter
@@ -402,8 +380,7 @@
             <param name="xI">The horizontal impact velocity (unused in implementation)</param>
             <param name="yI">The vertical impact velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodSprayExplodeEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodSprayExplodeEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates an explosive blood spray effect for violent deaths. Randomly selects between
                 two spray variations and horizontally flips based on direction. Used for gibbing and
@@ -415,8 +392,7 @@
             <param name="xI">The horizontal force direction (sign determines flip)</param>
             <param name="yI">The vertical force direction (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodTinySplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodTinySplashEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates tiny blood splash effects for minimal impacts. Randomly selects between two
                 tiny splash variations with 25% chance each (50% chance of no effect). Used for very
@@ -428,8 +404,7 @@
             <param name="xI">The horizontal impact velocity (unused in implementation)</param>
             <param name="yI">The vertical impact velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBoneParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBoneParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates bone debris particles. Identical implementation to CreateGreySandParticles,
                 combining bone dots at 1.4x force with small bone particles for skeletal destruction
@@ -443,8 +418,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBoomerangWindEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBoomerangWindEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform,System.Single,System.Single)">
             <summary>
                 Creates a spinning wind effect for boomerang weapons. The effect is parented to the
                 projectile and rotates continuously. Sets initial rotation and spin speed for the
@@ -459,8 +433,7 @@
             <param name="rotationSpeed">The rotation speed in degrees per second</param>
             <param name="rotation">The initial rotation angle in degrees</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBubbles(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBubbles(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single)">
             <summary>
                 Creates underwater bubble particle effects rising upward. Uses clustered spawning
                 where 60% of bubbles spawn near previous positions. All bubbles emit with upward
@@ -482,8 +455,7 @@
             <param name="x">The x-coordinate of the bullet impact</param>
             <param name="y">The y-coordinate of the bullet impact</param>
         </member>
-        <member
-            name="M:EffectsController.CreateChakramTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
+        <member name="M:EffectsController.CreateChakramTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
             <summary>
                 Creates a chakram (spinning blade) trail effect. Instantiates the chakramTrail
                 prefab and initializes it with the specified color and lifetime for visual tracking
@@ -504,8 +476,7 @@
             </summary>
             <param name="position">The 2D position where the explosion occurs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDirtParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDirtParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates dirt and earth debris particles. Combines dirt dust dots at 1.4x force (half
                 count) with three types of small dirt particles (one-third count each), with the
@@ -519,8 +490,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDirtWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateDirtWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
             <summary>
                 Creates white-tinted dirt particles with two color variations. Combines dirt dots at
                 1.4x force (half count), small white dirt particles (two-thirds count), and smaller
@@ -537,8 +507,7 @@
             <param name="color1">The first color variation for the particles</param>
             <param name="color2">The second color variation for the particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDoodadGib(SpriteSM,DoodadGibsType,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateDoodadGib(SpriteSM,DoodadGibsType,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates environmental debris based on DoodadGibsType enum. Special handling for
                 SmallMolotov type which burns ground and damages units on impact. Falls back to
@@ -556,8 +525,7 @@
             <param name="yI">The initial y-velocity</param>
             <param name="flipDirection">The horizontal flip direction</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDoodadGib(SpriteSM,DoodadPiece,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateDoodadGib(SpriteSM,DoodadPiece,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates environmental debris with explicit prefab specification. Copies all sprite
                 parameters from the base sprite including offset, dimensions, and UV coordinates to
@@ -574,8 +542,7 @@
             <param name="yI">The initial y-velocity</param>
             <param name="flipDirection">The horizontal flip direction</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDustParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates simple dust particles using the default dirt dots emitter. This convenience
                 method forwards to the emitter-based overload for standard dust cloud effects with
@@ -589,8 +556,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateDustParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates dust particles with a specified color. This wrapper method uses the default
                 dirt dots emitter but applies the provided color instead of random dirt colors for
@@ -605,8 +571,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="color">The color to apply to all dust particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticlesRow(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateDustParticlesRow(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates dust particles in a horizontal row pattern with custom color. This wrapper
                 uses the default dirt dots emitter and forwards to the emitter-based row creation
@@ -622,8 +587,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="color">The color to apply to all dust particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateEggPopEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateEggPopEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates an alien egg bursting effect at the specified 3D position. Used when alien
                 eggs are destroyed or when facehuggers emerge from eggs.
@@ -632,8 +596,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="z">The z-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.CreateExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Creates standard explosion effects with customizable parameters. Delegates to the
                 full explosion method with default values for complex explosions (true), spark count
@@ -650,8 +613,7 @@
             <param name="volume">The explosion sound volume</param>
             <param name="groundWave">Whether to create a ground shockwave effect</param>
         </member>
-        <member
-            name="M:EffectsController.CreateExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
+        <member name="M:EffectsController.CreateExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
             <summary>
                 Creates comprehensive explosion effects with full parameter control. Includes shader
                 explosion, optional ground wave, tree shaking, wildlife/alien disturbance, sound
@@ -672,8 +634,7 @@
             <param name="sparkCount">The number of spark particles to create</param>
             <param name="whitePop">Whether to include the white flash effect</param>
         </member>
-        <member
-            name="M:EffectsController.CreateExplosionInRectangle(Vector3,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:EffectsController.CreateExplosionInRectangle(Vector3,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Creates a grid of explosions within a rectangular area. Spawns explosions at 16-unit
                 intervals with random position offset and delay. Each explosion has randomized
@@ -693,8 +654,7 @@
             <param name="groundWave">Whether to create ground waves (unused in implementation)</param>
             <param name="debugDraw">Whether to draw debug visualization (partially implemented)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateExplosionParticle(UnityEngine.Vector2,System.Single,UnityEngine.Vector2)">
+        <member name="M:EffectsController.CreateExplosionParticle(UnityEngine.Vector2,System.Single,UnityEngine.Vector2)">
             <summary>
                 Creates explosion particles at a fixed z-depth of 32. Currently ignores the size and
                 velocity parameters in the implementation, creating standard explosion particles at
@@ -704,8 +664,7 @@
             <param name="size">The intended size parameter (currently unused)</param>
             <param name="velocity">The intended velocity parameter (currently unused)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFire(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateFire(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates multiple fire effects distributed randomly within a circular area. Each fire
                 has randomized delay and velocity based on its position relative to the center. Used
@@ -720,8 +679,7 @@
             <param name="force">The velocity force multiplier</param>
             <param name="velocity">The base velocity vector for all fires</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFire(System.Single,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateFire(System.Single,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates a single fire effect with specified parameters. Randomly selects from three
                 flame prefab variations (flame1, flame2, flame3) with equal probability. Returns the
@@ -734,8 +692,7 @@
             <param name="velocity">The initial velocity vector</param>
             <returns>The created FlickerFader component for the fire effect</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateFireSparks(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateFireSparks(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates fire-type spark particles for burning and welding effects. Uses the
                 specialized fire spark emitter to create hot sparks that appear during fire damage,
@@ -760,8 +717,7 @@
             <param name="localOffset">The local position offset from the parent</param>
             <returns>The created ParticleSystem component for further manipulation</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateFlameEffect(System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateFlameEffect(System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates flame particle effects with occasional fire sparks. Always creates a flame
                 particle and has 16.7% chance (2/12) to also spawn fire sparks for added visual
@@ -780,8 +736,7 @@
             <param name="x">The x-coordinate where the flame appears</param>
             <param name="y">The y-coordinate where the flame appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFlameParticle(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateFlameParticle(System.Single,System.Single,System.Single)">
             <summary>
                 Creates standard flame lick particles with custom z-depth. Uses the FlameLicks
                 particle emitter to generate realistic fire particles. Includes null checks for both
@@ -791,8 +746,7 @@
             <param name="y">The y-coordinate where the flame appears</param>
             <param name="z">The z-coordinate (depth) of the flame particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGib(Gib,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateGib(Gib,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a single gib instance with material and flip control. Sets up the gib's
                 sprite with rotation settings from the prefab and launches it based on its local
@@ -808,8 +762,7 @@
             <param name="yI">The initial y-velocity</param>
             <param name="flipDirection">The horizontal flip direction</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGib(Gib,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateGib(Gib,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a single gib with hit position parameters. Currently identical to the
                 simpler overload as hit position parameters are not utilized in the implementation.
@@ -827,8 +780,7 @@
             <param name="yI">The initial y-velocity</param>
             <param name="flipDirection">The horizontal flip direction</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibs(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGibs(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates gibs with center offset calculation for directional launching. Calculates
                 launch vectors based on the difference between hit position and center position,
@@ -844,8 +796,7 @@
             <param name="xI">The initial x-velocity for all gibs</param>
             <param name="yI">The initial y-velocity for all gibs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibs(GibHolder,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGibs(GibHolder,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates gibs with explicit material override. Forces all created gibs to use the
                 specified material regardless of their prefab settings, useful for themed
@@ -860,8 +811,7 @@
             <param name="xI">The initial x-velocity for all gibs</param>
             <param name="yI">The initial y-velocity for all gibs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibs(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGibs(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates gibs using each child's original material. The standard gib creation method
                 that preserves the visual appearance defined in the prefabs while applying physics
@@ -875,8 +825,7 @@
             <param name="xI">The initial x-velocity for all gibs</param>
             <param name="yI">The initial y-velocity for all gibs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibs(GibHolder,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGibs(GibHolder,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a limited number of gibs with default flip direction. Allows control over
                 the maximum number of gibs created, useful for performance management or specific
@@ -891,8 +840,7 @@
             <param name="xI">The initial x-velocity for all gibs</param>
             <param name="yI">The initial y-velocity for all gibs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibs(GibHolder,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateGibs(GibHolder,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a limited number of gibs with flip direction control. Applies 0.8-1.2x
                 random force variance to each gib for natural scatter patterns. The flip direction
@@ -908,8 +856,7 @@
             <param name="yI">The initial y-velocity for all gibs</param>
             <param name="flipDirection">The horizontal flip direction (-1 for left, 1 for right)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGibsFromNestedGibHolder(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGibsFromNestedGibHolder(GibHolder,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Activates and launches pre-existing nested gib children from their parent holder.
                 Iterates through all child transforms backwards, detaching and activating each gib
@@ -924,8 +871,7 @@
             <param name="xI">The initial x-velocity for all gibs</param>
             <param name="yI">The initial y-velocity for all gibs</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGlassShards(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGlassShards(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates glass shattering effects with particle shards, sound, and environmental
                 impact. Emits glass shard particles with random distribution, triggers camera shake,
@@ -945,8 +891,7 @@
             <param name="volume">The sound effect volume</param>
             <param name="sizeM">The size multiplier for glass shard particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGrenadeTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
+        <member name="M:EffectsController.CreateGrenadeTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
             <summary>
                 Creates a grenade trail effect that follows projectile movement. Instantiates the
                 grenadeTrail prefab and initializes it with the specified color and lifetime for
@@ -959,8 +904,7 @@
             <param name="color">The color of the trail effect</param>
             <returns>The created ProjectileTrail component for further manipulation</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateGreySandParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGreySandParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates grey sand or bone-like debris particles. Combines bone dots at 1.4x force
                 (full count) with small bone particles at normal force (one-third count) for ashen
@@ -974,8 +918,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGrindingSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGrindingSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates grinding or friction spark shower effects. Uses shower spark emitter with
                 20-40% lifetime for metal grinding, saw cutting, or heavy friction visual effects.
@@ -989,8 +932,7 @@
             <param name="yI">The initial y-velocity added to all sparks</param>
             <param name="redM">The red color multiplier (0=yellow, 1=red)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGroundWave(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateGroundWave(System.Single,System.Single,System.Single)">
             <summary>
                 Creates an expanding ground shockwave effect radiating from the center point. The
                 wave expands outward to the specified range, typically used with explosions to show
@@ -1000,8 +942,7 @@
             <param name="y">The y-coordinate of the wave center</param>
             <param name="range">The maximum expansion distance of the wave</param>
         </member>
-        <member
-            name="M:EffectsController.CreateHellPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateHellPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates hell-themed smoke plume particles with reduced opacity. Uses a red-tinted
                 smoke variant with 30% alpha multiplier (0.3) for a supernatural, hellish atmosphere
@@ -1016,8 +957,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateHugeExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateHugeExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a comprehensive huge explosion with multiple visual and audio effects.
                 Includes main explosion, extra random explosions, spark shower, camera shake, audio
@@ -1040,8 +980,7 @@
             <param name="lowPassFrequencyLossM">The audio low-pass filter intensity</param>
             <param name="flashEffectM">The screen flash effect intensity</param>
         </member>
-        <member
-            name="M:EffectsController.CreateHugeShockWave(System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.CreateHugeShockWave(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Creates a massive shockwave effect with optional aerial waves. The huge variant has
                 greater visual impact and can optionally create waves in the air for enhanced
@@ -1053,8 +992,7 @@
             <param name="createWavesInAir">Whether to create additional aerial wave effects</param>
             <returns>The created ExplosionGroundWave component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateLargeBloodGushEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateLargeBloodGushEffect(BloodColor,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates an extra large blood gush effect for massive damage. Randomly selects from 3
                 large gush variations and flips horizontally based on impact direction. Used for
@@ -1066,8 +1004,7 @@
             <param name="xI">The horizontal impact direction (sign determines flip)</param>
             <param name="yI">The vertical impact direction (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateLaserParticle(System.Single,System.Single,UnityEngine.GameObject)">
+        <member name="M:EffectsController.CreateLaserParticle(System.Single,System.Single,UnityEngine.GameObject)">
             <summary>
                 Creates a laser burn effect that can attach to a GameObject. The burn effect follows
                 the attached object if provided, useful for showing persistent laser damage on
@@ -1077,8 +1014,7 @@
             <param name="y">The y-coordinate of the laser burn</param>
             <param name="attachedGameObject">Optional GameObject to attach the burn effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateLeafBurst(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,Color)">
+        <member name="M:EffectsController.CreateLeafBurst(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,Color)">
             <summary>
                 Creates foliage destruction effects with colored leaf particles. Distributes leaves
                 between two prefab types as shrapnel-style particles. Used when vegetation is
@@ -1094,8 +1030,7 @@
             <param name="force">The velocity force multiplier</param>
             <param name="leafColor">The color tint for the leaf particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateLeafBurst(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateLeafBurst(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates foliage destruction effects with automatic leaf coloring. Delegates to the
                 color-specific overload using the current map's leaf color setting. Provides
@@ -1110,8 +1045,7 @@
             <param name="yI">The base vertical velocity component</param>
             <param name="force">The velocity force multiplier</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMassiveExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMassiveExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a comprehensive massive explosion with enhanced effects. Nearly identical to
                 huge explosion but uses larger prefabs and sounds. Includes all the same
@@ -1133,8 +1067,7 @@
             <param name="lowPassFrequencyLossM">The audio low-pass filter intensity</param>
             <param name="flashEffectM">The screen flash effect intensity</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMeleeStrikeEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMeleeStrikeEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a melee weapon strike effect. The effect is horizontally flipped based on
                 attack direction and vertically flipped on alternating strikes for visual variety.
@@ -1145,8 +1078,7 @@
             <param name="xI">The horizontal attack direction (sign determines horizontal flip)</param>
             <param name="yI">The vertical attack direction (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMeleeStrikeLargeEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMeleeStrikeLargeEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a large melee weapon strike effect for heavy attacks. Functions identically
                 to standard melee strikes but uses a larger prefab. Alternates vertical scale for
@@ -1157,8 +1089,7 @@
             <param name="xI">The horizontal attack direction (sign determines horizontal flip)</param>
             <param name="yI">The vertical attack direction (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates metal debris particles without rotation. Combines dirt dots at 1.4x force
                 for dust effects with small metal particles at normal force for metallic debris.
@@ -1172,8 +1103,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates rotating metal particle effects with uniform spread. This convenience
                 overload for the rotating version calls the full method with equal x and y offset
@@ -1188,8 +1118,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning metal pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates rotating metal particle effects with elliptical spread. Uses two metal
                 emitters with the first getting 1 + count/2 particles at 1.2x force and the second
@@ -1205,8 +1134,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning metal pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMusicalShockWave(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMusicalShockWave(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a musical-themed shockwave effect with unique visuals. Likely includes note
                 or sound-based visual elements. Returns the wave instance for customization.
@@ -1216,8 +1144,7 @@
             <param name="range">The maximum expansion distance of the wave</param>
             <returns>The created ExplosionGroundWave component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashBigEffect(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMuzzleFlashBigEffect(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a large muzzle flash effect for heavy weapons. Instantiates both the big
                 flash animation and big glow effect. Unlike smaller flashes, this is not parented to
@@ -1229,8 +1156,7 @@
             <param name="xI">The horizontal velocity component for orientation</param>
             <param name="yI">The vertical velocity component for orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateMuzzleFlashEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a standard muzzle flash effect for weapon firing. Instantiates both the main
                 flash animation oriented by velocity and a separate glow effect. The main flash is
@@ -1243,8 +1169,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the main flash effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashMediumEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateMuzzleFlashMediumEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a medium-sized muzzle flash effect for intermediate weapons. Instantiates
                 both the medium flash animation and standard glow effect. The main flash is parented
@@ -1257,8 +1182,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the main flash effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashRoundEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateMuzzleFlashRoundEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a round muzzle flash effect for circular barrel weapons. Instantiates both
                 the round flash animation and standard glow effect. The main flash is parented to
@@ -1271,8 +1195,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the main flash effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashRoundEffectBlue(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateMuzzleFlashRoundEffectBlue(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a blue-tinted round muzzle flash for energy weapons. Uses the specialized
                 blue round flash prefab with standard glow effect. The main flash is parented to the
@@ -1285,8 +1208,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the main flash effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashTankCannonEffect(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateMuzzleFlashTankCannonEffect(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a massive tank cannon muzzle flash effect. Uses the tank cannon flash prefab
                 with huge glow effect. The flash is horizontally flipped based on firing direction
@@ -1298,8 +1220,7 @@
             <param name="xI">The horizontal velocity component (sign determines flip)</param>
             <param name="yI">The vertical velocity component for orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreateMuzzleFlashVomitEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateMuzzleFlashVomitEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a vomit-style muzzle flash effect for acid/bile weapons. Instantiates the
                 vomit flash animation oriented by velocity and parents it to the provided transform.
@@ -1312,8 +1233,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateNuclearExplosion(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateNuclearExplosion(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a nuclear explosion particle effect. Instantiates the specialized nuclear
                 explosion particle system at the specified position without additional effects or
@@ -1323,8 +1243,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="z">The z-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateOilyFlameEffect(System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateOilyFlameEffect(System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates oily flame particle effects with occasional fire sparks. Similar to standard
                 flames but uses oily flame particles for darker, smokier appearance. Has 16.7%
@@ -1344,8 +1263,7 @@
             <param name="x">The x-coordinate where the oily flame appears</param>
             <param name="y">The y-coordinate where the oily flame appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateOilyFlameParticle(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateOilyFlameParticle(System.Single,System.Single,System.Single)">
             <summary>
                 Creates oil-based flame particles with custom z-depth. Uses the OilyFlameLicks
                 particle emitter for darker, smokier fire effects typical of burning oil. Includes
@@ -1355,8 +1273,7 @@
             <param name="y">The y-coordinate where the oily flame appears</param>
             <param name="z">The z-coordinate (depth) of the oily flame particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePinkPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePinkPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates pink-colored smoke plume particles with reduced opacity. Uses a pink smoke
                 variant with 30% alpha multiplier (0.3) for whimsical or special effect smoke.
@@ -1370,8 +1287,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePitchBlackPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePitchBlackPlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates extremely dark black smoke plume particles. Uses a pitch black variant with
                 full alpha (1.0) for maximum opacity, suitable for heavy smoke or soot effects from
@@ -1386,12 +1302,11 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
-                Creates standard gray smoke plume particles at z-depth 0. This is a convenience
+                Creates standard dark gray smoke plume particles at z-depth 0. This is a convenience
                 overload that calls the full version with default z positioning for standard smoke
-                effects.
+                effects. The smoke plumes have flames mixed in.
             </summary>
             <param name="x">The x-coordinate where the plume originates</param>
             <param name="y">The y-coordinate where the plume originates</param>
@@ -1401,13 +1316,13 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
-                Creates standard gray smoke plume particles with full control. Automatically selects
-                between small and large plume variants based on size multiplier (threshold at 2).
-                Randomly picks between two texture variations for each size category. Large plumes
-                have their size halved for proper scaling.
+                Creates standard dark gray smoke plume particles with full control. Automatically
+                selects between small and large plume variants based on size multiplier (threshold
+                at 2). Randomly picks between two texture variations for each size category. Large
+                plumes have their size halved for proper scaling. The smoke plumes have flames mixed
+                in.
             </summary>
             <param name="x">The x-coordinate where the plume originates</param>
             <param name="y">The y-coordinate where the plume originates</param>
@@ -1418,12 +1333,12 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier (less than 2 uses small plumes, 2+ uses large plumes)</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePlumes(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePlumes(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
-                Creates multiple smoke plume shrapnel effects in a circular pattern. Uses
+                Creates multiple smoke plume effects in a circular pattern. Uses
                 CreateShrapnelCircle internally to distribute smoke plumes evenly around the origin
-                point, useful for large explosions or smoke grenades.
+                point, useful for large explosions or smoke grenades. The plumes look like dark gray
+                smoke with a bit of flames mixed in.
             </summary>
             <param name="x">The x-coordinate of the plume origin</param>
             <param name="y">The y-coordinate of the plume origin</param>
@@ -1441,8 +1356,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePredictionTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
+        <member name="M:EffectsController.CreatePredictionTrailEffect(System.Single,System.Single,System.Single,System.Single,Color)">
             <summary>
                 Creates a prediction trail effect for trajectory visualization. Instantiates the
                 predictionTrail prefab and initializes it with the specified color and lifetime for
@@ -1455,8 +1369,7 @@
             <param name="color">The color of the trail effect</param>
             <returns>The created ProjectileTrail component for further manipulation</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateProjectileLargePopEffect(System.Single,System.Single)">
+        <member name="M:EffectsController.CreateProjectileLargePopEffect(System.Single,System.Single)">
             <summary>
                 Creates a large projectile impact effect. Combines a larger pop animation
                 (projectileLargeFlickPuff) with a glowing flash effect for visual feedback when
@@ -1474,8 +1387,7 @@
             <param name="x">The x-coordinate of the impact position</param>
             <param name="y">The y-coordinate of the impact position</param>
         </member>
-        <member
-            name="M:EffectsController.CreateProjectilePopWhiteEffect(System.Single,System.Single)">
+        <member name="M:EffectsController.CreateProjectilePopWhiteEffect(System.Single,System.Single)">
             <summary>
                 Creates a white-colored projectile impact effect. Combines a white pop animation
                 (projectileWhiteFlickPuff) with a glowing flash effect for visual feedback when
@@ -1493,8 +1405,7 @@
             <param name="x">The x-coordinate of impact in world space</param>
             <param name="y">The y-coordinate of impact in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateProjectileTimeBroPopEffect(System.Single,System.Single)">
+        <member name="M:EffectsController.CreateProjectileTimeBroPopEffect(System.Single,System.Single)">
             <summary>
                 Creates a special effect for projectile time (bullet time) activation. The effect
                 ignores time scale to maintain visual consistency during slow-motion gameplay.
@@ -1504,8 +1415,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePunchPopEffect(System.Single,System.Single,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreatePunchPopEffect(System.Single,System.Single,UnityEngine.Vector3)">
             <summary>
                 Creates a directional punch impact effect. The effect automatically orients itself
                 based on the velocity vector, flipping horizontally when punching left (negative x
@@ -1515,8 +1425,7 @@
             <param name="y">The y-coordinate of the impact</param>
             <param name="velocity">The punch velocity vector used to determine effect orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePurplePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePurplePlumeParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates purple-colored smoke plume particles with reduced opacity. Uses a purple
                 smoke variant with 30% alpha multiplier (0.3) for magical or poisonous gas effects.
@@ -1530,8 +1439,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateRedWarningDiamondHuge(System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateRedWarningDiamondHuge(System.Single,System.Single,Transform)">
             <summary>
                 Creates a huge diamond-shaped red warning effect. The effect is parented to the
                 provided transform for movement tracking. Used for major threat indicators or boss
@@ -1541,8 +1449,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="parentedTransform">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateRedWarningDiamondLargege(System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateRedWarningDiamondLargege(System.Single,System.Single,Transform)">
             <summary>
                 Creates a large diamond-shaped red warning effect. The effect is parented to the
                 provided transform for movement tracking. Used for significant threat indicators.
@@ -1552,8 +1459,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="parentedTransform">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateRedWarningEffect(System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateRedWarningEffect(System.Single,System.Single,Transform)">
             <summary>
                 Creates a red warning pulse effect at the specified position. The effect is parented
                 to the provided transform for movement tracking. Used to indicate danger zones or
@@ -1563,8 +1469,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="parentedTransform">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSandDots(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSandDots(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates only sand dot particles for simple sand puff effects. Uses 1.4x force
                 multiplier for enhanced spread. Simpler than CreateSandParticles as it omits the
@@ -1578,8 +1483,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSandParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSandParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates sandy debris particles for desert or beach environments. Combines sand dots
                 at 1.4x force (full count) with small sand particles at normal force (one-third
@@ -1593,8 +1497,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSandWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateSandWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
             <summary>
                 Creates white-tinted sand particles with two color variations. Uses dirt dots at
                 1.4x force (full count) combined with small white dirt particles (one-third count)
@@ -1610,8 +1513,7 @@
             <param name="color1">The first color variation for the particles</param>
             <param name="color2">The second color variation for the particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateScrapParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateScrapParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates complex scrap metal destruction effects. The most detailed metal particle
                 effect, combining: 5 scrap emitters with varying counts and forces, grey dirt dots
@@ -1628,8 +1530,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The base rotational velocity for spinning pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSemenParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSemenParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates semen particle effects using two particle sizes. Distributes particles
                 between small particles (1/2 of count + 1) and dot particles (1/2 of count + 1).
@@ -1647,8 +1548,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSemenParticlesDots(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSemenParticlesDots(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates semen dot particle effects at the specified position with z-coordinate of 1.
                 This method delegates to CreateBloodParticlesDots, effectively treating semen dots
@@ -1665,8 +1565,7 @@
             <param name="yI">The base vertical velocity component</param>
             <param name="scaleM">The scale multiplier for particle size</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSemenParticlesDots(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSemenParticlesDots(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates semen dot particle effects with clustered spawning and size scaling. Uses
                 dedicated semen dot emitter (or cutscene blood dots as fallback) with 50% chance to
@@ -1685,8 +1584,7 @@
             <param name="yI">The base vertical velocity component</param>
             <param name="scaleM">The scale multiplier for particle size</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSemenParticlesSmall(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSemenParticlesSmall(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small semen particle effects at the specified position with z-coordinate of
                 1. This method delegates to CreateBloodParticlesSmall, effectively treating semen as
@@ -1702,8 +1600,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSemenParticlesSmall(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSemenParticlesSmall(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small semen particle effects with clustered spawning pattern. Uses dedicated
                 semen particle emitter and implements clustering where 60% of particles spawn near
@@ -1721,8 +1618,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShaderExplosion(EffectsController.ExplosionSize,Vector3,System.Single)">
+        <member name="M:EffectsController.CreateShaderExplosion(EffectsController.ExplosionSize,Vector3,System.Single)">
             <summary>
                 Creates shader-based particle explosions of specified size. Supports various
                 explosion scales from Tiny to Massive, with optional white flash suppression
@@ -1733,8 +1629,7 @@
             <param name="position">The world position for the explosion center</param>
             <param name="delay">The delay in seconds before particles start emitting</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShellSpeedTrail(System.Single,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateShellSpeedTrail(System.Single,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates speed trail effects for fast-moving projectiles like shells. The trail is
                 oriented using the angleZ parameter to match projectile rotation. Returns the Puff
@@ -1747,8 +1642,7 @@
             <param name="velocity">The initial velocity vector</param>
             <returns>The created Puff component for the speed trail</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateShinyMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateShinyMetalParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates shiny metallic particle effects with rotation. Uses two shiny metal
                 emitters, each receiving 1 + count/2 particles at 1.2x force for polished metal
@@ -1764,8 +1658,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning metal pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShockWave(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateShockWave(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a standard shockwave effect with visual distortion. Returns the wave
                 instance for additional customization. Used for medium-scale explosions and impacts.
@@ -1775,8 +1668,7 @@
             <param name="range">The maximum expansion distance of the wave</param>
             <returns>The created ExplosionGroundWave component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateShrapnel(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateShrapnel(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates shrapnel debris with initial velocity inheritance. This basic overload
                 creates white-colored shrapnel pieces that spread randomly within the radius and
@@ -1791,8 +1683,7 @@
             <param name="xI">The initial x-velocity to add to each piece</param>
             <param name="yI">The initial y-velocity to add to each piece</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShrapnel(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateShrapnel(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates colored shrapnel debris with initial velocity inheritance. Spreads pieces
                 randomly within the radius, applies the specified color tint (if not white), and
@@ -1809,8 +1700,7 @@
             <param name="yI">The initial y-velocity to add to each piece</param>
             <param name="shrapnelColor">The color tint to apply to the shrapnel pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShrapnel(Shrapnel,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateShrapnel(Shrapnel,UnityEngine.Material,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates shrapnel debris with a custom material override. Spreads pieces randomly
                 within the radius and applies the specified shared material to each piece's renderer
@@ -1826,8 +1716,7 @@
             <param name="xI">The initial x-velocity to add to each piece</param>
             <param name="yI">The initial y-velocity to add to each piece</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShrapnelBlindStar(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform)">
+        <member name="M:EffectsController.CreateShrapnelBlindStar(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform)">
             <summary>
                 Creates stunning star effects that attach to and follow a unit. Uses PuffTwoLayer
                 effects cycling through 3 star variants. Each star is parented to the unit transform
@@ -1843,8 +1732,7 @@
             <param name="yI">The initial y-velocity component</param>
             <param name="unitTransform">The transform to parent the stars to (usually the stunned unit)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateShrapnelCircle(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateShrapnelCircle(Shrapnel,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates shrapnel debris in a circular arc pattern. Distributes pieces evenly along
                 an arc (size based on count), launching each outward from its position on the
@@ -1859,8 +1747,7 @@
             <param name="xI">The initial x-velocity to add to each piece</param>
             <param name="yI">The initial y-velocity to add to each piece</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,Vector3,BloodColor)">
+        <member name="M:EffectsController.CreateSlimeExplosion(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,Vector3,BloodColor)">
             <summary>
                 Creates a full-scale slime or blood explosion based on color. Includes main
                 explosion, extra blood gushes, slime particles, camera shake, sound, wildlife
@@ -1883,8 +1770,7 @@
             <param name="normal">The surface normal direction (unused)</param>
             <param name="bloodColor">The blood color type (Green or Red supported)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeExplosionSmall(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateSlimeExplosionSmall(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,Vector3)">
             <summary>
                 Creates a small slime/organic explosion effect. Spawns green slime particles,
                 creates visual splatter, shakes camera, plays wet explosion sound, and disturbs
@@ -1904,8 +1790,7 @@
             <param name="shrapnelForce">The velocity force for slime particles</param>
             <param name="normal">The surface normal direction (unused)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeParticles(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates slime particle effects with the specified color and parameters. Delegates to
                 the color-based overload after converting the BloodColor enum to its corresponding
@@ -1922,8 +1807,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeParticles(Color,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeParticles(Color,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates slime particle effects with a specific Unity Color. Uses a clustered
                 spawning pattern where 60% of particles spawn near previous positions to create more
@@ -1941,8 +1825,7 @@
             <param name="xI">The base horizontal velocity component</param>
             <param name="yI">The base vertical velocity component</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSmallExplosion(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSmallExplosion(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates small-scale explosion effects with shader particles and optional flames.
                 Uses random shader explosion size (Small, Medium, or Large) and spawns 0-3 flame
@@ -1965,8 +1848,7 @@
             <param name="localOffset">The local position offset from the parent</param>
             <returns>The created ParticleSystem component for further manipulation</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateSmallWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateSmallWhiteParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color)">
             <summary>
                 Creates small white particles with two color variations. Combines smaller white
                 particles (one-quarter count) with dirt dots at 1.1x force (three-quarters count)
@@ -1982,8 +1864,7 @@
             <param name="color1">The first color variation for the particles</param>
             <param name="color2">The second color variation for the particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single spark particle with default lifetime. Color interpolates from
                 yellow (1,1,0.3) to red (1,0,0) based on the redM parameter for temperature-based
@@ -1998,8 +1879,7 @@
             <param name="yI">The initial y-velocity component</param>
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single spark particle with custom lifetime multiplier. Allows control over
                 how long the spark remains visible while maintaining temperature-based color
@@ -2015,8 +1895,7 @@
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
             <param name="lifeM">The lifetime multiplier for the spark</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single)">
             <summary>
                 Creates a single spark particle with explicit color and lifetime control. Bypasses
                 temperature interpolation for direct color specification, useful for non-fire spark
@@ -2032,8 +1911,7 @@
             <param name="color">The explicit color for the spark</param>
             <param name="lifeM">The lifetime multiplier for the spark</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticles(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticles(System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates multiple spark particles with 3D positioning and lifetime control. Each
                 spark gets temperature-based coloring and the specified lifetime multiplier.
@@ -2049,8 +1927,7 @@
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
             <param name="lifeM">The lifetime multiplier for all sparks</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates multiple spark particles at z=0 with lifetime control. This 2D convenience
                 method forwards to the 3D version for standard spark effects on the main gameplay
@@ -2066,8 +1943,7 @@
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
             <param name="lifeM">The lifetime multiplier for all sparks</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates spark particles using a specific emitter with default lifetime. Allows
                 customization of the spark type while maintaining standard spark behavior and
@@ -2083,8 +1959,7 @@
             <param name="yI">The initial y-velocity added to all sparks</param>
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates spark particles using a specific emitter with lifetime control. Provides
                 full control over spark type, duration, and temperature-based coloring for
@@ -2101,8 +1976,7 @@
             <param name="redM">The red color multiplier (0=yellow hot, 1=red hot)</param>
             <param name="lifeM">The lifetime multiplier for all sparks</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a mixed spark shower with both shower and floating particles. The
                 particlesFloatM parameter controls the ratio between shower sparks (falling) and
@@ -2118,8 +1992,7 @@
             <param name="redM">The red color multiplier (0=yellow, 1=red)</param>
             <param name="particlesFloatM">The ratio of floating particles (0=all shower, 1=all float)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateStoneShrapnel(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateStoneShrapnel(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates multiple stone debris pieces that fly outward from an impact point. Each
                 piece is randomly positioned within the specified radius and launched with velocity
@@ -2130,8 +2003,7 @@
             <param name="radius">The maximum spread radius for shrapnel pieces</param>
             <param name="count">The number of stone shrapnel pieces to create</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSuddenSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSuddenSparkShower(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a sudden burst of short-lived floating spark particles. Uses floating spark
                 emitter with 20-40% lifetime for quick burst effects like impacts, electrical
@@ -2146,8 +2018,7 @@
             <param name="yI">The initial y-velocity added to all sparks</param>
             <param name="redM">The red color multiplier (0=yellow, 1=red)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSummonMagicParticle(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSummonMagicParticle(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates magical summoning particles with initial velocity. Used for spell casting
                 and magical summoning effects, allowing the particles to move in a specified
@@ -2158,8 +2029,7 @@
             <param name="xI">The initial x-velocity of the particle</param>
             <param name="yI">The initial y-velocity of the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateTimeBroMuzzleFlashEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateTimeBroMuzzleFlashEffect(System.Single,System.Single,System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a time-manipulation muzzle flash that ignores time scaling. Used for Time
                 Bro's weapons to ensure effects play at normal speed during slow motion. Creates
@@ -2172,8 +2042,7 @@
             <param name="yI">The vertical velocity component for orientation</param>
             <param name="parent">The transform to parent the main flash effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateTravellingExplosion(System.Single,System.Single,System.Single,Vector2,System.Single)">
+        <member name="M:EffectsController.CreateTravellingExplosion(System.Single,System.Single,System.Single,Vector2,System.Single)">
             <summary>
                 Placeholder for creating moving explosion effects. Currently not implemented and
                 performs no action. Parameters are accepted but unused.
@@ -2184,8 +2053,7 @@
             <param name="velocity">The intended movement velocity</param>
             <param name="life">The intended lifetime</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWaterDrip(System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
+        <member name="M:EffectsController.CreateWaterDrip(System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
             <summary>
                 Creates a water drip particle effect at the specified position. The particle emits
                 with zero velocity and randomized size/lifetime. Note: All offset and color
@@ -2198,8 +2066,7 @@
             <param name="scaleM">The scale multiplier for particle size</param>
             <param name="color">The blood color (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWaterDrip(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
+        <member name="M:EffectsController.CreateWaterDrip(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,BloodColor)">
             <summary>
                 Creates a water drip particle effect with position offset and initial velocity.
                 Spawns particle at a random position within the offset radius with specified
@@ -2231,8 +2098,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWoodDarkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateWoodDarkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates dark wood particle effects with uniform spread radius. This convenience
                 overload calls the full version with equal x and y offset radii for circular spread
@@ -2247,8 +2113,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning wood pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWoodDarkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateWoodDarkParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates dark wood particle effects with elliptical spread. Uses four dark wood
                 emitters with counts of half, half, third, and third of the total, with varying
@@ -2264,8 +2129,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning wood pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates rotating wood particle effects with uniform spread radius. This convenience
                 overload calls the full version with equal x and y offset radii for circular spread
@@ -2280,8 +2144,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning wood pieces</param>
         </member>
-        <member
-            name="M:EffectsController.CreateWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateWoodParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates rotating wood particle effects with elliptical spread. Uses three wood
                 particle emitters with varying forces (1.2x, 1.1x, 1.0x) plus wood dots at high
@@ -2298,8 +2161,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="angularVelocity">The rotational velocity for spinning wood pieces</param>
         </member>
-        <member
-            name="M:EffectsController.SpawnExplosion(UnityEngine.Vector2,System.Single,System.Boolean)">
+        <member name="M:EffectsController.SpawnExplosion(UnityEngine.Vector2,System.Single,System.Boolean)">
             <summary>
                 Spawns an explosion effect at the specified 2D position using the ExplosionSpawner
                 system.
@@ -2308,8 +2170,7 @@
             <param name="size">The size or intensity of the explosion effect.</param>
             <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
         </member>
-        <member
-            name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean)">
+        <member name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean)">
             <summary>
                 Spawns an explosion effect at the specified 3D position using the ExplosionSpawner
                 system.
@@ -2318,8 +2179,7 @@
             <param name="size">The size or intensity of the explosion effect.</param>
             <param name="spawnExtras">Whether to spawn additional explosion effects like debris or secondary explosions.</param>
         </member>
-        <member
-            name="M:EffectsController.SpawnExplosion(UnityEngine.Vector2,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
+        <member name="M:EffectsController.SpawnExplosion(UnityEngine.Vector2,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
             <summary>
                 Spawns an explosion effect at the specified 2D position and returns information
                 about the explosion components created.
@@ -2330,8 +2190,7 @@
             <param name="positions">Output array containing the positions of all explosion components created.</param>
             <param name="sizes">Output array containing the sizes of all explosion components created.</param>
         </member>
-        <member
-            name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
+        <member name="M:EffectsController.SpawnExplosion(UnityEngine.Vector3,System.Single,System.Boolean,UnityEngine.Vector3[]@,System.Single[]@)">
             <summary>
                 Spawns an explosion effect at the specified 3D position and returns information
                 about the explosion components created.
@@ -2342,8 +2201,7 @@
             <param name="positions">Output array containing the positions of all explosion components created.</param>
             <param name="sizes">Output array containing the sizes of all explosion components created.</param>
         </member>
-        <member
-            name="M:EffectsController.SprayBlood(BloodColor,System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.SprayBlood(BloodColor,System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Sprays blood onto surrounding terrain using raycasts. Casts rays in a circular
                 pattern and applies blood to any blocks hit within range. Red blood additionally
@@ -3086,8 +2944,7 @@
             </summary>
         </member>
         <!-- Position & Physics Methods -->
-        <member
-            name="M:EffectsController.CreateAirDashPoofEffect(System.Single,System.Single,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateAirDashPoofEffect(System.Single,System.Single,UnityEngine.Vector3)">
             <summary>
                 Creates an air dash trail effect with automatic orientation based on dash direction.
                 Flips horizontally for left/right dashes and rotates 90 degrees for vertical dashes
@@ -3097,8 +2954,7 @@
             <param name="y">The y-coordinate where the dash effect appears</param>
             <param name="velocity">The dash velocity used to determine effect orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBoulderRollPoof_Local(System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateBoulderRollPoof_Local(System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a dust poof effect for rolling boulders or heavy objects. The effect
                 orientation is based on the rolling direction, flipping horizontally when rolling
@@ -3108,8 +2964,7 @@
             <param name="y">The y-coordinate where the boulder poof appears</param>
             <param name="direction">The rolling direction (-1 for left, 1 for right)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDashPoofEffect_Local(System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateDashPoofEffect_Local(System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a local dash poof effect visible only on the current client. Used internally
                 by the networked version or directly for local-only effects. The effect is
@@ -3119,8 +2974,7 @@
             <param name="y">The y-coordinate where the dash effect appears</param>
             <param name="direction">The facing direction (-1 for left, 1 for right) that determines effect orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDashPoofEffect_Networked(System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateDashPoofEffect_Networked(System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a dash poof effect synchronized across all network clients. This networked
                 version ensures all players see the same dash visual effect when a character
@@ -3131,8 +2985,7 @@
             <param name="y">The y-coordinate where the dash effect appears</param>
             <param name="direction">The facing direction (-1 for left, 1 for right) that determines effect orientation</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFallPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
+        <member name="M:EffectsController.CreateFallPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
             <summary>
                 Creates a dust trail effect when a character is falling or wall-sliding. Randomly
                 selects between two fall poof variations and orients based on direction. Used for
@@ -3143,8 +2996,7 @@
             <param name="direction">The facing direction (-1 for left, 1 for right)</param>
             <param name="color">The effect color type (default is None for regular dust)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFootPoofEffect(System.Single,System.Single,System.Single,UnityEngine.Vector3,BloodColor)">
+        <member name="M:EffectsController.CreateFootPoofEffect(System.Single,System.Single,System.Single,UnityEngine.Vector3,BloodColor)">
             <summary>
                 Creates dust or blood effects from footsteps during movement. Randomly selects from
                 three foot poof variations for visual variety. Supports different colored effects
@@ -3156,8 +3008,7 @@
             <param name="velocity">The movement velocity (currently unused but part of signature)</param>
             <param name="bloodColor">The color type for bloody footprints (default is None for dust)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGroundExplodePoofEffect(System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateGroundExplodePoofEffect(System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a ground explosion poof effect using the default ground explode prefab. This
                 is a convenience overload that calls the prefab-specific version with the standard
@@ -3167,8 +3018,7 @@
             <param name="y">The y-coordinate of the ground explosion</param>
             <param name="direction">The explosion direction (-1 for left, 1 for right)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateGroundExplodePoofEffect(Puff,System.Single,System.Single,System.Int32)">
+        <member name="M:EffectsController.CreateGroundExplodePoofEffect(Puff,System.Single,System.Single,System.Int32)">
             <summary>
                 Creates a ground explosion poof effect with a custom puff prefab. Allows specifying
                 different puff types for varied ground explosion visuals. Returns the created Puff
@@ -3180,8 +3030,7 @@
             <param name="direction">The explosion direction (-1 for left, 1 for right)</param>
             <returns>The created Puff instance for further configuration</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateJumpPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
+        <member name="M:EffectsController.CreateJumpPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
             <summary>
                 Creates a dust cloud effect when a character jumps. Randomly selects between two
                 jump poof variations and flips the effect based on the character's facing direction.
@@ -3192,8 +3041,7 @@
             <param name="direction">The facing direction (-1 for left, 1 for right)</param>
             <param name="color">The effect color type (default is None for regular dust)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateLandPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
+        <member name="M:EffectsController.CreateLandPoofEffect(System.Single,System.Single,System.Int32,BloodColor)">
             <summary>
                 Creates a dust cloud impact effect when a character lands on solid ground. Randomly
                 selects between two landing variations and orients based on direction. The effect
@@ -3204,8 +3052,7 @@
             <param name="direction">The facing direction (-1 for left, 1 for right)</param>
             <param name="color">The effect color type (default is None for regular dust)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateLandSplashEffect(System.Single,System.Single,System.Int32,BloodColor)">
+        <member name="M:EffectsController.CreateLandSplashEffect(System.Single,System.Single,System.Int32,BloodColor)">
             <summary>
                 Creates a liquid splash effect when a character lands in water or other liquids.
                 Randomly selects between two splash variations and orients based on direction. The
@@ -3300,8 +3147,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Int32,System.Int32,BloodColor)">
+        <member name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Int32,System.Int32,BloodColor)">
             <summary>
                 Creates a scaled Puff effect with optional blood coloring. Supports different blood
                 types (red, green, oil, frozen, quicksand) and allows independent x/y scaling for
@@ -3316,8 +3162,7 @@
             <param name="bloodColor">The blood color type to apply (None for no coloring)</param>
             <returns>The created Puff instance for further configuration</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,UnityEngine.Vector3)">
             <summary>
                 Creates a delayed Puff effect with initial velocity and scaling. The effect appears
                 after the specified delay and moves according to the velocity vector. Useful for
@@ -3332,8 +3177,7 @@
             <param name="yScale">The vertical scale factor</param>
             <param name="velocity">The initial velocity vector for the effect</param>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32,UnityEngine.Vector3)">
             <summary>
                 Creates a delayed FlickerFader effect with initial velocity and scaling. Similar to
                 the Puff version but for FlickerFader-type effects. The effect appears after the
@@ -3348,8 +3192,7 @@
             <param name="yScale">The vertical scale factor</param>
             <param name="velocity">The initial velocity vector for the effect</param>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a FlickerFader effect at a specific 3D position. Provides full control over
                 the z-depth for layering effects in the scene. Returns the created instance for
@@ -3361,8 +3204,7 @@
             <param name="z">The z-coordinate in world space</param>
             <returns>The created FlickerFader instance for further customization</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates a FlickerFader effect at the specified position. This is a convenience
                 overload that delegates to the full version with z-coordinate of 0 for standard 2D
@@ -3375,8 +3217,7 @@
             <param name="velocity">The initial velocity vector for the effect</param>
             <returns>The created FlickerFader component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateEffect(FlickerFader,System.Single,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates a FlickerFader effect with full 3D positioning. Instantiates the prefab and
                 configures its delay and velocity settings. FlickerFader effects are used for
@@ -3390,8 +3231,7 @@
             <param name="velocity">The initial velocity vector for the effect</param>
             <returns>The created FlickerFader component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(DistortionGrow,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateEffect(DistortionGrow,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a DistortionGrow effect for visual distortion animations. Instantiates the
                 distortion prefab and sets its delay. Used for heat haze, explosion distortions, and
@@ -3404,8 +3244,7 @@
             <param name="z">The z-coordinate in world space (default 0)</param>
             <returns>The created DistortionGrow component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,Vector3,BloodColor)">
+        <member name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,Vector3,BloodColor)">
             <summary>
                 Creates a Puff effect with blood color tinting and scale variations. Supports
                 horizontal flipping for xScale parameter values and applies blood coloring.
@@ -3420,8 +3259,7 @@
             <param name="bloodColor">The blood color for tinting the effect</param>
             <returns>The created Puff component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(PuffTwoLayer,System.Single,System.Single,System.Single,Vector3,BloodColor)">
+        <member name="M:EffectsController.CreateEffect(PuffTwoLayer,System.Single,System.Single,System.Single,Vector3,BloodColor)">
             <summary>
                 Creates a two-layer Puff effect with blood color support. Instantiates the prefab
                 and applies blood coloring to both layers. Used for more complex puff animations
@@ -3435,8 +3273,7 @@
             <param name="bloodColor">The blood color for tinting both layers</param>
             <returns>The created PuffTwoLayer component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(FaderSprite,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateEffect(FaderSprite,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a FaderSprite effect at the specified position. Simple instantiation method
                 for fading sprite effects without additional configuration. Used for basic fade-out
@@ -3448,8 +3285,7 @@
             <param name="z">The z-coordinate in world space</param>
             <returns>The created FaderSprite component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,Vector3,Transform)">
+        <member name="M:EffectsController.CreateEffect(Puff,System.Single,System.Single,System.Single,System.Single,Vector3,Transform)">
             <summary>
                 Creates a Puff effect with optional parent transform attachment. Configures scale
                 based on delay parameter and can parent the effect to a moving object. Used for
@@ -3464,8 +3300,7 @@
             <param name="parentTransform">Optional transform to parent the effect to</param>
             <returns>The created Puff component</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateEffect(PuffLaserBurn,System.Single,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateEffect(PuffLaserBurn,System.Single,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates a laser burn Puff effect with specialized behavior. Instantiates the laser
                 burn prefab and configures its timing and scale properties. Used for scorching and
@@ -3503,8 +3338,7 @@
             <param name="followTransform">The transform that the flex effect should follow and be parented to.</param>
             <returns>The created MuscleTempleFlexEffect instance attached to the transform.</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateSmoke(System.Single,System.Single,System.Single,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateSmoke(System.Single,System.Single,System.Single,UnityEngine.Vector3)">
             <summary>
                 Creates a smoke particle effect with random variation. Randomly selects from three
                 different smoke prefabs to add visual variety. The smoke can be delayed and given
@@ -3659,8 +3493,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates blood trail particle effects at z-depth 0. This convenience overload calls
                 the full 3D version with default z positioning for standard blood trail effects.
@@ -3673,8 +3506,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier (less than 2 uses 2 variants, 2+ uses 3 variants)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBloodTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBloodTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates blood trail particle effects with full control. Uses identical logic to
                 slime trails but with blood-specific particle emitters. Small particles use 2
@@ -3689,8 +3521,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier (less than 2 uses small variants, 2+ uses large variants)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateEvilFloatParticle(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateEvilFloatParticle(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single dark floating particle for evil or supernatural effects. Randomly
                 selects from four dark color variations ranging from pure black to dark gray (0.231,
@@ -3702,8 +3533,7 @@
             <param name="xI">The initial x-velocity of the particle</param>
             <param name="yI">The initial y-velocity of the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFleshParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateFleshParticles(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a complex mix of flesh particle effects for gore and gibbing. Combines
                 multiple particle types: flesh dust dots at 1.4x force, medium flesh chunks at
@@ -3762,8 +3592,7 @@
             </summary>
             <returns>A ParticleSpawner configured for slime drips, or null if creation fails</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeParticles(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeParticles(BloodColor,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates clustered slime particles with drift behavior. Complex positioning algorithm
                 with 60% chance to create new cluster and 40% to continue from previous position.
@@ -3780,8 +3609,7 @@
             <param name="xI">The initial x-velocity</param>
             <param name="yI">The initial y-velocity</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeParticlesSpray(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeParticlesSpray(BloodColor,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a directional spray of slime particles based on blood color type. Particles
                 emit in a circular pattern with force variance controlling the spread angle.
@@ -3799,8 +3627,7 @@
             <param name="yI">The initial y-velocity direction</param>
             <param name="forceVariance">The spread control (1.0 = full variance)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeParticlesSpray(UnityEngine.Color,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeParticlesSpray(UnityEngine.Color,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a directional spray of slime particles with explicit color. Emits particles
                 in a circular pattern using Math.Point3OnCircle for even distribution. Force
@@ -3818,8 +3645,7 @@
             <param name="yI">The initial y-velocity direction</param>
             <param name="forceVariance">The spread control (1.0 = full variance)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates slime trail particle effects at z-depth 0. This convenience overload calls
                 the full 3D version with default z positioning for standard slime trail effects.
@@ -3832,8 +3658,7 @@
             <param name="lifeM">Life duration multiplier for the particle</param>
             <param name="sizeM">Size multiplier (less than 2 uses 2 variants, 2+ uses 3 variants)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSlimeTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSlimeTrailParticle(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates slime trail particle effects with full control. Automatically selects
                 between small and large variants based on size multiplier (threshold at 2). Small
@@ -4101,8 +3926,7 @@
             </summary>
         </member>
         <!-- Environmental Interaction Methods -->
-        <member
-            name="M:EffectsController.CreateSlimeCover(System.Int32,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.CreateSlimeCover(System.Int32,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Creates a slime cover on nearby terrain surfaces within a specified radius. Casts
                 rays from the center point to grid positions and adds slime to surfaces hit.
@@ -4467,8 +4291,7 @@
             </summary>
         </member>
         <!-- Status Effects Methods -->
-        <member
-            name="M:EffectsController.CreateBlindedEffect(System.Single,System.Single,System.Single,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateBlindedEffect(System.Single,System.Single,System.Single,UnityEngine.Vector3)">
             <summary>
                 Creates rotating star effects for stunned or blinded units. Uses a cycling counter
                 to alternate between three different star prefab variations for visual variety. Each
@@ -4489,8 +4312,7 @@
             <param name="x">The x-coordinate in world space</param>
             <param name="y">The y-coordinate in world space</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionHeatWaveEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionHeatWaveEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a heat wave distortion effect and returns the DistortionGrow component for
                 custom configuration. Allows fine-tuning of the distortion parameters after creation
@@ -4501,8 +4323,7 @@
             <param name="z">The z-coordinate (depth) of the effect</param>
             <returns>The DistortionGrow component for additional configuration</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionWobbleLargeRingEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionWobbleLargeRingEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a large heat distortion ring effect. Used for major explosions and intense
                 heat sources to create dramatic expanding air ripples visible across a wide area.
@@ -4511,8 +4332,7 @@
             <param name="y">The y-coordinate of the distortion center</param>
             <param name="delay">The delay before the distortion appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionWobbleLargeRingFullScreenEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionWobbleLargeRingFullScreenEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a massive screen-filling distortion effect with extreme parameters. Sets
                 alpha to 9 for maximum intensity, growth rate to 1355 for rapid expansion, and
@@ -4523,8 +4343,7 @@
             <param name="y">The y-coordinate of the distortion center</param>
             <param name="delay">The delay before the distortion appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionWobblePinchEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionWobblePinchEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a pinch-style distortion effect that pulls inward rather than expanding.
                 Used for implosion effects, black holes, or vacuum-based attacks where the visual
@@ -4534,8 +4353,7 @@
             <param name="y">The y-coordinate of the distortion center</param>
             <param name="delay">The delay before the distortion appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionWobbleRingEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionWobbleRingEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a medium-sized heat distortion ring effect. Used for standard explosions and
                 moderate heat effects to create visible air ripples that expand from the impact
@@ -4545,8 +4363,7 @@
             <param name="y">The y-coordinate of the distortion center</param>
             <param name="delay">The delay before the distortion appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDistortionWobbleSmallRingEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDistortionWobbleSmallRingEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a small heat distortion ring effect. Used for minor explosions and
                 heat-based attacks to create a rippling air distortion that expands outward from the
@@ -4556,8 +4373,7 @@
             <param name="y">The y-coordinate of the distortion center</param>
             <param name="delay">The delay before the distortion appears</param>
         </member>
-        <member
-            name="M:EffectsController.CreateElectricShock(System.Single,System.Single,System.Single,System.Single,Vector3)">
+        <member name="M:EffectsController.CreateElectricShock(System.Single,System.Single,System.Single,System.Single,Vector3)">
             <summary>
                 Creates electrical shock visual effects with random variations. Randomly selects
                 from three electricity prefabs with equal probability. Used for electrical damage,
@@ -4570,8 +4386,7 @@
             <param name="velocity">The initial velocity vector for the effect</param>
             <returns>The created Puff component for the electrical effect</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateExplosionRangePop(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateExplosionRangePop(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates an explosion range indicator that expands to show blast radius. Instantiates
                 the range pop prefab and sets its size based on the explosion range. Also resets the
@@ -4583,8 +4398,7 @@
             <param name="range">The explosion radius to visualize</param>
             <returns>The created ExplosionRangePop component for further manipulation</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateFreezeDamageEffect(System.Single,System.Single,UnityEngine.Transform)">
+        <member name="M:EffectsController.CreateFreezeDamageEffect(System.Single,System.Single,UnityEngine.Transform)">
             <summary>
                 Creates a freeze damage visual effect that can optionally attach to a parent
                 transform. Used to show ice crystals or frost effects on frozen units. The effect is
@@ -4594,8 +4408,7 @@
             <param name="y">The y-coordinate of the freeze effect</param>
             <param name="parentTransform">Optional transform to parent the effect to (null for world space)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateNinjaSmokeEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateNinjaSmokeEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a ninja smoke bomb effect for stealth abilities. Produces a cloud of smoke
                 at the specified position. Note: Velocity parameters are accepted but unused in the
@@ -4606,8 +4419,7 @@
             <param name="xI">The horizontal velocity (unused in implementation)</param>
             <param name="yI">The vertical velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePuffDisappearEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePuffDisappearEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a disappearance puff effect with accompanying ring. Spawns both a main puff
                 cloud and a ring effect with 0.25 unit vertical offset. Used for teleportation and
@@ -4618,8 +4430,7 @@
             <param name="xI">The horizontal velocity (unused in implementation)</param>
             <param name="yI">The vertical velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreatePuffDisappearRingEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePuffDisappearRingEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates just the ring portion of a disappearance effect. Returns the Puff component
                 for further manipulation. Note: Velocity parameters are accepted but unused.
@@ -4630,8 +4441,7 @@
             <param name="yI">The vertical velocity (unused in implementation)</param>
             <returns>The created Puff component for the ring effect</returns>
         </member>
-        <member
-            name="M:EffectsController.CreatePuffPeckShineEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreatePuffPeckShineEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a shining effect typically used for peck attacks or impacts. Returns the
                 Puff component for further manipulation. Note: Velocity parameters are accepted but
@@ -4643,8 +4453,7 @@
             <param name="yI">The vertical velocity (unused in implementation)</param>
             <returns>The created Puff component for the shine effect</returns>
         </member>
-        <member
-            name="M:EffectsController.CreateReviveZombieEffect(System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateReviveZombieEffect(System.Single,System.Single,Transform)">
             <summary>
                 Creates a zombie revival effect at the specified position. The effect is parented to
                 the provided transform to follow the reviving unit. Used when necromancer abilities
@@ -4654,8 +4463,7 @@
             <param name="y">The y-coordinate in world space</param>
             <param name="parentedTransform">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateRevivedZombiePassiveEffect(System.Single,System.Single,System.Single,Transform)">
+        <member name="M:EffectsController.CreateRevivedZombiePassiveEffect(System.Single,System.Single,System.Single,Transform)">
             <summary>
                 Creates a persistent effect for revived zombie units. The effect is parented to the
                 zombie transform to provide continuous visual indication of undead status. Typically
@@ -4666,8 +4474,7 @@
             <param name="z">The z-coordinate in world space</param>
             <param name="parentedTransform">The transform to parent the effect to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSparkleDisappearEffect(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSparkleDisappearEffect(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a sparkly disappearance effect for magical vanishing. Produces a glittering
                 particle effect at the specified position. Note: Velocity parameters are accepted
@@ -4678,8 +4485,7 @@
             <param name="xI">The horizontal velocity (unused in implementation)</param>
             <param name="yI">The vertical velocity (unused in implementation)</param>
         </member>
-        <member
-            name="M:EffectsController.CreateUndeadSelfReviveEffect(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateUndeadSelfReviveEffect(System.Single,System.Single,System.Single)">
             <summary>
                 Creates a self-revival effect for undead units coming back to life. Unlike other
                 revival effects, this is not parented and plays as a one-shot animation at the
@@ -4789,8 +4595,7 @@
             </summary>
         </member>
         <!-- Audio System Methods -->
-        <member
-            name="M:EffectsController.PlayBloodSquirtSound(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.PlayBloodSquirtSound(System.Single,System.Single,System.Single)">
             <summary>
                 Plays blood squirt sound effect from the effort sounds collection. Protected method
                 for blood spray and arterial bleeding audio. Does not return the AudioSource.
@@ -4799,8 +4604,7 @@
             <param name="y">The y-coordinate of the sound source</param>
             <param name="volume">The playback volume</param>
         </member>
-        <member
-            name="M:EffectsController.PlayExplosionHugeSound(System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.PlayExplosionHugeSound(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Plays huge explosion sound effect from the death sounds collection. Protected method
                 used for major explosive events. Returns the AudioSource for further audio
@@ -4812,8 +4616,7 @@
             <param name="ignoreFilters">Whether to bypass audio filters</param>
             <returns>The AudioSource playing the sound</returns>
         </member>
-        <member
-            name="M:EffectsController.PlayExplosionMassiveSound(System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.PlayExplosionMassiveSound(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Plays massive explosion sound effect from the death sounds collection. Protected
                 method for the largest explosive events. Returns the AudioSource for audio
@@ -4825,8 +4628,7 @@
             <param name="ignoreFilters">Whether to bypass audio filters</param>
             <returns>The AudioSource playing the sound</returns>
         </member>
-        <member
-            name="M:EffectsController.PlayExplosionSound(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.PlayExplosionSound(System.Single,System.Single,System.Single)">
             <summary>
                 Plays standard explosion sound effect from the death sounds collection. Protected
                 method for regular explosive audio feedback. Does not return the AudioSource.
@@ -4835,8 +4637,7 @@
             <param name="y">The y-coordinate of the sound source</param>
             <param name="volume">The playback volume</param>
         </member>
-        <member
-            name="M:EffectsController.PlayGlassShatterSound(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.PlayGlassShatterSound(System.Single,System.Single,System.Single)">
             <summary>
                 Plays glass shattering sound effect from the death sounds collection. Protected
                 method for glass breaking audio feedback. Does not return the AudioSource.
@@ -4845,8 +4646,7 @@
             <param name="y">The y-coordinate of the sound source</param>
             <param name="volume">The playback volume</param>
         </member>
-        <member
-            name="M:EffectsController.PlaySlimeExplosionSound(System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.PlaySlimeExplosionSound(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Plays slime explosion sound effect from the death sounds collection. Protected
                 method that returns the AudioSource for further manipulation. Used for wet, organic
@@ -4858,8 +4658,7 @@
             <param name="ignoreFilters">Whether to bypass audio filters</param>
             <returns>The AudioSource playing the sound</returns>
         </member>
-        <member
-            name="M:EffectsController.PlaySmallExplosionSound(System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.PlaySmallExplosionSound(System.Single,System.Single,System.Single)">
             <summary>
                 Plays small explosion sound using attack2 sounds collection. Protected method for
                 minor explosive effects. Does not return the AudioSource.
@@ -4868,8 +4667,7 @@
             <param name="y">The y-coordinate of the sound source</param>
             <param name="volume">The playback volume</param>
         </member>
-        <member
-            name="M:EffectsController.PlaySmallSlimeExplosionSound(System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:EffectsController.PlaySmallSlimeExplosionSound(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Plays small slime explosion sound using greeting sounds at 0.7 pitch. Protected
                 method that creates a lower-pitched variant for smaller slime effects. Returns the
@@ -4922,8 +4720,7 @@
             </summary>
             <param name="unit">The unit to attach the light to</param>
         </member>
-        <member
-            name="M:EffectsController.CreateBoneParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateBoneParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates bone-colored particles using a specified emitter. Randomly selects bone
                 colors from the theme for skeletal or ashen debris effects with appropriate pale
@@ -4938,8 +4735,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates dirt-colored dust particles using a specified emitter. Randomly selects dirt
                 colors from the theme for each particle. Uses the same distribution pattern as flesh
@@ -4954,8 +4750,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates dust particles with a specified color using a custom emitter. Overrides the
                 emitter's default coloring to apply the provided color uniformly to all created
@@ -4971,8 +4766,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="color">The color to apply to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateDustParticlesRow(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateDustParticlesRow(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates particles in a horizontal row pattern using a specified emitter. Particles
                 are distributed only along the x-axis while maintaining a constant y-position,
@@ -4990,8 +4784,7 @@
             <param name="yI">The initial y-velocity added to all particles</param>
             <param name="color">The color to apply to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateFleshDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateFleshDustParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates flesh-colored dust particles using a specified emitter. Randomly selects
                 flesh colors from the theme for each particle. Distributes particles within the
@@ -5007,8 +4800,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single particle at the specified 3D position. The most basic particle
                 creation method that simply emits one particle at the exact coordinates provided.
@@ -5018,8 +4810,7 @@
             <param name="y">The y-coordinate for the particle</param>
             <param name="z">The z-coordinate for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleSystem,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleSystem,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single particle using the modern ParticleSystem. This wrapper converts
                 coordinates to a Vector3 and calls the vector-based overload for ParticleSystem
@@ -5038,8 +4829,7 @@
             <param name="emitter">The ParticleSystem to emit from</param>
             <param name="position">The 3D position for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleSystem,UnityEngine.Vector3,System.Single,UnityEngine.Vector3)">
+        <member name="M:EffectsController.CreateParticle(ParticleSystem,UnityEngine.Vector3,System.Single,UnityEngine.Vector3)">
             <summary>
                 Creates a single particle with position randomization and initial velocity. The
                 particle appears randomly within the specified radius of the position and launches
@@ -5050,8 +4840,7 @@
             <param name="radius">The randomization radius around the position</param>
             <param name="velocity">The initial velocity vector for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates a single colored particle at the specified position. Temporarily overrides
                 the emitter's renderer color to apply the specified color to the emitted particle.
@@ -5062,8 +4851,7 @@
             <param name="z">The z-coordinate for the particle</param>
             <param name="color">The color to apply to the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a single particle with force-based random velocity. The particle's initial
                 velocity is randomized within a unit circle and scaled by the force parameter, then
@@ -5076,8 +4864,7 @@
             <param name="xI">The initial x-velocity to add</param>
             <param name="yI">The initial y-velocity to add</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color)">
             <summary>
                 Creates a single colored particle with force-based velocity. Combines color override
                 with velocity randomization for colored particles with dynamic movement.
@@ -5090,8 +4877,7 @@
             <param name="yI">The initial y-velocity to add</param>
             <param name="color">The color to apply to the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a particle with life and size multipliers at z=1. This wrapper adds default
                 z-position and zero z-velocity, calling the full 3D version for particles with
@@ -5106,8 +4892,7 @@
             <param name="lifeM">Lifetime multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a particle with custom z-position, life, and size multipliers. Adds zero
                 z-velocity as a default, forwarding to the full implementation with complete 3D
@@ -5123,8 +4908,7 @@
             <param name="lifeM">Lifetime multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticle(ParticleEmitter,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates a fully customized particle with 3D position and velocity. The most
                 comprehensive single particle creation method, supporting custom lifetime and size
@@ -5141,8 +4925,7 @@
             <param name="lifeM">Lifetime multiplier for the particle</param>
             <param name="sizeM">Size multiplier for the particle</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates white particles using a specified emitter. The generic particle creation
                 method that uses white color for all particles. Provides the base implementation for
@@ -5157,8 +4940,7 @@
             <param name="xI">The initial x-velocity added to all particles</param>
             <param name="yI">The initial y-velocity added to all particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
             <summary>
                 Creates multiple rotating particles with uniform spread. This wrapper uses equal x
                 and y offset radii for circular distribution patterns when creating spinning
@@ -5176,8 +4958,7 @@
             <param name="angularVelocityMin">The minimum rotation speed</param>
             <param name="angularVelocityMax">The maximum rotation speed</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
             <summary>
                 Creates multiple rotating particles at z=0 with elliptical spread. This wrapper adds
                 default z-position for 2D particle effects with rotation and custom distribution
@@ -5196,8 +4977,7 @@
             <param name="angularVelocityMin">The minimum rotation speed</param>
             <param name="angularVelocityMax">The maximum rotation speed</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,System.Single,System.Single)">
             <summary>
                 Creates multiple rotating particles with full 3D control. The comprehensive particle
                 creation method supporting elliptical distribution, custom colors, and randomized
@@ -5218,8 +4998,7 @@
             <param name="angularVelocityMin">The minimum rotation speed for particles</param>
             <param name="angularVelocityMax">The maximum rotation speed for particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateParticles(ParticleEmitter,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.Color,UnityEngine.Color,System.Single,System.Single)">
             <summary>
                 Creates multiple particles with color interpolation between two colors. Each
                 particle gets a random color between color1 and color2, creating gradient effects.
@@ -5241,8 +5020,7 @@
             <param name="angularVelocityMin">The minimum rotation speed for particles</param>
             <param name="angularVelocityMax">The maximum rotation speed for particles</param>
         </member>
-        <member
-            name="M:EffectsController.CreateSandParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:EffectsController.CreateSandParticles(ParticleEmitter,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates sand-colored particles using a specified emitter. Randomly selects sand
                 colors from the theme for desert or beach-appropriate particle effects with natural
@@ -5273,8 +5051,7 @@
             <param name="prefab">The effect prefab to instantiate. Can be any Unity Object type.</param>
             <returns>The instantiated effect object, either from the pool or newly created.</returns>
         </member>
-        <member
-            name="M:EffectsController.InstantiateEffect(UnityEngine.Object,UnityEngine.Vector3,UnityEngine.Quaternion)">
+        <member name="M:EffectsController.InstantiateEffect(UnityEngine.Object,UnityEngine.Vector3,UnityEngine.Quaternion)">
             <summary>
                 Instantiates an effect object at the specified position and rotation. Supports
                 object pooling for IPoolableEffect types to improve performance.

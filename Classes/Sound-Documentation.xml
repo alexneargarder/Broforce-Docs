@@ -81,8 +81,7 @@
                 can be resumed later with Resume().
             </summary>
         </member>
-        <member
-            name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip[],System.Single,System.Single,System.Single)">
+        <member name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip[],System.Single,System.Single,System.Single)">
             <summary>
                 Plays a random announcer sound from an array. Returns null if clips array is null or
                 empty. Otherwise selects a random clip from the array and calls the single-clip
@@ -94,8 +93,7 @@
             <param name="delay">Delay in seconds before playing (default 0)</param>
             <returns>The AudioSource playing the announcer sound, or null if clips array was invalid</returns>
         </member>
-        <member
-            name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip,System.Single,System.Single,System.Single)">
+        <member name="M:Sound.PlayAnnouncer(UnityEngine.AudioClip,System.Single,System.Single,System.Single)">
             <summary>
                 Plays an announcer sound with special audio settings. Positions the sound at the
                 Sound instance position, or camera position if Sound instance is null. Creates the
@@ -1048,8 +1046,7 @@
             <param name="v">Volume level for playback</param>
             <param name="p">Pitch multiplier for playback</param>
         </member>
-        <member
-            name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip[],System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
+        <member name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip[],System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
             <summary>
                 Plays a random sound effect from an array of clips at a specific 3D position.
                 Returns null if clips array is null or empty. Otherwise selects a random clip from
@@ -1065,8 +1062,7 @@
             <param name="delay">Delay in seconds before playing (default 0)</param>
             <returns>The AudioSource playing the sound, or null if clips array was invalid</returns>
         </member>
-        <member
-            name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip,System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
+        <member name="M:Sound.PlaySoundEffectAt(UnityEngine.AudioClip,System.Single,UnityEngine.Vector3,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single)">
             <summary>
                 Plays a sound effect at a specific 3D position. Returns null if clip is null or
                 hasPlayedEffectSound is true (preventing multiple effect sounds in the same frame).
@@ -1211,8 +1207,7 @@
             </summary>
             <returns>A ReusableOneShotSound from the pool, or null if pool is empty</returns>
         </member>
-        <member
-            name="M:Sound.PlayAudioClip(UnityEngine.AudioClip,UnityEngine.Vector3,System.Single,System.Single,System.Boolean,System.Boolean,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Sound.PlayAudioClip(UnityEngine.AudioClip,UnityEngine.Vector3,System.Single,System.Single,System.Boolean,System.Boolean,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Core method for playing audio clips with full control over positioning and effects.
                 Creates or retrieves an AudioSource (from pool unless neverPool is true), configures

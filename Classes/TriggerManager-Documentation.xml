@@ -125,8 +125,7 @@
             </summary>
         </member>
         <!-- Scripted Events Methods -->
-        <member
-            name="M:TriggerManager.AddRepeatingBombardment(UnityEngine.Vector3,System.Int32,System.Boolean,System.Boolean)">
+        <member name="M:TriggerManager.AddRepeatingBombardment(UnityEngine.Vector3,System.Int32,System.Boolean,System.Boolean)">
             <summary>
                 Adds a repeating bombardment pattern that will continue firing projectiles at
                 intervals. Used to create ongoing artillery barrages or environmental hazards in
@@ -138,8 +137,7 @@
             <param name="fireBallVertical">True to use vertical fireball projectiles</param>
             <returns>The BombardmentRepeat instance managing this repeating attack</returns>
         </member>
-        <member
-            name="M:TriggerManager.CreateAlienSpawnAttack(GridPoint,DirectionEnum,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
+        <member name="M:TriggerManager.CreateAlienSpawnAttack(GridPoint,DirectionEnum,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
             <summary>
                 Spawns alien enemies from a specified direction attacking a target point. Handles
                 different alien types (facehuggers, melters, xenomorphs, mosquitoes) and spawn
@@ -155,8 +153,7 @@
             <param name="seed">Random seed for spawn patterns (currently unused in implementation)</param>
             <param name="spawnOffScreen">True to spawn aliens outside the visible screen area</param>
         </member>
-        <member
-            name="M:TriggerManager.CreateScriptedBlock(GridPoint,GroundType,System.Boolean,NID)">
+        <member name="M:TriggerManager.CreateScriptedBlock(GridPoint,GroundType,System.Boolean,NID)">
             <summary>
                 Creates a new block at runtime with specified properties, useful for dynamic level
                 modifications. Can create the block in a disturbed state (falling/moving) and
@@ -168,8 +165,7 @@
             <param name="blockNID">Network ID to assign to the block for multiplayer synchronization</param>
             <returns>The created Block instance</returns>
         </member>
-        <member
-            name="M:TriggerManager.CreateScriptedBombardment(UnityEngine.Vector3,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
+        <member name="M:TriggerManager.CreateScriptedBombardment(UnityEngine.Vector3,System.Boolean,System.Boolean,System.Boolean,System.Int32)">
             <summary>
                 Creates a bombardment projectile attack at the specified position. Can create
                 diagonal fireballs, vertical fireballs, or standard artillery shells. Optionally

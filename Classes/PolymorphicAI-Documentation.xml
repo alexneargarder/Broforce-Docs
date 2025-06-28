@@ -728,8 +728,7 @@
                 and grid points when debug mode is enabled for this enemy.
             </summary>
         </member>
-        <member
-            name="M:PolymorphicAI.DebugShowInput(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:PolymorphicAI.DebugShowInput(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Displays debug information about the current input state and pathfinding. Shows
                 which movement directions are active and current pathfinding node information when
@@ -866,8 +865,7 @@
                 stomp-stopping logic.
             </summary>
         </member>
-        <member
-            name="M:PolymorphicAI.Sync(ActionObject[],MentalState,System.Single,System.Single,System.Int32,ActionState)">
+        <member name="M:PolymorphicAI.Sync(ActionObject[],MentalState,System.Single,System.Single,System.Int32,ActionState)">
             <summary>
                 Synchronizes AI state from network data, updating action queue, mental state, and
                 position.
@@ -1015,8 +1013,7 @@
                 behind. Tracks suspicion with suspciousThinkCount.
             </summary>
         </member>
-        <member
-            name="M:PolymorphicAI.GetInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+        <member name="M:PolymorphicAI.GetInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
             <summary>
                 Processes the current action queue and sets input flags based on the next action to
                 execute. This is the main method that translates queued AI actions into actual
@@ -1069,8 +1066,7 @@
                 states.
             </summary>
         </member>
-        <member
-            name="M:PolymorphicAI.RunHoverInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
+        <member name="M:PolymorphicAI.RunHoverInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
             <summary>
                 Handles hover input generation for AI units capable of hovering. Base implementation
                 is empty.
@@ -1085,8 +1081,7 @@
                 behavior.
             </remarks>
         </member>
-        <member
-            name="M:PolymorphicAI.RunJumpingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+        <member name="M:PolymorphicAI.RunJumpingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
             <summary>
                 Handles input generation for the Jump action. Sets movement direction based on
                 facing and activates jump.
@@ -1106,8 +1101,7 @@
                 determined by the sign of transform.localScale.x.
             </remarks>
         </member>
-        <member
-            name="M:PolymorphicAI.RunMovementInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
+        <member name="M:PolymorphicAI.RunMovementInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,ActionObject)">
             <summary>
                 Handles movement input generation when the current action is Move type. Sets
                 left/right flags based on target position.
@@ -1123,8 +1117,7 @@
                 position.
             </remarks>
         </member>
-        <member
-            name="M:PolymorphicAI.RunStompingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+        <member name="M:PolymorphicAI.RunStompingInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
             <summary>
                 Handles input generation for the Stomp action. Sets movement direction and down
                 input for stomping.

@@ -115,8 +115,7 @@
             </summary>
             <param name="playerNum">The player number to apply steroids to.</param>
         </member>
-        <member
-            name="M:HeroController.OneBroUseSteroids(System.Int32,System.Single,System.Boolean,System.Boolean,System.Single)">
+        <member name="M:HeroController.OneBroUseSteroids(System.Int32,System.Single,System.Boolean,System.Boolean,System.Single)">
             <summary>
                 Activates steroid power-up for a single player with customizable parameters. Allows
                 control over duration, visual effects, and whether to use high-five or standard time
@@ -137,8 +136,7 @@
             <param name="playerNum">The player number to set invulnerable.</param>
             <param name="duration">Duration in seconds for the invulnerability effect.</param>
         </member>
-        <member
-            name="M:HeroController.SetHeroesWillComebackToLife(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.SetHeroesWillComebackToLife(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Sets heroes within range to resurrect after death for the specified duration. This
                 effect allows heroes to automatically respawn at their death location after being
@@ -149,8 +147,7 @@
             <param name="range">Radius of the effect area.</param>
             <param name="duration">Duration in seconds for the resurrection effect.</param>
         </member>
-        <member
-            name="M:HeroController.SetHerosInvulnerable(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:HeroController.SetHerosInvulnerable(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Sets all heroes within a specified range of a position to invulnerable state. Checks
                 each player's distance from the center point and applies invulnerability if they are
@@ -249,8 +246,7 @@
             <param name="playerNum">The player number to assign the character to.</param>
             <param name="character">The TestVanDammeAnim character instance to assign.</param>
         </member>
-        <member
-            name="M:HeroController.AttachHeroToHelicopter(UnityEngine.Vector3,System.Single,TestVanDammeAnim,Helicopter,System.Boolean)">
+        <member name="M:HeroController.AttachHeroToHelicopter(UnityEngine.Vector3,System.Single,TestVanDammeAnim,Helicopter,System.Boolean)">
             <summary>
                 Attaches a hero to a helicopter for extraction or transport. Disables the hero's
                 normal functionality, parents them to the helicopter transform, and positions them
@@ -400,8 +396,7 @@
             <param name="heroType">The hero type to get the prefab for.</param>
             <returns>The hero prefab or null if not found.</returns>
         </member>
-        <member
-            name="M:HeroController.GetHeroType(System.Int32,System.Collections.Generic.List{HeroType},System.Collections.Generic.List{HeroType},System.Boolean)">
+        <member name="M:HeroController.GetHeroType(System.Int32,System.Collections.Generic.List{HeroType},System.Collections.Generic.List{HeroType},System.Boolean)">
             <summary>
                 Determines the next hero type for a player based on game mode and availability.
                 Handles forced hero mode, random selection, elimination mode cycling, and
@@ -592,8 +587,7 @@
             <param name="playerNum">The player number to check.</param>
             <returns>True if the player exists with valid data; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.RecieveHeroTypeFromMaster(HeroType,System.Int32,HeroType[],Ack)">
+        <member name="M:HeroController.RecieveHeroTypeFromMaster(HeroType,System.Int32,HeroType[],Ack)">
             <summary>
                 Client-side RPC that receives the hero type assignment from the master. Updates the
                 local hero type, synchronizes the already-chosen heroes list, and triggers the spawn
@@ -604,8 +598,7 @@
             <param name="updatedHeroAlreadyChosenTypes">Updated list of heroes already chosen.</param>
             <param name="ackResponse">Network acknowledgment response.</param>
         </member>
-        <member
-            name="M:HeroController.RegisterHeroToPlayer(TestVanDammeAnim,System.Int32,HeroType)">
+        <member name="M:HeroController.RegisterHeroToPlayer(TestVanDammeAnim,System.Int32,HeroType)">
             <summary>
                 Registers a spawned hero character to a specific player slot. Links the hero
                 instance to the player data, activates the HUD, sets the hero type, and handles
@@ -633,8 +626,7 @@
             <param name="PlayerNum">The player number requesting a hero.</param>
             <param name="ignoreYetToBeSeenHeroes">Whether to ignore heroes the player hasn't unlocked yet.</param>
         </member>
-        <member
-            name="M:HeroController.RequestHeroTypeFromMasterRPC(PID,System.Int32,HeroType[],HeroType,HeroType[],Ack,System.Boolean)">
+        <member name="M:HeroController.RequestHeroTypeFromMasterRPC(PID,System.Int32,HeroType[],HeroType,HeroType[],Ack,System.Boolean)">
             <summary>
                 Server-side RPC that processes hero type requests from clients. Determines the
                 appropriate hero based on game mode, availability, and player preferences, then
@@ -746,8 +738,7 @@
             </summary>
             <param name="playerNum">The player number to spawn as suicide bro.</param>
         </member>
-        <member
-            name="M:HeroController.UpdatePlayerData(System.Int32,System.Boolean,PID,System.String,System.Int32)">
+        <member name="M:HeroController.UpdatePlayerData(System.Int32,System.Boolean,PID,System.String,System.Int32)">
             <summary>
                 RPC method that updates all player data for a specific slot. Synchronizes player
                 information across the network including playing status, network ID, name, and
@@ -759,8 +750,7 @@
             <param name="playerName">The player's display name.</param>
             <param name="controller">The controller ID assigned to this player.</param>
         </member>
-        <member
-            name="M:HeroController.UpdatePlayerUserData(System.Int32,System.Int32,System.String)">
+        <member name="M:HeroController.UpdatePlayerUserData(System.Int32,System.Int32,System.String)">
             <summary>
                 Updates a player's controller and name information and broadcasts the change to
                 other players. Also updates the primary user ID for single-player scenarios. Used
@@ -1069,8 +1059,7 @@
             <param name="latestDeathOrder">The authoritative death order array from the host.</param>
         </member>
         <!-- Player Detection Methods -->
-        <member
-            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
             <summary>
                 Performs a line of sight check for players in a specific direction. Uses raycasting
                 to ensure no obstacles block the view. Checks both players and their owned units
@@ -1084,8 +1073,7 @@
             <param name="seenPlayerNum">Output parameter for the player number if seen.</param>
             <returns>True if a player is visible in the specified direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Int32,System.Int32,System.Single,System.Single,System.Int32@)">
             <summary>
                 Line of sight check with both X and Y direction constraints. Most restrictive
                 visibility check that requires the target to be in the correct quadrant and have an
@@ -1111,8 +1099,7 @@
             <param name="y">Y coordinate to check from.</param>
             <returns>True if the specified player is visible and not in stealth; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.CanSeePlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
             <summary>
                 Omnidirectional line of sight check for any player within range. Checks all living
                 players and their units for visibility without direction constraints. Respects
@@ -1125,8 +1112,7 @@
             <param name="seenPlayerNum">Output parameter for the nearest visible player number.</param>
             <returns>True if any player is visible within range; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.GetActualNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.GetActualNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Finds the truly nearest player using combined X and Y distance. More accurate than
                 GetNearestPlayer for finding the closest player as it uses actual distance rather
@@ -1138,8 +1124,7 @@
             <param name="yRange">Maximum vertical distance to search.</param>
             <returns>Player index (0-3) of nearest player or -1 if none in range.</returns>
         </member>
-        <member
-            name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Finds the nearest player within a specified rectangular range. Returns the player
                 index of the closest player within the range or -1 if no players are found. Uses
@@ -1151,8 +1136,7 @@
             <param name="yRange">Maximum vertical distance to search.</param>
             <returns>Player index (0-3) of nearest player or -1 if none in range.</returns>
         </member>
-        <member
-            name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single,System.Int32@)">
             <summary>
                 Finds the nearest player within range and updates the current nearest reference.
                 Returns true if a closer player was found than the current nearest. Used for
@@ -1175,8 +1159,7 @@
             <param name="y">Y coordinate to search from.</param>
             <returns>Vector3 position of the nearest player or (1000, 1000, 0) if none found.</returns>
         </member>
-        <member
-            name="M:HeroController.GetNearestPlayerPos(System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.GetNearestPlayerPos(System.Single,System.Single,System.Int32@)">
             <summary>
                 Finds the position of the nearest living player and returns their player number.
                 Uses squared distance for efficiency and updates the playerNum reference with the
@@ -1228,8 +1211,7 @@
             </summary>
             <returns>Player number (0-3) of a random living player or -1 if none.</returns>
         </member>
-        <member
-            name="M:HeroController.GetRandomPlayerPos(System.Single@,System.Single@,System.Int32@)">
+        <member name="M:HeroController.GetRandomPlayerPos(System.Single@,System.Single@,System.Int32@)">
             <summary>
                 Gets the position of a random living player through reference parameters. Randomly
                 selects from all alive players and returns their position and player number. Returns
@@ -1248,8 +1230,7 @@
             </summary>
             <returns>Vector3 position of a random living player or (1000, 1000, 0) if none.</returns>
         </member>
-        <member
-            name="M:HeroController.IsAnotherPlayerNearby(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.IsAnotherPlayerNearby(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Checks if any player other than the specified player is within range. Used for co-op
                 mechanics, friendly fire detection, and ensuring players don't interact with their
@@ -1262,8 +1243,7 @@
             <param name="yRange">Maximum vertical distance to search.</param>
             <returns>True if another player is found within range; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
             <summary>
                 Checks if any player is within the specified range and returns their position.
                 Updates reference parameters with the nearest player's coordinates and player
@@ -1278,8 +1258,7 @@
             <param name="seenPlayer">Output parameter for found player's number.</param>
             <returns>True if a player is found within range; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
             <summary>
                 Directional player detection that checks for players in a specific direction. Only
                 detects players in the direction specified by xDirection parameter and returns their
@@ -1295,8 +1274,7 @@
             <param name="seenPlayerNum">Output parameter for found player's number.</param>
             <returns>True if a player is found in the specified direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Basic proximity check to determine if any player is within the specified rectangular
                 range. Simple boolean check without returning player information.
@@ -1307,8 +1285,7 @@
             <param name="yRange">Vertical detection range.</param>
             <returns>True if any player is within range; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single)">
+        <member name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single)">
             <summary>
                 Directional proximity check that only detects players in the specified direction.
                 Used for directional attacks, line of sight checks, and facing-dependent
@@ -1321,8 +1298,7 @@
             <param name="yRange">Vertical detection range.</param>
             <returns>True if a player is found in the specified direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Single,System.Single,System.Int32,System.Single,System.Single,System.Int32@)">
             <summary>
                 Directional player detection that finds players in a specific direction and returns
                 their player number. Only detects players whose position relative to the check point
@@ -1336,8 +1312,7 @@
             <param name="seenPlayerNum">Output parameter for found player's number.</param>
             <returns>True if a player is found in the specified direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
             <summary>
                 Checks if a specific player is nearby in a given direction and returns their
                 position. Updates the xRange parameter and target position references if the player
@@ -1353,8 +1328,7 @@
             <param name="targetY">Output parameter for the player's Y position if found.</param>
             <returns>True if the specified player is found in range and direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Int32,System.Int32,System.Single@,System.Single,System.Single@,System.Single@)">
             <summary>
                 Checks if a specific player is nearby with both X and Y direction constraints. Most
                 restrictive proximity check that requires the player to be in the correct quadrant
@@ -1371,8 +1345,7 @@
             <param name="targetY">Output parameter for the player's Y position if found.</param>
             <returns>True if the player is found in the specified quadrant; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Single@,System.Single,System.Single@,System.Single@)">
+        <member name="M:HeroController.IsPlayerNearby(System.Int32,System.Single,System.Single,System.Single@,System.Single,System.Single@,System.Single@)">
             <summary>
                 Checks if a specific player is within range without direction constraints. Updates
                 the xRange parameter and returns the player's position through reference parameters
@@ -1387,8 +1360,7 @@
             <param name="targetY">Output parameter for the player's Y position if found.</param>
             <returns>True if the specified player is within range; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerThisWay(System.Int32,System.Single,System.Single,System.Int32)">
+        <member name="M:HeroController.IsPlayerThisWay(System.Int32,System.Single,System.Single,System.Int32)">
             <summary>
                 Checks if a specific player is positioned in the given direction from a point. Used
                 for directional AI decisions and determining relative player positions.
@@ -1410,8 +1382,7 @@
             <param name="xDirection">Direction to check (-1 for left, 1 for right).</param>
             <returns>True if any player is in the specified direction; otherwise, false.</returns>
         </member>
-        <member
-            name="M:HeroController.IsPlayerThisWay(System.Single,System.Single,System.Int32,System.Int32@)">
+        <member name="M:HeroController.IsPlayerThisWay(System.Single,System.Single,System.Int32,System.Int32@)">
             <summary>
                 Checks if any player is in the given direction and returns the nearest one. Finds
                 the closest player in the specified direction based on absolute X distance and
@@ -1446,8 +1417,7 @@
             </summary>
         </member>
         <!-- Rescue System Methods -->
-        <member
-            name="M:HeroController.CheckRescueBros(System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.CheckRescueBros(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Checks for rescue bros within range of the specified position and initiates rescue
                 if found. Handles the rescue animation, network RPC calls, and returns whether any
@@ -1832,8 +1802,7 @@
             </summary>
             <param name="time">Duration in seconds for the time dilation effect.</param>
         </member>
-        <member
-            name="M:HeroController.IsPlayerNearbyActivatedCheckPoint(UnityEngine.Vector2@,System.Boolean@)">
+        <member name="M:HeroController.IsPlayerNearbyActivatedCheckPoint(UnityEngine.Vector2@,System.Boolean@)">
             <summary>
                 Checks if any player is near an activated checkpoint and returns the checkpoint
                 data. Updates the position and airdrop flag references if a player is found near a
@@ -1953,8 +1922,7 @@
             </summary>
         </member>
         <!-- Camera System Methods -->
-        <member
-            name="M:HeroController.AddTemporaryPlayerTarget(System.Int32,UnityEngine.Transform)">
+        <member name="M:HeroController.AddTemporaryPlayerTarget(System.Int32,UnityEngine.Transform)">
             <summary>
                 RPC method that adds a temporary follow target for a specific player's camera. Used
                 for cutscenes or special camera focus events where the camera needs to track
@@ -1963,8 +1931,7 @@
             <param name="playerNum">The player number whose camera should follow the target.</param>
             <param name="target">The transform for the camera to follow.</param>
         </member>
-        <member
-            name="M:HeroController.AddToExtents(UnityEngine.Vector3,System.Single@,System.Single@,System.Single@,System.Single@)">
+        <member name="M:HeroController.AddToExtents(UnityEngine.Vector3,System.Single@,System.Single@,System.Single@,System.Single@)">
             <summary>
                 Adds a position to the camera view extents calculation. Updates the minimum and
                 maximum X/Y bounds by reference to include the given position. Used internally for
@@ -1976,8 +1943,7 @@
             <param name="minY">Reference to minimum Y bound, updated if pos.y is smaller.</param>
             <param name="maxY">Reference to maximum Y bound, updated if pos.y is larger.</param>
         </member>
-        <member
-            name="M:HeroController.CanFollow(UnityEngine.Vector3,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:HeroController.CanFollow(UnityEngine.Vector3,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Determines if a position can be followed by the camera while keeping it within
                 screen bounds. Calculates whether including this position would push the camera view

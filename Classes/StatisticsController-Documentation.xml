@@ -152,8 +152,7 @@
             <param name="time">Time in seconds to format</param>
             <returns>Formatted time string showing minutes, seconds, and tenths</returns>
         </member>
-        <member
-            name="M:StatisticsController.LogLevelScore(System.Int32,System.Single,System.Int64,System.Int64,System.Int32,System.Int32)">
+        <member name="M:StatisticsController.LogLevelScore(System.Int32,System.Single,System.Int64,System.Int64,System.Int32,System.Int32)">
             <summary>
                 Stores level statistics in the campaign score dictionary. Creates the dictionary if
                 needed and replaces existing scores for the same level number. Used internally after
@@ -526,8 +525,7 @@
             </summary>
             <param name="deathObj">The death object to add to the tracking list</param>
         </member>
-        <member
-            name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,MookType,System.Single,System.Single)">
+        <member name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,MookType,System.Single,System.Single)">
             <summary>
                 RPC method that creates and adds a mook death object to the current level's death
                 list. Called on all clients to synchronize death tracking.
@@ -538,8 +536,7 @@
             <param name="xI">X position where death occurred</param>
             <param name="yI">Y position where death occurred</param>
         </member>
-        <member
-            name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,HeroType,System.Single,System.Single)">
+        <member name="M:StatisticsController.AddToDeathListRPC(NID,DeathType,HeroType,System.Single,System.Single)">
             <summary>
                 RPC method that creates and adds a hero death object to the current level's death
                 list. Called on all clients to synchronize death tracking.
@@ -558,8 +555,7 @@
             <param name="deathIndex">The index of the death object to retrieve</param>
             <returns>The DeathObject at the specified index, or null if index is out of bounds</returns>
         </member>
-        <member
-            name="M:StatisticsController.NotifyDeathType(NID,MookType,DeathType,System.Single,System.Single)">
+        <member name="M:StatisticsController.NotifyDeathType(NID,MookType,DeathType,System.Single,System.Single)">
             <summary>
                 Records and broadcasts a death event to all players via RPC. Only processes non-None
                 and non-Unassigned death types when the level is not finished. Sends death

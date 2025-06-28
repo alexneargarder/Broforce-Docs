@@ -5,8 +5,7 @@
     </assembly>
     <members>
         <!-- Combat & Damage Methods -->
-        <member
-            name="M:Map.BlindUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.BlindUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Blinds all enemy units within range of a position. Blinded units have impaired
                 vision and targeting abilities.
@@ -17,8 +16,7 @@
             <param name="range">Radius of the blind effect</param>
             <param name="blindTime">Duration of the blindness in seconds (default 9)</param>
         </member>
-        <member
-            name="M:Map.BurnBlocksAround(System.Int32,System.Int32,System.Int32,System.Boolean,UnityEngine.GameObject)">
+        <member name="M:Map.BurnBlocksAround(System.Int32,System.Int32,System.Int32,System.Boolean,UnityEngine.GameObject)">
             <summary>
                 Burns blocks in the four cardinal directions (up, down, left, right) from a center
                 position using raycasting. Can force burn non-oily blocks or only burn oily blocks
@@ -63,8 +61,7 @@
             <param name="y">World Y position</param>
             <returns>True if any objects were found and damaged, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.BurnUnitsAround_Local(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.BurnUnitsAround_Local(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Sets units on fire within a specified range from a position. Only affects units when
                 the Demonstration.enemiesSetOnFire flag is enabled. Damage can be blocked by
@@ -91,8 +88,7 @@
             <param name="direction">Direction of the roll (not used in current implementation)</param>
             <returns>True if the object can roll onto units at this position, false if blocked by heavy units</returns>
         </member>
-        <member
-            name="M:Map.CheckForCorpse(System.Single,System.Single,System.Single,System.Single,System.Single@)">
+        <member name="M:Map.CheckForCorpse(System.Single,System.Single,System.Single,System.Single,System.Single@)">
             <summary>
                 Searches for the nearest corpse within the specified area. Performs line-of-sight
                 checks to ensure the corpse is accessible. Used for abilities that interact with
@@ -105,8 +101,7 @@
             <param name="corpseX">Output parameter that returns the X coordinate of the found corpse.</param>
             <returns>The nearest accessible corpse unit, or null if none found.</returns>
         </member>
-        <member
-            name="M:Map.CollectUnits(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.CollectUnits(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
             <summary>
                 Collects all units within range that match the specified criteria into a list. Used
                 for area effects that need to process multiple units, such as chain lightning or
@@ -138,8 +133,7 @@
                 layer mask for the physics check.
             </remarks>
         </member>
-        <member
-            name="M:Map.CrushUnitsAgainstWalls(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32,System.Int32)">
+        <member name="M:Map.CrushUnitsAgainstWalls(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32,System.Int32)">
             <summary>
                 Checks units within range of a crushing force and either damages them if they're
                 against a wall or pushes them away from the crusher position. Used for environmental
@@ -152,8 +146,7 @@
             <param name="xDirection">Horizontal direction of crushing force (1 for right, -1 for left, 0 for none)</param>
             <param name="yDirection">Vertical direction of crushing force (1 for up, -1 for down, 0 for none)</param>
         </member>
-        <member
-            name="M:Map.CrushUnitsAgainstWallsHorizontal(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.CrushUnitsAgainstWallsHorizontal(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Crushes units horizontally against walls within a specified size range. Uses
                 raycasting to detect if there's a solid wall in the crush direction before applying
@@ -165,8 +158,7 @@
             <param name="crusherSize">Half-height of the crushing area</param>
             <param name="direction">Horizontal crushing direction (1 for right, -1 for left)</param>
         </member>
-        <member
-            name="M:Map.CrushUnitsAgainstWallsVertical(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.CrushUnitsAgainstWallsVertical(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Crushes units vertically against walls within a specified size range. Checks if
                 units are positioned correctly relative to the crusher and uses raycasting to verify
@@ -178,8 +170,7 @@
             <param name="crusherSize">Half-width of the crushing area</param>
             <param name="direction">Vertical crushing direction (1 for up, -1 for down)</param>
         </member>
-        <member
-            name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Applies damage to both foreground and background blocks within a circular radius.
             </summary>
@@ -194,8 +185,7 @@
                 The damage falls off based on distance from the center point.
             </remarks>
         </member>
-        <member
-            name="M:Map.DecapitateUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.DecapitateUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Attempts to decapitate the first eligible unit found within the specified area.
                 Prioritizes headshot-capable units and applies decapitation effects, used for
@@ -230,8 +220,7 @@
                 are made per cycle to find a valid explosion location.
             </remarks>
         </member>
-        <member
-            name="M:Map.ExplodeUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.ExplodeUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Creates an explosion that damages and knocks back units within range. Units within
                 killRange take full damage, while units between killRange and range are only knocked
@@ -252,8 +241,7 @@
             <param name="knockFriendlies">Whether to knock back friendly units</param>
             <returns>Number of units killed by the explosion</returns>
         </member>
-        <member
-            name="M:Map.FivePointPalmExplodingHeartTechnique(NetworkedUnit,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.FivePointPalmExplodingHeartTechnique(NetworkedUnit,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Applies the legendary Five Point Palm Exploding Heart Technique to units and certain
                 destructible objects. This martial arts move plants a delayed explosion effect that
@@ -273,8 +261,7 @@
             <param name="knock">Whether to apply knockback force to hit units.</param>
             <returns>True if at least one unit or object was affected, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.FreezeUnits(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.FreezeUnits(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Freezes units within range of a position. Units that can be frozen will be frozen
                 for the specified duration. Units that cannot be frozen will take 8 freeze damage
@@ -288,8 +275,7 @@
             <param name="freezeTime">Duration of the freeze in seconds</param>
             <returns>True if at least one unit was frozen or damaged, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.GeLivingtUnit(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GeLivingtUnit(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Gets the first living, non-stealthed unit within the specified rectangular area. The
                 method name contains a typo (should be GetLivingUnit) but is preserved for
@@ -303,8 +289,7 @@
             <param name="y">The Y coordinate of the search center point.</param>
             <returns>The first eligible living unit found, or null if none found.</returns>
         </member>
-        <member
-            name="M:Map.GetFirstUnit(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.GetFirstUnit(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
             <summary>
                 Finds the first unit within range that matches the specified criteria. Used for
                 targeted abilities that need to select a single unit, such as grappling hooks or
@@ -320,8 +305,7 @@
             <param name="alreadyHitUnits">List of units to exclude from the search.</param>
             <returns>The first eligible unit found, or null if none found.</returns>
         </member>
-        <member
-            name="M:Map.GetNearbyMook(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean)">
+        <member name="M:Map.GetNearbyMook(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean)">
             <summary>
                 Finds the nearest enemy mook in a specified horizontal direction. Uses Manhattan
                 distance and filters by direction, health status, and unit type.
@@ -334,8 +318,7 @@
             <param name="canBeDead">Whether to include dead mooks in the search</param>
             <returns>The nearest mook matching criteria, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearbyMookVertical(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean)">
+        <member name="M:Map.GetNearbyMookVertical(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean)">
             <summary>
                 Finds the nearest enemy mook in a specified vertical direction. Uses Manhattan
                 distance and filters by direction, health status, and unit type.
@@ -348,8 +331,7 @@
             <param name="canBeDead">Whether to include dead mooks in the search</param>
             <returns>The nearest mook matching criteria, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.HeadShotUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean,System.Single,System.Single)">
+        <member name="M:Map.HeadShotUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean,System.Single,System.Single)">
             <summary>
                 Applies headshot damage to a unit with special headshot mechanics. Checks damage
                 policies before applying damage and handles knockback separately.
@@ -365,8 +347,7 @@
             <param name="xHit">The X position where the headshot hit</param>
             <param name="yHit">The Y position where the headshot hit</param>
         </member>
-        <member
-            name="M:Map.HitAllLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitAllLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Damages all living units regardless of team within a rectangular area. Used for
                 environmental hazards or attacks that damage everyone, including allies, except the
@@ -386,8 +367,7 @@
             <param name="knock">Whether to apply knockback force to hit units.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitAllLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.HitAllLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit})">
             <summary>
                 Damages all living units regardless of team, tracking which units have been hit.
                 Allows for damage effects that need to avoid hitting the same unit multiple times
@@ -408,8 +388,7 @@
             <param name="alreadyHit">List of units to skip and to add newly hit units to.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitClosestUnit(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitClosestUnit(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Finds and damages the closest unit within range, checking line of sight. Prioritizes
                 living units over dead ones but can optionally hit dead units if no living targets
@@ -432,8 +411,7 @@
             <param name="hitDead">Whether dead units can be targeted (default true)</param>
             <returns>The unit that was hit, or null if no valid target was found</returns>
         </member>
-        <member
-            name="M:Map.HitDeadUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitDeadUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Damages only dead units (corpses) within a square area. Used for attacks that can
                 destroy or further damage corpses, such as explosives that gib bodies or effects
@@ -451,8 +429,7 @@
             <param name="knock">Whether to apply knockback force to corpses.</param>
             <returns>True if at least one corpse was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitHellUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitHellUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Damages only hell-type enemy units within a square area. Used for attacks that
                 specifically target demonic enemies while ignoring regular units, with options to
@@ -474,8 +451,7 @@
             <param name="canHeadshot">Whether this damage can trigger headshots. Default is true.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitLivingHeroes(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitLivingHeroes(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Selectively damages either heroes or non-hero units based on the hitHeroes
                 parameter. Used for attacks that need to differentiate between player characters and
@@ -496,8 +472,7 @@
             <param name="hitHeroes">If true, only damages hero units; if false, only damages non-hero units.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Damages only living units within a square area. This overload uses equal horizontal
                 and vertical range for a square hit area, commonly used for explosions and
@@ -518,8 +493,7 @@
             <param name="onlyGroundUnits">If true, only hits units that are on the ground. Default is false.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitLivingUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Damages only living units within a rectangular area. Provides separate control over
                 horizontal and vertical hit ranges, useful for attacks with non-square areas of
@@ -541,8 +515,7 @@
             <param name="onlyGroundUnits">If true, only hits units that are on the ground. Default is false.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Damages units within a square range using basic hit detection. Convenience overload
                 that delegates to the canGib version with gibbing enabled by default.
@@ -561,8 +534,7 @@
             <param name="knock">Whether to apply knockback</param>
             <returns>True if any units were hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Damages units within a square range with gibbing control. Convenience overload that
                 delegates to the rectangular version with equal x/y ranges and headshots enabled by
@@ -583,8 +555,7 @@
             <param name="canGib">Whether units can be gibbed when killed</param>
             <returns>True if any units were hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Damages units within a rectangular area with separate x/y ranges and headshot
                 control. Convenience overload that delegates to the full implementation with default
@@ -607,8 +578,7 @@
             <param name="canHeadShot">Whether this damage can trigger headshots for increased damage (default: true)</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,BloodColor@,System.Collections.Generic.List{Unit},System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,BloodColor@,System.Collections.Generic.List{Unit},System.Boolean)">
             <summary>
                 Core implementation of HitUnits with full parameter control. This is the main
                 implementation that handles all unit damage logic, with options for blood color
@@ -635,8 +605,7 @@
             <param name="onlyDamageInRadius">If true, applies damage only to units within a circular radius instead of rectangular area.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
             <summary>
                 Damages units along a line segment between two points. Standalone implementation for
                 line-based damage detection, useful for beam weapons, laser attacks, or linear area
@@ -652,8 +621,7 @@
             <param name="width">The width of the line for hit detection (perpendicular distance from line)</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean,System.Boolean)">
             <summary>
                 Damages units within a square range with hit tracking and corpse filtering.
                 Convenience overload that delegates to the corpse damage version with equal damage
@@ -676,8 +644,7 @@
             <param name="canHeadshot">Whether this damage can trigger headshots.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean)">
             <summary>
                 Damages units with separate damage values for living and dead units. Convenience
                 overload that delegates to the rectangular version with equal x/y ranges. Useful for
@@ -700,8 +667,7 @@
             <param name="canHeadshot">Whether this damage can trigger headshots (default: false)</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{Unit},System.Boolean,System.Boolean)">
             <summary>
                 Core implementation for damage with separate corpse damage values and rectangular
                 areas. This is a standalone implementation (not a delegation) that handles all the
@@ -726,8 +692,7 @@
             <param name="canHeadshot">Whether this damage can trigger headshots.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{BroforceObject},System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Collections.Generic.List{BroforceObject},System.Boolean)">
             <summary>
                 Damages units with BroforceObject list tracking for mixed object types. Standalone
                 implementation that tracks hit objects as BroforceObject instead of Unit, allowing
@@ -751,8 +716,7 @@
             <param name="canHeadshot">Whether this damage can trigger headshots. Default is false.</param>
             <returns>True if at least one unit was hit, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Damages all units within a square range regardless of team. Convenience overload
                 that delegates to the rectangular version with equal x/y ranges. No avoidID
@@ -770,8 +734,7 @@
             <param name="knock">Whether to apply knockback to damaged units</param>
             <returns>True if at least one unit was hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Damages all units within a rectangular area regardless of team. Standalone
                 implementation without avoidID that hits all units in range. Includes special
@@ -790,8 +753,7 @@
             <param name="knock">Whether to apply knockback to damaged units</param>
             <returns>True if at least one unit was hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,BloodColor@)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,BloodColor@)">
             <summary>
                 Damages all units within a square range and tracks blood color. Convenience overload
                 that delegates to the rectangular version with equal x/y ranges. Used when visual
@@ -810,8 +772,7 @@
             <param name="bloodColor">Output parameter that returns the blood color of the last unit hit</param>
             <returns>True if at least one unit was hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,BloodColor@)">
+        <member name="M:Map.HitUnits(UnityEngine.MonoBehaviour,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,BloodColor@)">
             <summary>
                 Damages all units within a rectangular area and tracks blood color. Standalone
                 implementation without team filtering that includes blood color tracking for visual
@@ -831,8 +792,7 @@
             <param name="bloodColor">Output parameter that will contain the blood color of the last hit unit</param>
             <returns>True if at least one unit was hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitUnitsWithArrow(UnityEngine.MonoBehaviour,Arrow,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.HitUnitsWithArrow(UnityEngine.MonoBehaviour,Arrow,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Specialized hit detection for arrow projectiles that destroys the arrow on impact.
                 Handles headshot detection and applies appropriate damage based on hit location,
@@ -852,8 +812,7 @@
             <param name="knock">Whether to apply knockback force to hit units.</param>
             <returns>Always returns false after processing hits (arrow is destroyed on impact).</returns>
         </member>
-        <member
-            name="M:Map.InseminateUnits(AlienFaceHugger,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.InseminateUnits(AlienFaceHugger,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Attempts to implant alien parasites into eligible units within range. Used by
                 AlienFaceHugger enemies to infect heroes with chest-bursting aliens. Only affects
@@ -869,8 +828,7 @@
             <param name="yI">The vertical velocity of the face hugger (affects insemination angle).</param>
             <returns>True if a unit was successfully inseminated, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.KnockAndDamageUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean)">
+        <member name="M:Map.KnockAndDamageUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean)">
             <summary>
                 Applies knockback and damage to a unit. This is a convenience overload that calls
                 the more detailed version with default hit position parameters (-100, -100).
@@ -884,8 +842,7 @@
             <param name="direction">Direction of the attack (-1 for left, 1 for right, 0 for no specific direction)</param>
             <param name="knock">Whether to apply knockback to the unit</param>
         </member>
-        <member
-            name="M:Map.KnockAndDamageUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.KnockAndDamageUnit(UnityEngine.MonoBehaviour,Unit,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Boolean,System.Single,System.Single,System.Boolean)">
             <summary>
                 Applies knockback and damage to a unit with full control over hit position. Handles
                 damage policy validation to determine if damage should be applied based on the
@@ -904,8 +861,7 @@
             <param name="hitY">Y position where the hit occurred</param>
             <param name="sendPosAndVelocityAcrossNetwork">Whether to synchronize position and velocity (networking functionality excluded for modding)</param>
         </member>
-        <member
-            name="M:Map.KnockMooks(UnityEngine.MonoBehaviour,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.KnockMooks(UnityEngine.MonoBehaviour,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Applies knockback to enemy units (mooks) without dealing damage. Used for crowd
                 control effects that push enemies away without harming them, such as sonic booms or
@@ -924,8 +880,7 @@
             <param name="onlyGroundUnits">If true, only affects units on the ground. Default is true.</param>
             <returns>True if at least one unit was knocked back, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.KnockUnits(UnityEngine.MonoBehaviour,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Map.KnockUnits(UnityEngine.MonoBehaviour,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Applies knockback to all units (not just enemies) without dealing damage. More
                 general version of KnockMooks that affects any unit regardless of allegiance, used
@@ -1000,8 +955,7 @@
             </summary>
             <param name="target">The TargetableObject to remove from targeting consideration.</param>
         </member>
-        <member
-            name="M:Map.ReviveDeadUnits(System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Boolean,TestVanDammeAnim,System.Boolean)">
+        <member name="M:Map.ReviveDeadUnits(System.Single,System.Single,System.Single,System.Int32,System.Int32,System.Boolean,TestVanDammeAnim,System.Boolean)">
             <summary>
                 Attempts to revive dead units or remove acid from acid-covered units within a
                 circular range. Returns true if any units were successfully revived.
@@ -1048,8 +1002,7 @@
                 explosion sequence is handled by StartLevelEndExplosions() on each client.
             </remarks>
         </member>
-        <member
-            name="M:Map.StunUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.StunUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Stuns all enemy units within range of a position. Only affects units that are
                 enemies of the specified player number.
@@ -1060,8 +1013,7 @@
             <param name="range">Radius of the stun effect</param>
             <param name="stunTime">Duration of the stun in seconds</param>
         </member>
-        <member
-            name="M:Map.TearGasUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.TearGasUnits(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Applies tear gas effect to all enemy units within range. Tear gas causes units to be
                 temporarily incapacitated.
@@ -1072,8 +1024,7 @@
             <param name="range">Radius of the tear gas effect</param>
             <param name="tearGasTime">Duration of the tear gas effect in seconds (default 9)</param>
         </member>
-        <member
-            name="M:Map.WhipUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single@)">
+        <member name="M:Map.WhipUnits(UnityEngine.MonoBehaviour,UnityEngine.MonoBehaviour,System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Single@)">
             <summary>
                 Specialized damage method for whip-like attacks that deal variable damage based on
                 distance. Creates visual effects and applies damage that scales with the unit's
@@ -1132,8 +1083,7 @@
             </summary>
         </member>
         <!-- Position & Physics Methods -->
-        <member
-            name="M:Map.AddSlime(SlimeGroundCover,System.Int32,System.Int32,System.Int32,DirectionEnum)">
+        <member name="M:Map.AddSlime(SlimeGroundCover,System.Int32,System.Int32,System.Int32,DirectionEnum)">
             <summary>
                 Adds slime to a block surface in the specified direction if the block is solid, has
                 an open face, and isn't immune to slime. Creates new slime or adds to existing slime
@@ -1178,8 +1128,7 @@
                 full helicopter entity isn't needed.
             </remarks>
         </member>
-        <member
-            name="M:Map.CheckCheckPoint(System.Single,System.Single,System.Single,TestVanDammeAnim)">
+        <member name="M:Map.CheckCheckPoint(System.Single,System.Single,System.Single,TestVanDammeAnim)">
             <summary>
                 Checks and activates checkpoints near a moving character. Considers character
                 velocity for predictive checkpoint activation, triggers perks and time bonuses.
@@ -1212,8 +1161,7 @@
                 remove all persisted blocks immediately.
             </remarks>
         </member>
-        <member
-            name="M:Map.ConstrainToBlocks(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Boolean@,System.Boolean@,System.Boolean)">
+        <member name="M:Map.ConstrainToBlocks(UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Boolean@,System.Boolean@,System.Boolean)">
             <summary>
                 Constrains movement to prevent objects from passing through solid blocks,
                 calculating collision responses and bounce directions. Handles multi-frame movements
@@ -1235,8 +1183,7 @@
                 block boundaries.
             </remarks>
         </member>
-        <member
-            name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
+        <member name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
             <summary>
                 Creates a 2x2 arrangement of ammunition and revival crates at the specified
                 position. The arrangement includes two ammo crates (top), one revive crate
@@ -1292,8 +1239,7 @@
                 explosive devices in gameplay.
             </remarks>
         </member>
-        <member
-            name="M:Map.CrossProduct(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2)">
+        <member name="M:Map.CrossProduct(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2)">
             <summary>
                 Calculates the 2D cross product (scalar) of vectors formed by three points.
             </summary>
@@ -1311,8 +1257,7 @@
                 decompilation artifact.
             </remarks>
         </member>
-        <member
-            name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Damages background and foreground blocks within a circular radius. This method is
                 used for explosive damage that affects the destructible terrain behind the main play
@@ -1427,8 +1372,7 @@
                 typically when transitioning to a completely different area.
             </remarks>
         </member>
-        <member
-            name="M:Map.DotProduct(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2)">
+        <member name="M:Map.DotProduct(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2)">
             <summary>
                 Calculates the dot product of vectors formed by three points, used for angle
                 calculations.
@@ -1445,8 +1389,7 @@
                 calculations used elsewhere in the map system.
             </remarks>
         </member>
-        <member
-            name="M:Map.FindHoleToJumpThroughAndAppear(System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
+        <member name="M:Map.FindHoleToJumpThroughAndAppear(System.Single,System.Single,System.Single@,System.Single@,System.Int32@)">
             <summary>
                 Searches for a suitable floor opening where a character can jump through and appear
                 from below. Used for dramatic entrance animations and spawn mechanics.
@@ -1462,8 +1405,7 @@
                 have a solid floor block with at least 4 empty blocks below on one side.
             </remarks>
         </member>
-        <member
-            name="M:Map.FindLadderNearPosition(System.Single,System.Single,System.Single@,System.Single@)">
+        <member name="M:Map.FindLadderNearPosition(System.Single,System.Single,System.Single@,System.Single@)">
             <summary>
                 Searches for a ladder block near the specified position and returns the optimal
                 climbing position. Uses a default search range of 8 units, prioritizing ladders to
@@ -1480,8 +1422,7 @@
                 (remaining 1/4 to the left).
             </remarks>
         </member>
-        <member
-            name="M:Map.FindLadderNearPosition(System.Single,System.Single,System.Int32,System.Single@,System.Single@)">
+        <member name="M:Map.FindLadderNearPosition(System.Single,System.Single,System.Int32,System.Single@,System.Single@)">
             <summary>
                 Searches for a ladder block near the specified position within a custom range and
                 returns the optimal climbing position. Prioritizes ladders in front of the search
@@ -1499,8 +1440,7 @@
                 their movement direction.
             </remarks>
         </member>
-        <member
-            name="M:Map.FindLargeBlockDimensions(System.Int32,System.Int32,System.Int32@,System.Int32@,System.Int32@,System.Int32@,TerrainType,TerrainType[,])">
+        <member name="M:Map.FindLargeBlockDimensions(System.Int32,System.Int32,System.Int32@,System.Int32@,System.Int32@,System.Int32@,TerrainType,TerrainType[,])">
             <summary>
                 Analyzes a terrain region to find the dimensions of a contiguous area of the same
                 terrain type. Used for optimizing terrain mesh generation by combining adjacent
@@ -1696,8 +1636,7 @@
             <param name="y">Y position to search from</param>
             <returns>The nearest checkpoint, or null if none found within range</returns>
         </member>
-        <member
-            name="M:Map.GetNearestCheckPointToRight(System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestCheckPointToRight(System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest checkpoint that is to the right of the specified position. Used
                 for checkpoint discovery and progression tracking.
@@ -2077,8 +2016,7 @@
                 open).
             </remarks>
         </member>
-        <member
-            name="M:Map.IsNearActivatedCheckPoint(System.Single,System.Single,UnityEngine.Vector2@,System.Boolean@)">
+        <member name="M:Map.IsNearActivatedCheckPoint(System.Single,System.Single,UnityEngine.Vector2@,System.Boolean@)">
             <summary>
                 Checks if a position is near the current active checkpoint. Returns checkpoint
                 position and airdrop status for spawn determination.
@@ -2156,8 +2094,7 @@
             <param name="row">The row index to check.</param>
             <returns>True if the terrain at the position matches the source ground type; false if different or out of bounds.</returns>
         </member>
-        <member
-            name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
+        <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
             <summary>
                 Calculates the minimum distance from a point to a line or line segment in 2D space.
                 This method supports both infinite lines and finite line segments.
@@ -2173,8 +2110,7 @@
                 CrossProduct and DotProduct helper methods for calculations.
             </remarks>
         </member>
-        <member
-            name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
+        <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
             <summary>
                 Calculates the shortest distance from a point to a line or line segment in 2D space.
             </summary>
@@ -2190,8 +2126,7 @@
                 segment boundary checks.
             </remarks>
         </member>
-        <member
-            name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
+        <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
             <summary>
                 Calculates the minimum distance from a point to a line or line segment in 2D space.
                 This method supports both infinite lines and finite line segments.
@@ -2254,8 +2189,7 @@
                 should be skipped.
             </remarks>
         </member>
-        <member
-            name="M:Map.PlaceGround(GroundType,System.Int32,System.Int32,Block[,]@,System.Boolean)">
+        <member name="M:Map.PlaceGround(GroundType,System.Int32,System.Int32,Block[,]@,System.Boolean)">
             <summary>
                 Places a ground block of the specified type at the given grid position. Handles
                 block instantiation, theme application, and map state updates.
@@ -2769,8 +2703,7 @@
                 full helicopter entity isn't needed.
             </remarks>
         </member>
-        <member
-            name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Damages background and foreground blocks within a circular radius. This method is
                 used for explosive damage that affects the destructible terrain behind the main play
@@ -2788,8 +2721,7 @@
                 DestroyBackground.
             </remarks>
         </member>
-        <member
-            name="M:Map.DamageDoodads(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean@,UnityEngine.MonoBehaviour)">
+        <member name="M:Map.DamageDoodads(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean@,UnityEngine.MonoBehaviour)">
             <summary>
                 Damages destroyable doodads within a circular range, applying damage based on player
                 permissions and doodad properties. Checks if doodads can be damaged by mooks (if
@@ -2808,8 +2740,7 @@
             <param name="sender">The MonoBehaviour that caused the damage (optional).</param>
             <returns>True if at least one doodad was damaged, false otherwise.</returns>
         </member>
-        <member
-            name="M:Map.DamageStaticDoodads(System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+        <member name="M:Map.DamageStaticDoodads(System.Single,System.Single,System.Single,System.Single,System.Single,UnityEngine.MonoBehaviour)">
             <summary>
                 Damages static doodads within a circular range by causing them to collapse. Iterates
                 through the static doodads list in reverse order and collapses any doodads within
@@ -2832,8 +2763,7 @@
             <param name="y">The Y coordinate to check from</param>
             <param name="playerNum">The player number disturbing the eggs (unused in current implementation)</param>
         </member>
-        <member
-            name="M:Map.DisturbWildLife(System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.DisturbWildLife(System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Disturbs wildlife and alerts units within hearing range of a sound. Wildlife uses
                 hearing range multipliers, units check their hearing capabilities and player
@@ -2844,8 +2774,7 @@
             <param name="range">The base range of the disturbance</param>
             <param name="playerNum">The player number causing the disturbance (-1 skips unit alerts)</param>
         </member>
-        <member
-            name="M:Map.GeTargetableObjectsInRange(System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GeTargetableObjectsInRange(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Gets all enemy targetable objects within a circular range. Uses Manhattan distance
                 (sum of X and Y distances) for range calculation.
@@ -2902,8 +2831,7 @@
             <param name="range">The maximum distance to search for acid pools.</param>
             <returns>The nearest DoodadAcidPool within range that doesn't fully submerge units, or null if none found.</returns>
         </member>
-        <member
-            name="M:Map.GetNextClosestTargetableObject(System.Int32,DirectionEnum,System.Single,System.Single,System.Single,System.Single,System.Collections.Generic.List{TargetableObject})">
+        <member name="M:Map.GetNextClosestTargetableObject(System.Int32,DirectionEnum,System.Single,System.Single,System.Single,System.Single,System.Collections.Generic.List{TargetableObject})">
             <summary>
                 Finds the next closest targetable object (destructible environment pieces) in a
                 specified direction. Used for target cycling systems.
@@ -2917,8 +2845,7 @@
             <param name="alreadyFoundTargets">List of targets to exclude from the search</param>
             <returns>The next closest targetable object in the specified direction, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNextClosestTargetableObjectOnScreen(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNextClosestTargetableObjectOnScreen(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the closest targetable object that is currently visible on screen. Can
                 optionally filter for boss-specific targets only.
@@ -2976,8 +2903,7 @@
             <param name="range">The range to check for substance doodads</param>
             <returns>The first substance doodad found at the position, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.JiggleDoodads(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.JiggleDoodads(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Applies jiggle physics to doodads within range of a position. Forces are calculated
                 based on distance from center and applied to grass/blood doodads, also triggers
@@ -3000,8 +2926,7 @@
             <param name="xRange">The horizontal range (unused in current implementation)</param>
             <param name="yRange">The vertical range (unused in current implementation)</param>
         </member>
-        <member
-            name="M:Map.PassThroughScenery(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.PassThroughScenery(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Checks if a position passes through damageable scenery and knocks it. Used to
                 interact with destructible environmental objects like crates or barrels.
@@ -3254,8 +3179,7 @@
             <param name="direction">Direction to check for oil particles</param>
             <param name="origin">Starting position for the raycast</param>
         </member>
-        <member
-            name="M:Map.ShakeTrees(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.ShakeTrees(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Shakes tree foliage within a specified range from a position. Applies force to trees
                 based on their distance from the center position, also triggers doodad jiggling.
@@ -3442,8 +3366,7 @@
                 not required. The helicopter is reused across multiple calls.
             </remarks>
         </member>
-        <member
-            name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
+        <member name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
             <summary>
                 Creates a 2x2 arrangement of ammunition and revival crates at the specified
                 position. The arrangement includes two ammo crates (top), one revive crate
@@ -3459,8 +3382,7 @@
                 establishes connections to adjacent blocks and runs FirstFrame initialization.
             </remarks>
         </member>
-        <member
-            name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
+        <member name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
             <summary>
                 Creates a 2x2 arrangement of power-up crates at the specified position.
             </summary>
@@ -3474,8 +3396,7 @@
                 system. The jungle theme is temporarily set to ensure consistent crate types.
             </remarks>
         </member>
-        <member
-            name="M:Map.GetNearestEnemyUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestEnemyUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest enemy unit that can be damaged by the specified player. This is a
                 convenience overload that calls the full GetNearestEnemyUnit with equal X and Y
@@ -3488,8 +3409,7 @@
             <param name="includeDead">Whether to include dead units in the search</param>
             <returns>The nearest enemy unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestEnemyUnit(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Boolean,System.Int32,Unit)">
+        <member name="M:Map.GetNearestEnemyUnit(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Boolean,System.Int32,Unit)">
             <summary>
                 Finds the nearest enemy unit within specified X and Y ranges that can be damaged by
                 the player. Supports directional filtering and unit exclusion.
@@ -3514,8 +3434,7 @@
             <param name="y">Y position to search from</param>
             <returns>The nearest evil unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestHero(Unit,System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestHero(Unit,System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest hero (player character) within specified ranges, with optional
                 direction filtering. Searches through the BroBase.bros list rather than general
@@ -3530,8 +3449,7 @@
             <param name="includeDead">Whether to include dead heroes in the search</param>
             <returns>The nearest hero matching the criteria, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest unit belonging to a specific player within range using Manhattan
                 distance. Similar to GetNearestUnitWithXBias but uses a local variable for tracking
@@ -3544,8 +3462,7 @@
             <param name="includeDead">Whether to include dead units in the search</param>
             <returns>The nearest unit matching the criteria, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestUnitWithXBias(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestUnitWithXBias(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest unit belonging to a specific player within range, using Manhattan
                 distance (sum of X and Y distances) for calculations. Biases search horizontally.
@@ -3557,8 +3474,7 @@
             <param name="includeDead">Whether to include dead units in the search</param>
             <returns>The nearest unit matching the criteria, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestVisibleDeadUnit(System.Int32,System.Int32,System.Single,System.Single)">
+        <member name="M:Map.GetNearestVisibleDeadUnit(System.Int32,System.Int32,System.Single,System.Single)">
             <summary>
                 Finds the nearest dead unit belonging to a specific player that has line of sight
                 from the search position. Uses raycasting to ensure no solid terrain blocks the
@@ -3570,8 +3486,7 @@
             <param name="y">Y position to search from</param>
             <returns>The nearest visible dead unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestVisibleUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestVisibleUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest unit belonging to a specific player that has line of sight from
                 the search position. Uses raycasting to ensure visibility.
@@ -3583,8 +3498,7 @@
             <param name="includeDead">Whether to include dead units in the search</param>
             <returns>The nearest visible unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearestVisibleUnitDamagebleBy(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetNearestVisibleUnitDamagebleBy(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest enemy unit that has line of sight from the search position and can
                 be damaged by the specified player. Combines visibility checking with damage
@@ -3597,8 +3511,7 @@
             <param name="includeDead">Whether to include dead units in the search</param>
             <returns>The nearest visible enemy unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNextClosestUnit(System.Int32,DirectionEnum,System.Single,System.Single,System.Single,System.Single,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.GetNextClosestUnit(System.Int32,DirectionEnum,System.Single,System.Single,System.Single,System.Single,System.Collections.Generic.List{Unit})">
             <summary>
                 Finds the next closest enemy unit in a specified direction, excluding units already
                 found. Used for cycling through targets.
@@ -3612,8 +3525,7 @@
             <param name="alreadyFoundUnits">List of units to exclude from the search</param>
             <returns>The next closest unit in the specified direction, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNextClosestUnitOnScreen(System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GetNextClosestUnitOnScreen(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Finds the closest enemy unit that is currently visible on screen. Used for
                 auto-targeting systems that should only target visible enemies.
@@ -3625,8 +3537,7 @@
             <param name="y">The Y position to search from</param>
             <returns>The closest on-screen enemy unit, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetUnitCountInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetUnitCountInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Counts the number of units within a rectangular range without creating a list. More
                 efficient than GetUnitsInRange when only the count is needed.
@@ -3638,8 +3549,7 @@
             <param name="includeDead">Whether to include dead units in the count</param>
             <returns>Number of units within the specified range</returns>
         </member>
-        <member
-            name="M:Map.GetUnitsInRange(System.Int32,System.Single,System.Single,System.Boolean,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.GetUnitsInRange(System.Int32,System.Single,System.Single,System.Boolean,System.Collections.Generic.List{Unit})">
             <summary>
                 Populates a list with all units within a circular range of a position. Uses squared
                 distance for efficiency and adds a 6 unit vertical offset to unit positions for
@@ -3651,8 +3561,7 @@
             <param name="includeDead">Whether to include dead units</param>
             <param name="unitsInRange">List to populate with found units (not cleared before adding)</param>
         </member>
-        <member
-            name="M:Map.GetUnitsInRange(System.Int32,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetUnitsInRange(System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Returns a new list containing all units within a circular range of a position.
                 Creates and returns a new list rather than populating an existing one.
@@ -3663,8 +3572,7 @@
             <param name="includeDead">Whether to include dead units</param>
             <returns>New list containing all units within range</returns>
         </member>
-        <member
-            name="M:Map.GetUnitsInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Collections.Generic.List{Unit})">
+        <member name="M:Map.GetUnitsInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Collections.Generic.List{Unit})">
             <summary>
                 Populates a list with all units within a rectangular range of a position. Uses
                 separate X and Y ranges for rectangular area searches.
@@ -3676,8 +3584,7 @@
             <param name="includeDead">Whether to include dead units</param>
             <param name="unitsInRange">List to populate with found units (not cleared before adding)</param>
         </member>
-        <member
-            name="M:Map.GetUnitsInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.GetUnitsInRange(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Returns a new list containing all units within a rectangular range of a position.
                 Creates and returns a new list rather than populating an existing one.
@@ -3721,8 +3628,7 @@
                 rescue missions or collateral damage prevention.
             </remarks>
         </member>
-        <member
-            name="M:Map.IsEnemyUnitNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.IsEnemyUnitNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Checks if any enemy unit exists within a directional range with optional line of
                 sight checking. Used for AI threat detection.
@@ -3737,8 +3643,7 @@
             <param name="testForVisible">If true, performs line of sight check to each potential target</param>
             <returns>True if at least one enemy unit is found that meets all criteria, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.IsEnemyUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.IsEnemyUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Checks if any enemy unit exists within the specified range in any direction.
                 Simplified version without directional constraints.
@@ -3778,8 +3683,7 @@
             <param name="y">Y position to measure from</param>
             <returns>True if the unit is within range, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.IsUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.IsUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Checks if any allied unit (same player number) exists within the specified range.
                 Used for proximity detection of friendly units.
@@ -3792,8 +3696,7 @@
             <param name="includeDeadUnits">Whether to include dead units in the search</param>
             <returns>True if at least one allied unit is found within range, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.IsUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,Unit@)">
+        <member name="M:Map.IsUnitNearby(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,Unit@)">
             <summary>
                 Checks for allied units within range and returns the nearest one found. Extended
                 version that provides access to the found unit.
@@ -3915,8 +3818,7 @@
                 where prisoner rescue is replaced with resource collection.
             </remarks>
         </member>
-        <member
-            name="M:Map.SpawnFaceBaneling(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.SpawnFaceBaneling(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Spawns an alien baneling (face hugger variant) at the specified position with
                 initial velocity. These aliens climb on walls and ceilings to ambush players.
@@ -3927,8 +3829,7 @@
             <param name="yI">The initial y velocity</param>
             <returns>The spawned AlienClimber instance</returns>
         </member>
-        <member
-            name="M:Map.SpawnFaceHugger(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.SpawnFaceHugger(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Spawns an alien face hugger at the specified position with initial velocity. These
                 aliens jump at players and attach to their faces.
@@ -3994,8 +3895,7 @@
             </summary>
         </member>
         <!-- AI & Player Management Methods -->
-        <member
-            name="M:Map.ActivateNearbyAlienTelepathyTriggers(System.Int32,System.Int32,System.Int32)">
+        <member name="M:Map.ActivateNearbyAlienTelepathyTriggers(System.Int32,System.Int32,System.Int32)">
             <summary>
                 Activates alien telepathy triggers within sensing range of the specified grid
                 position.
@@ -4021,8 +3921,7 @@
             </summary>
             <param name="Bro">The bro character to add to the transport</param>
         </member>
-        <member
-            name="M:Map.AlertNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32,GridPoint)">
+        <member name="M:Map.AlertNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32,GridPoint)">
             <summary>
                 Fully alerts all enemy units within a rectangular range, making them aware of a
                 player at the specified position. The GridPoint parameter appears to be unused in
@@ -4035,8 +3934,7 @@
             <param name="playerNum">Player number that triggered the alert</param>
             <param name="startPoint">Grid point where the alert originated (unused in implementation)</param>
         </member>
-        <member
-            name="M:Map.AlertNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.AlertNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Fully alerts all living enemy units within a rectangular range, making them aware of
                 a player at the specified position. Only affects units with negative player numbers
@@ -4069,8 +3967,7 @@
             <param name="xRange">Half-width of the rectangular attraction area</param>
             <param name="yRange">Half-height of the rectangular attraction area</param>
         </member>
-        <member
-            name="M:Map.BotherNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.BotherNearbyMooks(System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Makes a sound that bothers nearby enemy units, causing them to investigate. Only
                 affects living enemy units that have the ability to hear (CanHear property is true).
@@ -4106,8 +4003,7 @@
             <param name="ArriveByHelicopter">Whether to use helicopter transport</param>
             <param name="ArriveByPortal">Whether to use portal transport</param>
         </member>
-        <member
-            name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
+        <member name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
             <summary>
                 Searches for visible enemy units within a directional sight range with no vertical
                 direction preference. Wrapper that calls the full overload with yDirection set to 0.
@@ -4123,8 +4019,7 @@
             <param name="enemyY">Output parameter for the seen enemy's Y position</param>
             <returns>True if an enemy unit was found, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
+        <member name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
             <summary>
                 Searches for visible enemy units within a directional sight range with optional
                 vertical direction filtering. Full implementation that checks line of sight and
@@ -4142,8 +4037,7 @@
             <param name="enemyY">Output parameter for the seen enemy's Y position</param>
             <returns>True if an enemy unit was found that meets all criteria, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Map.CanSeeNPCEnemyUnit(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
                 Checks if any enemy unit is visible within a directional sight range without
                 returning position information. Simplified version for basic visibility checks.
@@ -4156,8 +4050,7 @@
             <param name="playerNum">The player number of the searching unit</param>
             <returns>True if any enemy unit is visible within range, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.CanSeeNPCEnemyUnitWithPosition(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
+        <member name="M:Map.CanSeeNPCEnemyUnitWithPosition(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32@,System.Single@,System.Single@)">
             <summary>
                 Searches for visible enemy units within a directional sight range and returns the
                 first found enemy's position. Used by AI to detect player units in their field of
@@ -4185,8 +4078,7 @@
             <param name="seenRow">The target row position to check visibility to</param>
             <returns>True if there is a clear line of sight between the positions (no ground or fragile terrain blocking), false otherwise</returns>
         </member>
-        <member
-            name="M:Map.CanSeePosition(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.CanSeePosition(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Checks if there is a clear line of sight between two world positions using raycast
                 collision detection. Tests direct visibility between exact coordinates.
@@ -4197,8 +4089,7 @@
             <param name="seenPositionY">The target Y position to check visibility to</param>
             <returns>True if there is a clear line of sight between the positions (no ground or fragile terrain blocking), false otherwise</returns>
         </member>
-        <member
-            name="M:Map.CheckHighFive(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.CheckHighFive(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Checks if a player can perform a high five with another player within range. Players
                 must be facing each other (opposite directions) and both must be player-controlled
@@ -4229,8 +4120,7 @@
             <param name="confuseMooks">If true, makes AI units lose sight of the player; if false and amuseMooks is false, makes them forget the player entirely.</param>
             <param name="amuseMooks">If true, makes AI units laugh at the dead player.</param>
         </member>
-        <member
-            name="M:Map.ForgetPlayer(System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.ForgetPlayer(System.Int32,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Makes AI units within a circular range forget about a specific player.
             </summary>
@@ -4241,8 +4131,7 @@
             <param name="confuseMooks">If true, makes AI units lose sight of the player; if false and amuseMooks is false, makes them forget the player entirely.</param>
             <param name="amuseMooks">If true, makes AI units laugh at the dead player.</param>
         </member>
-        <member
-            name="M:Map.ForgetPlayer(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.ForgetPlayer(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Makes AI units within a rectangular range forget about a specific player.
             </summary>
@@ -4254,8 +4143,7 @@
             <param name="confuseMooks">If true, makes AI units lose sight of the player; if false and amuseMooks is false, makes them forget the player entirely.</param>
             <param name="amuseMooks">If true, makes AI units laugh at the dead player.</param>
         </member>
-        <member
-            name="M:Map.GetNearbyUnalertedMook(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GetNearbyUnalertedMook(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Finds and returns a nearby enemy unit (Mook) that has never been alerted. Used for
                 stealth gameplay mechanics to identify unaware enemies.
@@ -4294,8 +4182,7 @@
             </summary>
             <returns>True if any transport has released heroes, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.MakeMooksDance(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.MakeMooksDance(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Makes all enemy units (mooks) within a rectangular range dance for a specified
                 duration. Dancing units are temporarily incapacitated.
@@ -4316,8 +4203,7 @@
             <param name="range">Radius of the panic effect</param>
             <param name="forgetPlayer">Whether panicked units should forget about players they were tracking</param>
         </member>
-        <member
-            name="M:Map.PanicUnits(System.Int32,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.PanicUnits(System.Int32,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Causes enemy units within range to panic and flee from a specific player. Only
                 affects units that can be damaged by the specified player number. Units panic for 2
@@ -4329,8 +4215,7 @@
             <param name="range">Radius of the panic effect</param>
             <param name="forgetPlayer">Whether panicked units should forget about players they were tracking</param>
         </member>
-        <member
-            name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Causes enemy units within range to panic for a specified duration. This overload
                 converts circular range to rectangular range internally.
@@ -4342,8 +4227,7 @@
             <param name="forgetPlayer">Whether panicked units should forget about players they were tracking</param>
             <param name="runRandomDirection">Whether units should run in random directions or away from the source</param>
         </member>
-        <member
-            name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Causes enemy units within a rectangular range to panic for a specified duration.
                 Units can either flee away from the source or run in random directions.
@@ -4356,8 +4240,7 @@
             <param name="forgetPlayer">Whether panicked units should forget about players they were tracking</param>
             <param name="runRandomDirection">If true, units run in random directions; if false, they run away from the source</param>
         </member>
-        <member
-            name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Boolean)">
+        <member name="M:Map.PanicUnits(System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single,System.Boolean)">
             <summary>
                 Causes enemy units within a rectangular range to panic in a specific direction for a
                 specified duration. If direction is 0, units will flee away from the source.
@@ -4378,8 +4261,7 @@
             </summary>
             <param name="trig">The Trigger object that will listen for enemy death events.</param>
         </member>
-        <member
-            name="M:Map.RegisterFetchObject(System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform)">
+        <member name="M:Map.RegisterFetchObject(System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform)">
             <summary>
                 Registers an object for nearby enemy units to fetch. Only affects living enemy units
                 that can hear. Unlike other range checks, this method uses exact range comparison
@@ -4431,8 +4313,7 @@
             </summary>
             <param name="pointObject">The ScoutMookInterestPoint to remove from tracking.</param>
         </member>
-        <member
-            name="M:Map.StunMooks(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.StunMooks(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Stuns all enemy units (mooks) within a rectangular range for a specified duration.
                 Only affects units with negative player numbers.
@@ -4454,8 +4335,7 @@
             </summary>
         </member>
         <!-- Projectile & Explosive Management Methods -->
-        <member
-            name="M:Map.DamageProjectile(Projectile,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Map.DamageProjectile(Projectile,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Applies damage to a projectile, potentially destroying or redirecting it. Used when
                 projectiles collide with attacks or explosions.
@@ -4468,8 +4348,7 @@
             <param name="delay">Delay before applying the damage</param>
             <param name="newPlayerNum">The new owner player number (for redirected projectiles)</param>
         </member>
-        <member
-            name="M:Map.DeflectProjectiles(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Map.DeflectProjectiles(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Deflects enemy projectiles within range back at enemies. Changes projectile
                 ownership, reverses direction, adds scatter, and can trigger achievements.
@@ -4483,8 +4362,7 @@
             <param name="giveDeflectAchievementOnMookKill">Whether to award achievement for mook kills with deflected projectiles</param>
             <returns>True if any projectiles were deflected, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.GetGrenadesInRange(System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GetGrenadesInRange(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Gets all active grenades within Manhattan distance that can be damaged by the
                 player. Checks game mode rules for friendly fire and filters by active state.
@@ -4505,8 +4383,7 @@
             <param name="y">The Y coordinate to search from</param>
             <returns>The nearest grenade within range, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetNearbySachelPack(System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GetNearbySachelPack(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Finds the nearest active satchel pack within range using Manhattan distance. Used
                 for remote detonation and chain explosion mechanics.
@@ -4517,8 +4394,7 @@
             <param name="y">The Y coordinate to search from</param>
             <returns>The nearest satchel pack within range, or null if none found</returns>
         </member>
-        <member
-            name="M:Map.GetProjectilesInRange(System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:Map.GetProjectilesInRange(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
                 Gets all projectiles within Manhattan distance that can damage the specified player.
                 Respects game mode damage rules for team damage and friendly fire.
@@ -4529,8 +4405,7 @@
             <param name="y">The Y coordinate to search from</param>
             <returns>List of projectiles within range that can damage the player</returns>
         </member>
-        <member
-            name="M:Map.HitGrenades(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@)">
+        <member name="M:Map.HitGrenades(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@)">
             <summary>
                 Checks for grenade hits within range and knocks the first one found. Special
                 handling for coconuts with RPC synchronization for knockback.
@@ -4545,8 +4420,7 @@
             <param name="grenadeY">Output parameter for the hit grenade's Y position</param>
             <returns>True if a grenade was hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitProjectiles(System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.HitProjectiles(System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Damages damageable projectiles within a square range. Simple overload that uses same
                 range for both X and Y axes.
@@ -4562,8 +4436,7 @@
             <param name="delay">The damage delay</param>
             <returns>True if any projectiles were hit, false otherwise</returns>
         </member>
-        <member
-            name="M:Map.HitProjectiles(System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Map.HitProjectiles(System.Int32,System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Damages damageable projectiles within a rectangular range. Checks projectile size
                 for precise collision and respects damage rules.

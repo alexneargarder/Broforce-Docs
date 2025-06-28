@@ -154,8 +154,7 @@
             </summary>
             <param name="target">The transform to set as the temporary target.</param>
         </member>
-        <member
-            name="M:Player.GetInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+        <member name="M:Player.GetInput(System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
             <summary>
                 Retrieves input state for all control actions from the appropriate source. If using
                 bot brain, gets AI-generated input. If chat or pause menu is active (based on
@@ -421,8 +420,7 @@
             <param name="eventType">The type of perk event to trigger.</param>
             <param name="bro">The hero character associated with this event.</param>
         </member>
-        <member
-            name="M:Player.TriggerPerkEvent(PerkTriggerController.PerkEvent,TestVanDammeAnim,Mook)">
+        <member name="M:Player.TriggerPerkEvent(PerkTriggerController.PerkEvent,TestVanDammeAnim,Mook)">
             <summary>
                 Triggers a perk event for this player with hero and mook context. Passes the event
                 type, player's inventory items, hero, and mook references to the perk trigger
@@ -432,8 +430,7 @@
             <param name="bro">The hero character associated with this event.</param>
             <param name="mook">The mook (enemy) involved in this event.</param>
         </member>
-        <member
-            name="M:Player.TriggerPerkEvent(PerkTriggerController.PerkEvent,TestVanDammeAnim,CheckPoint)">
+        <member name="M:Player.TriggerPerkEvent(PerkTriggerController.PerkEvent,TestVanDammeAnim,CheckPoint)">
             <summary>
                 Triggers a perk event for this player with hero and checkpoint context. Passes the
                 event type, player's inventory items, hero, and checkpoint references to the perk
@@ -809,8 +806,7 @@
             </summary>
             <param name="time">The duration in seconds for which the character should be invulnerable.</param>
         </member>
-        <member
-            name="M:Player.SetSpawnPositon(TestVanDammeAnim,Player.SpawnType,System.Boolean,UnityEngine.Vector3)">
+        <member name="M:Player.SetSpawnPositon(TestVanDammeAnim,Player.SpawnType,System.Boolean,UnityEngine.Vector3)">
             <summary>
                 RPC method that sets the spawn position and state for a hero character. Applies the
                 calculated position, enables parachute if spawning via air drop, plays spawn sounds

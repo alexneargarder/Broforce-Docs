@@ -350,8 +350,7 @@
             <param name="aboveBlock">Reference to the block above this one, can be null</param>
             <param name="belowBlock">Reference to the block below this one, can be null</param>
         </member>
-        <member
-            name="M:Block.UseLargePieces(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+        <member name="M:Block.UseLargePieces(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)">
             <summary>
                 Configures the block to use large tile pieces for visual variety. Sets parameters
                 for window and mural pieces that span multiple blocks.
@@ -1228,8 +1227,7 @@
                 1 second (minimum 0.5 seconds).
             </summary>
         </member>
-        <member
-            name="M:Block.MakeAlienBlockCollapseEffects(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Block.MakeAlienBlockCollapseEffects(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Creates visual effects when an alien block collapses, including green blood gushes,
                 slime particles, and optional alien particles. Spawns two blood gush effects in

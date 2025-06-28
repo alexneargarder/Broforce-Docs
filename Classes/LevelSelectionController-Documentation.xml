@@ -125,8 +125,7 @@
                 Displays different text for challenge levels, arcade levels, and campaign levels.
             </summary>
         </member>
-        <member
-            name="M:LevelSelectionController.UGC_UGCQueryCompleted(Steamworks.SteamUGCQueryCompleted_t,System.Boolean)">
+        <member name="M:LevelSelectionController.UGC_UGCQueryCompleted(Steamworks.SteamUGCQueryCompleted_t,System.Boolean)">
             <summary>
                 Callback handler for Steam Workshop queries. Processes the returned deathmatch
                 levels, creates WorkshopLevelDetails objects, and selects levels for the current and

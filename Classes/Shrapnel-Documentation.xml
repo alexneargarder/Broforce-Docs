@@ -103,8 +103,7 @@
             <param name="bounceX">Whether horizontal bounce occurred</param>
             <param name="bounceY">Whether vertical bounce occurred</param>
         </member>
-        <member
-            name="M:Shrapnel.CheckWallCollisions(System.Boolean@,System.Boolean@,System.Single@,System.Single@)">
+        <member name="M:Shrapnel.CheckWallCollisions(System.Boolean@,System.Boolean@,System.Single@,System.Single@)">
             <summary>
                 Checks for collisions with terrain blocks and handles bouncing or constraint logic.
                 Also manages parenting to moving platforms when moveWithRestingTransform is enabled.
@@ -128,8 +127,7 @@
             <param name="xI">Initial horizontal velocity</param>
             <param name="yI">Initial vertical velocity</param>
         </member>
-        <member
-            name="M:Shrapnel.Launch(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Shrapnel.Launch(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Launches the shrapnel with explicit rotation speed control. Similar to the
                 4-parameter version but allows direct specification of rotation speed rather than

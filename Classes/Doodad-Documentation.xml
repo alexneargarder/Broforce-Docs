@@ -381,8 +381,7 @@
             <param name="_xI">Horizontal force intensity to apply</param>
             <param name="_yI">Vertical force intensity to apply</param>
         </member>
-        <member
-            name="M:Doodad.ApplyForce(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Doodad.ApplyForce(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Applies force effects with interpolation between the force origin and doodad
                 position. Used by grass doodads to create realistic force propagation effects.

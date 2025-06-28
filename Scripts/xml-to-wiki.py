@@ -12,6 +12,7 @@ import html
 import sys
 sys.path.append(str(Path(__file__).parent))
 from csharp_parser import parse_csharp_file
+from xml_utils import XMLPatterns, SectionManager, MemberParser, XMLFormatter, XMLFileReader
 
 # Global cache for source signatures
 SOURCE_SIGNATURES_CACHE = {}

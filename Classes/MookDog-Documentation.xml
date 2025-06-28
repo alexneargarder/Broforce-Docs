@@ -29,8 +29,7 @@
             <param name="xI">Horizontal force for gib physics</param>
             <param name="yI">Vertical force for gib physics</param>
         </member>
-        <member
-            name="M:MookDog.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+        <member name="M:MookDog.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
             <summary>
                 Processes damage taken by the MookDog, setting a 0.3 second attack disable timer
                 when hit by melee, knife, knock, or blade damage types. This prevents the dog from

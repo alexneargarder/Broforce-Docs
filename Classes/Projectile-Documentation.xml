@@ -96,8 +96,7 @@
             </summary>
             <param name="raycastHit">Information about the surface that was hit</param>
         </member>
-        <member
-            name="M:Projectile.Damage(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Projectile.Damage(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Applies damage to this projectile if it's damageable. Reduces projectile damage by
                 the incoming damage amount and destroys the projectile if damage reaches zero. Only
@@ -169,8 +168,7 @@
                 damage to animals.
             </summary>
         </member>
-        <member
-            name="M:Projectile.MakeSparkShower(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Projectile.MakeSparkShower(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Creates an intense shower of spark particles at the specified position. Generates 12
                 sparks with randomized velocities based on the provided shower direction. Each spark
@@ -181,8 +179,7 @@
             <param name="showerXI">Base X velocity for spark shower direction</param>
             <param name="showerYI">Base Y velocity for spark shower direction</param>
         </member>
-        <member
-            name="M:Projectile.ProjectileApplyDamageToBlock(UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single)">
+        <member name="M:Projectile.ProjectileApplyDamageToBlock(UnityEngine.GameObject,System.Int32,DamageType,System.Single,System.Single)">
             <summary>
                 Applies damage to terrain blocks with special handling for depleted uranium perks.
                 Creates a 24-radius explosion for player projectiles with depleted uranium,
@@ -292,8 +289,7 @@
             </summary>
             <param name="m">Multiplier to apply to the projectile's life (e.g., 2.0 doubles remaining life)</param>
         </member>
-        <member
-            name="M:Projectile.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
+        <member name="M:Projectile.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
             <summary>
                 Creates visual effects when the projectile impacts. Generates sparks with
                 physics-based trajectories, optional puff effects, and plays impact sounds. Supports
@@ -522,8 +518,7 @@
             </summary>
         </member>
         <!-- Projectile Initialization & Configuration Methods -->
-        <member
-            name="M:Projectile.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
+        <member name="M:Projectile.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
             <summary>
                 Primary initialization method that launches the projectile. Sets position, velocity,
                 player ownership, and performs comprehensive spawn validation including collision

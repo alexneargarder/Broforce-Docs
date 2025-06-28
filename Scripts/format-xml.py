@@ -3,6 +3,8 @@
 XML formatter for Broforce documentation that preserves the exact formatting style.
 Can be used both as a standalone script and imported by other Python scripts.
 
+This is the refactored version using xml_utils.
+
 Usage as script:
     python3 format-xml.py [file_or_directory]
     
@@ -15,9 +17,11 @@ import re
 import argparse
 import sys
 import os
-import shutil
 from pathlib import Path
 from typing import List, Optional
+
+# Import from xml_utils
+from xml_utils import XMLPatterns, XMLFormatter
 
 class BroforceXMLFormatter:
     """Formatter that matches the exact Broforce documentation XML style."""
@@ -25,6 +29,7 @@ class BroforceXMLFormatter:
     def __init__(self):
         self.indent = '    '  # 4 spaces per level
         self.target_line_length = 100  # Target total line length including indentation
+        self.formatter = XMLFormatter()  # Use XMLFormatter for utilities
         
     def format_content(self, content: str) -> str:
         """
@@ -39,8 +44,8 @@ class BroforceXMLFormatter:
         # XML declaration
         lines.append('<?xml version="1.0" encoding="utf-8"?>')
         
-        # Extract main structure
-        doc_match = re.search(r'<doc\s*>(.*?)</doc>', content, re.DOTALL)
+        # Extract main structure using patterns from xml_utils
+        doc_match = XMLPatterns.DOC.search(content)
         if not doc_match:
             raise ValueError("Invalid XML: No <doc> element found")
         
@@ -48,14 +53,14 @@ class BroforceXMLFormatter:
         doc_content = doc_match.group(1)
         
         # Process assembly
-        assembly_match = re.search(r'<assembly\s*>(.*?)</assembly>', doc_content, re.DOTALL)
+        assembly_match = XMLPatterns.ASSEMBLY.search(doc_content)
         if assembly_match:
             lines.append(f'{self.indent}<assembly>')
             lines.append(f'{self.indent * 2}<name>Assembly-CSharp</name>')
             lines.append(f'{self.indent}</assembly>')
         
         # Process members
-        members_match = re.search(r'<members\s*>(.*?)</members>', doc_content, re.DOTALL)
+        members_match = XMLPatterns.MEMBERS.search(doc_content)
         if members_match:
             lines.append(f'{self.indent}<members>')
             
@@ -68,8 +73,10 @@ class BroforceXMLFormatter:
             for match in matches:
                 if match.group(1):  # Comment
                     comment = match.group(1)
-                    comment_text = re.search(r'<!--\s*(.*?)\s*-->', comment).group(1)
-                    lines.append(f'{self.indent * 2}<!-- {comment_text} -->')
+                    comment_match = XMLPatterns.COMMENT.search(comment)
+                    if comment_match:
+                        comment_text = comment_match.group(1)
+                        lines.append(f'{self.indent * 2}<!-- {comment_text} -->')
                 elif match.group(2):  # Member
                     member_xml = match.group(2)
                     self._format_member(member_xml, lines)
@@ -108,24 +115,17 @@ class BroforceXMLFormatter:
     
     def _format_member(self, member_xml: str, lines: List[str]) -> None:
         """Format a single member element."""
-        # Extract member name
-        name_match = re.search(r'name="([^"]*)"', member_xml)
+        # Extract member name using pattern from xml_utils
+        name_match = XMLPatterns.MEMBER_NAME.search(member_xml)
         if not name_match:
             return
         
         member_name = name_match.group(1)
         
-        # Check if we need to split the member tag
+        # Always keep member tag on one line for Visual Studio IntelliSense compatibility
         indent2 = self.indent * 2
         member_line = f'{indent2}<member name="{member_name}">'
-        
-        # Special handling for very long member names (>100 chars total)
-        if len(member_line) > 100:
-            # Split after 'member' for long names
-            lines.append(f'{indent2}<member')
-            lines.append(f'{indent2}    name="{member_name}">')
-        else:
-            lines.append(member_line)
+        lines.append(member_line)
         
         # Extract and format child elements
         self._format_summary(member_xml, lines)
@@ -137,7 +137,7 @@ class BroforceXMLFormatter:
     
     def _format_summary(self, member_xml: str, lines: List[str]) -> None:
         """Format summary element with proper text wrapping."""
-        summary_match = re.search(r'<summary\s*>(.*?)</summary>', member_xml, re.DOTALL)
+        summary_match = XMLPatterns.SUMMARY.search(member_xml)
         if not summary_match:
             return
         
@@ -160,8 +160,7 @@ class BroforceXMLFormatter:
     
     def _format_params(self, member_xml: str, lines: List[str]) -> None:
         """Format param elements - always on one line."""
-        param_pattern = r'<param\s+name="([^"]*)">(.*?)</param>'
-        params = re.findall(param_pattern, member_xml, re.DOTALL)
+        params = XMLPatterns.PARAM.findall(member_xml)
         
         indent3 = self.indent * 3
         for param_name, param_desc in params:
@@ -170,7 +169,7 @@ class BroforceXMLFormatter:
     
     def _format_returns(self, member_xml: str, lines: List[str]) -> None:
         """Format returns element - always on one line."""
-        returns_match = re.search(r'<returns>(.*?)</returns>', member_xml, re.DOTALL)
+        returns_match = XMLPatterns.RETURNS.search(member_xml)
         if returns_match:
             returns_text = ' '.join(returns_match.group(1).strip().split())
             indent3 = self.indent * 3
@@ -178,7 +177,7 @@ class BroforceXMLFormatter:
     
     def _format_remarks(self, member_xml: str, lines: List[str]) -> None:
         """Format remarks element - uses same multi-line format as summary."""
-        remarks_match = re.search(r'<remarks>(.*?)</remarks>', member_xml, re.DOTALL)
+        remarks_match = XMLPatterns.REMARKS.search(member_xml)
         if remarks_match:
             remarks_text = ' '.join(remarks_match.group(1).strip().split())
             

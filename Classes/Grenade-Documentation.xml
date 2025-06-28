@@ -227,8 +227,7 @@
                 implementation to maintain position synchronization.
             </summary>
         </member>
-        <member
-            name="M:Grenade.ThrowGrenade(System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:Grenade.ThrowGrenade(System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Launches a grenade that was previously held by a unit. Unparents the grenade, sets
                 its position and velocity, resets visual effects, and ensures a minimum fuse time of

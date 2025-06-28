@@ -30,8 +30,7 @@
             <param name="xI">The horizontal force for gib particles.</param>
             <param name="yI">The vertical force for gib particles.</param>
         </member>
-        <member
-            name="M:Unit.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+        <member name="M:Unit.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
             <summary>
                 Handles damage dealt to the unit. Base implementation is empty. Override in derived
                 classes to implement damage processing, health reduction, and death handling.
@@ -83,8 +82,7 @@
             <param name="xI">The horizontal force of the gibbing.</param>
             <param name="yI">The vertical force of the gibbing.</param>
         </member>
-        <member
-            name="M:Unit.HeadShot(System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+        <member name="M:Unit.HeadShot(System.Int32,DamageType,System.Single,System.Single,System.Int32,System.Single,System.Single,UnityEngine.MonoBehaviour)">
             <summary>
                 Handles headshot damage to the unit. Simply delegates to the regular Damage method
                 with the same parameters. Override in derived classes to implement special headshot
@@ -99,8 +97,7 @@
             <param name="yHit">The Y coordinate where the headshot hit.</param>
             <param name="damageSender">The MonoBehaviour that caused the damage.</param>
         </member>
-        <member
-            name="M:Unit.Impale(UnityEngine.Transform,UnityEngine.Vector3,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Unit.Impale(UnityEngine.Transform,UnityEngine.Vector3,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Impales the unit on an object, attaching it to the specified transform. Base
                 implementation is empty. Override in derived classes to implement impalement
@@ -181,8 +178,7 @@
                 calls QuietDeath internally.
             </summary>
         </member>
-        <member
-            name="M:Unit.Unimpale(System.Int32,DamageType,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+        <member name="M:Unit.Unimpale(System.Int32,DamageType,System.Single,System.Single,UnityEngine.MonoBehaviour)">
             <summary>
                 Removes the unit from an impaled state and applies damage. Reduces the knockback
                 velocity by 20% and applies damage at the unit's position with an 8 unit vertical
@@ -419,8 +415,7 @@
                 the Z offset to create a visual depth effect.
             </summary>
         </member>
-        <member
-            name="M:Unit.SetPositionAndVelocity(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Unit.SetPositionAndVelocity(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Sets both the position and velocity of the unit in one operation. Base
                 implementation is empty. Override in derived classes to handle synchronized position
@@ -912,8 +907,7 @@
                 implement custom destruction behavior or cleanup.
             </summary>
         </member>
-        <member
-            name="M:Unit.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Unit.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Ejects the pilot from this unit at the specified position and velocity. Base
                 implementation is empty. Override in pilotable units to implement pilot ejection

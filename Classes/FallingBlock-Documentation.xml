@@ -246,8 +246,7 @@
             </summary>
             <param name="yOffset">The vertical offset to apply for shake animation</param>
         </member>
-        <member
-            name="M:FallingBlock.Settle(System.Single,System.Single,System.Int32,System.Single)">
+        <member name="M:FallingBlock.Settle(System.Single,System.Single,System.Int32,System.Single)">
             <summary>
                 Completes the settling process after a block finishes rolling or falling. Updates
                 the block's position and rotation, checks for solid ground beneath, assigns it back
@@ -259,8 +258,7 @@
             <param name="colOffset">Column offset applied during settling (-1 for left roll, 1 for right roll, 0 for vertical drop)</param>
             <param name="final_zAngle">The final rotation angle to apply to the block</param>
         </member>
-        <member
-            name="M:FallingBlock.SettleBlockAfterRoll(System.Single,System.Single,System.Int32,System.Single,System.Double,Networking.PID)">
+        <member name="M:FallingBlock.SettleBlockAfterRoll(System.Single,System.Single,System.Int32,System.Single,System.Double,Networking.PID)">
             <summary>
                 Network-synchronized settling method called after a block completes its roll
                 animation. Validates the timestamp to prevent out-of-order updates, settles the

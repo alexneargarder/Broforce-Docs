@@ -96,8 +96,7 @@
             <param name="hero">The hero type to check.</param>
             <returns>True if the hero is an Expendabro (LeeBroxmas, BroneyRoss, etc.), false otherwise.</returns>
         </member>
-        <member
-            name="M:HeroUnlockController.MakeSureTheresEnoughUnlockedBrosForAllTheJoinedPlayers">
+        <member name="M:HeroUnlockController.MakeSureTheresEnoughUnlockedBrosForAllTheJoinedPlayers">
             <summary>
                 Ensures that enough heroes are unlocked to support all joined players. In exhibition
                 builds, unlocks 4 specific heroes. In normal gameplay, automatically increases the

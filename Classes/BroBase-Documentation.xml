@@ -644,8 +644,7 @@
             </summary>
             <returns>False if will revive; otherwise, base implementation result.</returns>
         </member>
-        <member
-            name="M:BroBase.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+        <member name="M:BroBase.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
             <summary>
                 Processes incoming damage with revival and flex invulnerability checks. If marked
                 for revival and damaged within 5 seconds of death, accelerates revival to 0.6

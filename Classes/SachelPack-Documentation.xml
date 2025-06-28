@@ -53,8 +53,7 @@
                 base behavior to enable the sticky mechanic instead of standard projectile damage.
             </summary>
         </member>
-        <member
-            name="M:SachelPack.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
+        <member name="M:SachelPack.MakeEffects(System.Boolean,System.Single,System.Single,System.Boolean,UnityEngine.Vector3,UnityEngine.Vector3)">
             <summary>
                 Creates the massive explosion effects when the satchel pack detonates. Generates
                 multiple layers of fire, smoke, and explosion effects distributed within the blast
@@ -228,8 +227,7 @@
                 point checking. Also attempts to stick to units at spawn position.
             </summary>
         </member>
-        <member
-            name="M:SachelPack.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
+        <member name="M:SachelPack.Fire(System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour)">
             <summary>
                 Initializes and launches the satchel pack projectile. Performs initial wall
                 collision check, calls base fire method for standard setup, then registers the

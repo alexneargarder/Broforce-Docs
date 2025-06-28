@@ -95,8 +95,7 @@
             </summary>
             <returns>True if the mook can catch friendly bullets, false otherwise</returns>
         </member>
-        <member
-            name="M:Mook.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+        <member name="M:Mook.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
             <summary>
                 Processes damage to the mook with special handling for various damage types. Handles
                 chainsaw impaling with disembowel conversion, propane block achievement tracking,
@@ -139,8 +138,7 @@
             <param name="yI">The vertical knockback force applied on death</param>
             <param name="damage">The damage object containing information about what killed the mook</param>
         </member>
-        <member
-            name="M:Mook.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Mook.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Ejects the mook from a vehicle or mech, killing the mook in the process. Initiates a
                 back somersault animation and sets up a delayed scream effect.
@@ -1414,8 +1412,7 @@
             </summary>
             <param name="mookDoor">The door object that spawned this mook</param>
         </member>
-        <member
-            name="M:Mook.SetSpawnState(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Mook.SetSpawnState(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Configures mook spawn state with various initial conditions. Can apply fire damage
                 (3 damage), tumbling state, parachute settings (delayed or immediate), alert state
@@ -1430,8 +1427,7 @@
             <param name="onFire">Whether to spawn on fire (takes damage)</param>
             <param name="isAlert">Whether to spawn in alert state tracking a player</param>
         </member>
-        <member
-            name="M:Mook.SetSpawnStateJumping(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:Mook.SetSpawnStateJumping(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Sets spawn state for jumping/ejected mooks with initial velocity and effects. Forces
                 jump from vehicles if jumping, applies brief invulnerability (0.05s), can set on

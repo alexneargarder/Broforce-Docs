@@ -167,8 +167,7 @@
             <param name="xI">Horizontal velocity for gib pieces</param>
             <param name="yI">Vertical velocity for gib pieces</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.Damage(System.Int32,DamageType,System.Single,System.Single,System.Int32,UnityEngine.MonoBehaviour,System.Single,System.Single)">
             <summary>
                 Core damage handling method that processes all incoming damage to the character.
                 Handles special cases like inseminator unit redirection, parachute destruction
@@ -229,8 +228,7 @@
                 player.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.FireWeapon(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.FireWeapon(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Fires weapon projectile at specified position and velocity. Sets gun animation
                 frame, creates muzzle flash, spawns projectile, and triggers fire events.
@@ -251,8 +249,7 @@
             <param name="xI">Horizontal velocity for gib pieces</param>
             <param name="yI">Vertical velocity for gib pieces</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.GibRPC(DamageType,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.GibRPC(DamageType,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Network RPC handler for synchronizing gibbing across all connected players. Updates
                 the character position for out-of-bounds deaths and calls the local Gib method to
@@ -271,8 +268,7 @@
             </summary>
             <returns>True if doing melee and cannot do independent animations, false otherwise</returns>
         </member>
-        <member
-            name="M:TestVanDammeAnim.Knock(DamageType,System.Single,System.Single,System.Boolean)">
+        <member name="M:TestVanDammeAnim.Knock(DamageType,System.Single,System.Single,System.Boolean)">
             <summary>
                 Applies knockback force to the character from damage or explosions. Clears any
                 impalement state and ignores knockback if frozen. Applies half the horizontal
@@ -292,8 +288,7 @@
             </summary>
             <param name="damageObject">DamageObject containing knockback force information</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.ReleaseAlien(Mook,System.Single,System.Single,System.Boolean,System.Int32)">
+        <member name="M:TestVanDammeAnim.ReleaseAlien(Mook,System.Single,System.Single,System.Boolean,System.Int32)">
             <summary>
                 RPC method that handles alien release from chest bursting. Applies fire damage to
                 spawned alien if specified.
@@ -304,8 +299,7 @@
             <param name="onFire">Whether the alien should be set on fire</param>
             <param name="seenPlayer">Index of player that witnessed the spawn</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.ReleaseGrenadeRPC(Grenade,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.ReleaseGrenadeRPC(Grenade,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 RPC method for releasing grenades across network. Handles grenade physics and
                 positioning.
@@ -358,8 +352,7 @@
                 horizontally, or on ladder to set appropriate melee type.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.SetVelocity(DamageType,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.SetVelocity(DamageType,System.Single,System.Single,System.Single)">
             <summary>
                 Sets character velocity from damage or explosion forces, adding to existing velocity
                 rather than replacing it. Clamps horizontal velocity to ±200 and vertical velocity
@@ -379,8 +372,7 @@
             <param name="XI">Output X velocity for thrown mook</param>
             <param name="YI">Output Y velocity for thrown mook</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.SpawnPrimaryProjectile(Projectile,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.SpawnPrimaryProjectile(Projectile,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Spawns primary weapon projectile using the ProjectileController system with
                 specified parameters.
@@ -426,8 +418,7 @@
             </summary>
             <param name="mook">The mook object to pick up and throw</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.ThrowGrenade(Grenade,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.ThrowGrenade(Grenade,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Executes grenade throwing mechanics with specified position and velocity parameters.
             </summary>
@@ -633,9 +624,9 @@
         </member>
         <member name="F:TestVanDammeAnim.projectileTime">
             <summary>
-                Cooldown timer preventing immediate detonation of remote projectiles after firing.
-                Set to 0.3 seconds when firing remote explosives. Prevents accidental
-                self-destruction by requiring a brief delay before detonation is allowed.
+                Timestamp preventing immediate detonation of remote projectiles after firing. Set to
+                Time.time when firing remote explosives. Prevents accidental self-destruction by
+                requiring 0.56 seconds to elapse before detonation is allowed.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.remoteCar">
@@ -815,8 +806,8 @@
             <summary>
                 Executes rightward air dash with two-phase implementation. Delay phase: stops
                 vertical movement and adds slight leftward anticipation movement. Dash phase:
-                triggers animation change, plays dash sound, creates leftward poof effect, and calls
-                SetAirDashRightSpeed.
+                triggers animation change, plays dash sound, creates rightward poof effect, and
+                calls SetAirDashRightSpeed.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.RunUpwardDash">
@@ -1442,8 +1433,7 @@
             </summary>
             <param name="time">Delay in seconds before parachute can be used</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.SetPositionAndVelocity(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.SetPositionAndVelocity(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Sets the position and velocity of TestVanDammeAnim with teleportation handling. If
                 the distance change exceeds 6 units, directly sets position to prevent large jumps.
@@ -2789,8 +2779,7 @@
                 NotifyDeathType after 0.33 second delay.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.CopyInput(TestVanDammeAnim,System.Single@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
+        <member name="M:TestVanDammeAnim.CopyInput(TestVanDammeAnim,System.Single@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@,System.Boolean@)">
             <summary>
                 Copies control inputs from one unit to another, primarily used for zombie control.
                 If the source is alive, copies all input states. If dead, sets all inputs to false.
@@ -2870,8 +2859,7 @@
                 special game states.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.Impale(UnityEngine.Transform,UnityEngine.Vector3,System.Int32,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.Impale(UnityEngine.Transform,UnityEngine.Vector3,System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Impales the character on a transform, drastically reducing movement capability while
                 maintaining position constraints.
@@ -2959,8 +2947,7 @@
                 Re-enables the component after it has been disabled. Sets the enabled state to true.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.ReplaceWithSkinnedInstance(Unit,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.ReplaceWithSkinnedInstance(Unit,System.Single,System.Single)">
             <summary>
                 Replaces this unit instance with a skinned version, transferring all state and
                 properties to the new instance.
@@ -3044,8 +3031,7 @@
                 where units need to exist outside normal play area.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.SetInvulnerable(System.Single,System.Boolean,System.Boolean)">
+        <member name="M:TestVanDammeAnim.SetInvulnerable(System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Makes the character invulnerable to damage for the specified duration. Can
                 optionally display a protection bubble and/or halo effect to indicate the
@@ -3055,8 +3041,7 @@
             <param name="restartBubble">Whether to show the protection bubble (default true)</param>
             <param name="showHalo">Whether to show a halo effect (default false)</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.SetSpawnState(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:TestVanDammeAnim.SetSpawnState(System.Single,System.Single,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Sets the initial spawn conditions for the hero including velocity and status
                 effects. Network RPC method that can be called remotely to ensure consistent spawn
@@ -3165,8 +3150,7 @@
                 actions.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.Unimpale(System.Int32,DamageType,System.Single,System.Single,UnityEngine.MonoBehaviour)">
+        <member name="M:TestVanDammeAnim.Unimpale(System.Int32,DamageType,System.Single,System.Single,UnityEngine.MonoBehaviour)">
             <summary>
                 Removes the character from an impaled state, applying damage and velocity while
                 clearing impalement constraints.
@@ -3722,8 +3706,7 @@
                 high-five inputs. Used to clear attack inputs when needed.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.DebugShowInput(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:TestVanDammeAnim.DebugShowInput(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
                 Debug method to display current input state. Shows formatted string with L/R/U/D/J/C
                 states when debug mode is enabled.
@@ -4306,8 +4289,7 @@
                 material restoration.
             </summary>
         </member>
-        <member
-            name="M:TestVanDammeAnim.LedgeGrapple(System.Boolean,System.Boolean,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.LedgeGrapple(System.Boolean,System.Boolean,System.Single,System.Single)">
             <summary>
                 Handles ledge grabbing mechanics when the character is near an edge while jumping or
                 falling. Initiates ledge grab state when conditions are met and adjusts character
@@ -4770,8 +4752,7 @@
             </summary>
             <param name="volumne">Volume level for the sound effect (note: parameter name has typo)</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.PlayFootStepSound(UnityEngine.AudioClip[],System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.PlayFootStepSound(UnityEngine.AudioClip[],System.Single,System.Single)">
             <summary>
                 Core footstep sound playing method with player versus NPC audio optimization.
                 Players hear full volume while NPCs play at 50% volume and only when visible on
@@ -4940,8 +4921,7 @@
             </summary>
             <param name="volume">Volume level for the sound effect</param>
         </member>
-        <member
-            name="M:TestVanDammeAnim.PlaySpecialSound(System.Single,System.Single,System.Boolean)">
+        <member name="M:TestVanDammeAnim.PlaySpecialSound(System.Single,System.Single,System.Boolean)">
             <summary>
                 Plays special ability sound effect with full control over volume, pitch, and reverb
                 settings.
@@ -5029,7 +5009,7 @@
         <member name="F:TestVanDammeAnim._lastResurectionSoundTime">
             <summary>
                 Timestamp of the last resurrection sound played. Used to prevent resurrection sound
-                spam by enforcing a minimum 1-second delay between plays. Ensures audio doesn't
+                spam by enforcing a minimum 2-second delay between plays. Ensures audio doesn't
                 overlap during rapid revival attempts.
             </summary>
         </member>
@@ -5117,8 +5097,7 @@
             <param name="helicopter">The helicopter instance to attach to</param>
             <returns>Updated ladder X position after attachment</returns>
         </member>
-        <member
-            name="M:TestVanDammeAnim.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:TestVanDammeAnim.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
                 Exits piloting mode and restores character to normal state. Re-enables rendering,
                 restores health, sets position/velocity, and optionally applies stun effects.
@@ -5489,8 +5468,7 @@
             <param name="yForce">Y force component for insemination</param>
             <returns>Always returns true</returns>
         </member>
-        <member
-            name="M:TestVanDammeAnim.InseminateRPC(AlienFaceHugger,System.Single,System.Single)">
+        <member name="M:TestVanDammeAnim.InseminateRPC(AlienFaceHugger,System.Single,System.Single)">
             <summary>
                 RPC method that executes alien insemination process. Sets up face hugger attachment,
                 initializes infection counters, updates UI, and plays muffled scream sounds.

@@ -45,8 +45,7 @@
             <param name="delay">Time in seconds to wait before starting</param>
             <returns>IEnumerator for coroutine execution</returns>
         </member>
-        <member
-            name="M:CutsceneController.SceneChange(UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene)">
+        <member name="M:CutsceneController.SceneChange(UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene)">
             <summary>
                 Handles scene change events by closing any active cutscenes
             </summary>

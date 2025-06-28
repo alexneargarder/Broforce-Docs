@@ -25,8 +25,7 @@
             </summary>
         </member>
         <!-- Projectile Spawning Methods -->
-        <member
-            name="M:ProjectileController.SpawnGrenadeLocally(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32)">
+        <member name="M:ProjectileController.SpawnGrenadeLocally(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Int32)">
             <summary>
                 Spawns a grenade locally without network synchronization. Sets up the grenade with
                 physics parameters and launches it.
@@ -43,8 +42,7 @@
             <param name="seed">Random seed for deterministic grenade behavior.</param>
             <returns>The spawned Grenade instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnGrenadeOverNetwork(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single)">
+        <member name="M:ProjectileController.SpawnGrenadeOverNetwork(Grenade,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Single)">
             <summary>
                 Spawns a grenade across the network for multiplayer synchronization. Creates the
                 grenade and sends RPCs to set it up and launch it on all clients. Note: Network
@@ -62,8 +60,7 @@
             <param name="lifeM">Life multiplier for the grenade. Values less than 1 reduce the grenade's fuse time.</param>
             <returns>The spawned Grenade instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnLaserBeamLocally(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:ProjectileController.SpawnLaserBeamLocally(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Spawns a laser beam locally without network synchronization. Creates a laser beam
                 with specified angle and rotation parameters.
@@ -79,8 +76,7 @@
             <param name="playerNum">The player number who owns this laser beam.</param>
             <returns>The spawned LaserBeam instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnLaserBeamOverNetwork(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform,System.Boolean,System.Int32,System.Boolean)">
+        <member name="M:ProjectileController.SpawnLaserBeamOverNetwork(LaserBeam,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,UnityEngine.Transform,System.Boolean,System.Int32,System.Boolean)">
             <summary>
                 Spawns a laser beam across the network for multiplayer synchronization. Can target a
                 specific transform. Note: Network functionality may not work reliably in mods.
@@ -97,8 +93,7 @@
             <param name="executeImmediately">Whether to execute the network commands immediately.</param>
             <returns>The spawned LaserBeam instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32)">
+        <member name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32)">
             <summary>
                 Spawns a projectile locally without network synchronization. This is the simplest
                 overload for local projectile creation.
@@ -112,8 +107,7 @@
             <param name="playerNum">The player number who owns this projectile.</param>
             <returns>The spawned Projectile instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Single)">
+        <member name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean,System.Single)">
             <summary>
                 Spawns a projectile locally with additional z-offset control. The
                 AddTemporaryPlayerTarget parameter appears to be unused in this overload.
@@ -129,8 +123,7 @@
             <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
             <returns>The spawned Projectile instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
+        <member name="M:ProjectileController.SpawnProjectileLocally(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
             <summary>
                 Spawns a projectile locally with all available parameters. The synced,
                 AddTemporaryPlayerTarget, and executeImmediately parameters appear to be unused in
@@ -149,8 +142,7 @@
             <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
             <returns>The spawned Projectile instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SpawnProjectileOverNetwork(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
+        <member name="M:ProjectileController.SpawnProjectileOverNetwork(Projectile,UnityEngine.MonoBehaviour,System.Single,System.Single,System.Single,System.Single,System.Boolean,System.Int32,System.Boolean,System.Boolean,System.Single)">
             <summary>
                 Spawns a projectile across the network for multiplayer synchronization. Creates the
                 projectile and sends RPCs to synchronize its state across all players. Note: Network
@@ -169,8 +161,7 @@
             <param name="_zOffset">The Z-axis offset for the projectile spawn position.</param>
             <returns>The spawned Projectile instance.</returns>
         </member>
-        <member
-            name="M:ProjectileController.SummonPortalNetworked(WarlockPortal,System.Int32,UnityEngine.Vector2,System.Single)">
+        <member name="M:ProjectileController.SummonPortalNetworked(WarlockPortal,System.Int32,UnityEngine.Vector2,System.Single)">
             <summary>
                 Spawns a warlock portal across the network with a delay. Only creates the portal if
                 spawnPos is not Vector2.zero. Note: Network functionality may not work reliably in
@@ -182,8 +173,7 @@
             <param name="delay">Delay in seconds before the portal activates.</param>
         </member>
         <!-- Projectile Return System Methods -->
-        <member
-            name="M:ProjectileController.CheckReturnZone(System.Single,System.Single,System.Int32@,ProjectileReturnZone@,UnityEngine.MonoBehaviour@)">
+        <member name="M:ProjectileController.CheckReturnZone(System.Single,System.Single,System.Int32@,ProjectileReturnZone@,UnityEngine.MonoBehaviour@)">
             <summary>
                 Checks if a position is within any registered return zone. If found, updates the
                 projectile ownership and provides zone information. Return zones only affect
