@@ -27,7 +27,8 @@
         </member>
         <member name="M:TestVanDammeAnim.FixedUpdate">
             <summary>
-                Unity fixed update method that runs oil test checking at fixed intervals.
+                Unity fixed update method that checks if the unit has exited oil areas at fixed
+                intervals.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.LateUpdate">
@@ -63,7 +64,7 @@
         <member name="M:TestVanDammeAnim.RunSync">
             <summary>
                 Network synchronization method that updates the unit's position. Calls base
-                synchronization and updates position based on current transform.
+                synchronization and updates the transform position based on current X/Y coordinates.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.SetDefaultGroundLayer">
@@ -578,9 +579,8 @@
         </member>
         <member name="F:TestVanDammeAnim.impaledByChainSaw">
             <summary>
-                Flag indicating the unit was killed by chainsaw impalement. Currently not actively
-                used in the codebase. May have been intended for special chainsaw death animations
-                or to prevent certain post-death effects.
+                Indicates if character is impaled by a chainsaw. Field is declared but not used in
+                TestVanDammeAnim.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.impalementCollider">
@@ -645,10 +645,8 @@
         </member>
         <member name="F:TestVanDammeAnim.skinnedMookOnMyBack">
             <summary>
-                Reference to a SkinnedMook enemy that has jumped onto this unit's back. When set,
-                reduces movement speed by 50%, prevents dashing and wall climbing, and marks the
-                unit as having "baggage". The attached enemy can be removed by melee attacks or
-                death.
+                Tracks whether character has a skinned mook attached. When true, reduces horizontal
+                movement speed by 5% (multiplies by 0.95).
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.specialCounter">
@@ -994,8 +992,8 @@
         <!-- Position & Physics Methods -->
         <member name="M:TestVanDammeAnim.AddParentedDiff(System.Single,System.Single)">
             <summary>
-                Adds positional differences to the character's coordinates based on parent movement,
-                with special handling for different parent types.
+                Adds positional differences to the character's coordinates. Only applies differences
+                if the unit is owned locally or synchronization is disabled.
             </summary>
             <param name="xDiff">The horizontal position difference to apply.</param>
             <param name="yDiff">The vertical position difference to apply.</param>
@@ -1022,8 +1020,10 @@
         </member>
         <member name="M:TestVanDammeAnim.ApplyFallingGravity">
             <summary>
-                Orchestrates gravity application based on character state, delegating to specialized
-                gravity methods for parachute, quicksand, or normal conditions.
+                Applies gravity based on character state. Skips gravity during chimney flips when
+                constrained or while climbing ladders. Applies specialized gravity for parachute
+                (17% when falling, 33% when rising, plus horizontal damping), quicksand, or normal
+                conditions.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.ApplyNormalGravity">
@@ -1034,8 +1034,9 @@
         </member>
         <member name="M:TestVanDammeAnim.ApplyQuicksandGravity">
             <summary>
-                Applies special gravity behavior in quicksand, clamping velocities and creating a
-                floating effect with different sink rates for alive versus dead characters.
+                Applies special gravity behavior in quicksand. Clamps Y velocity between -80 and 50,
+                then smoothly transitions velocity toward -2 units/sec for alive characters or -1
+                unit/sec for dead characters.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.AssignGroundTransform(UnityEngine.Transform)">
@@ -1288,9 +1289,10 @@
         </member>
         <member name="M:TestVanDammeAnim.Jump(System.Boolean)">
             <summary>
-                Handles all jump mechanics including wall jumps, grace jumping, and special surface
-                interactions. Adjusts jump force based on surface type (barbed wire reduces to 80%,
-                bouncy blocks increase to 190%) and inherits velocity from moving platforms.
+                Handles all jump mechanics including wall jumps and special surface interactions.
+                Sets jump force to 80% when surrounded by barbed wire, 190% for bouncy blocks during
+                grace period, or normal jump force otherwise. Inherits velocity from moving
+                platforms. Wall jumps reset horizontal velocity and trigger climb animations.
             </summary>
             <param name="wallJump">If true, performs a wall jump with horizontal velocity reset and climb sound/animation.</param>
         </member>
@@ -1935,8 +1937,10 @@
         </member>
         <member name="F:TestVanDammeAnim.oldJumpForce">
             <summary>
-                Unused field that was likely intended to store the original jump force during
-                temporary modifications. Initialized to -1 but never used in implementation.
+                Stores the original jump force value when temporarily modifying jump force for
+                attack moves. Initialized to -1. Set in UseAttackJumpForceForSeconds() and restored
+                in ResetToOriginalJumpForce(). The -1 value indicates no temporary modification is
+                active.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.originalMaxFallSpeed">
@@ -2221,8 +2225,8 @@
         </member>
         <member name="M:TestVanDammeAnim.AnimateChimneyFlip">
             <summary>
-                Handles chimney flip animation sequence for wall-to-wall traversal between narrow
-                spaces.
+                Handles chimney flip animation, which is the animation that plays when you jump
+                towards a corner and go up and over it.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.AnimateHanging">
@@ -2239,8 +2243,9 @@
         </member>
         <member name="M:TestVanDammeAnim.AnimateHighFiveRelease">
             <summary>
-                Handles animation for releasing/completing high-five gesture with celebration
-                effects.
+                Handles animation for releasing/completing high-five gesture. Creates high five
+                effects when successfulHighFive is true at frame 4. Uses different frame rates based
+                on useNewHighFivingFrames flag.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.AnimateIdle">
@@ -2355,7 +2360,9 @@
         </member>
         <member name="M:TestVanDammeAnim.AnimateZipline">
             <summary>
-                Handles zipline traversal animation with movement-based sprite selection and timing.
+                Handles zipline traversal animation with movement-based sprite selection. Creates
+                blood particles for gut ziplines or grinding sparks for regular ziplines when
+                sliding. Deactivates gun during horizontal movement, activates it when stationary.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.CreateFaderTrailInstance">
@@ -2403,18 +2410,18 @@
         <!-- Animation & Sprite Systems Fields -->
         <member name="F:TestVanDammeAnim._frozenGunMaterial">
             <summary>
-                Cached material for frozen gun appearance. Currently not actively used in
-                TestVanDammeAnim - the Freeze method creates materials directly. May be used by
-                derived classes or reserved for optimization to avoid material creation during
-                gameplay.
+                Cached material for frozen gun appearance. Created on-demand in the Freeze method
+                when the character is frozen, using the frozen shader with ice-blue color values.
+                Applied to the gun sprite renderer to give the weapon a frozen visual effect
+                matching the character's frozen state.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim._frozenMaterial">
             <summary>
-                Cached material for frozen appearance. Currently not actively used in
-                TestVanDammeAnim - the Freeze method creates materials directly. May be used by
-                derived classes or reserved for optimization to avoid material creation during
-                gameplay.
+                Cached material for frozen appearance. Created on-demand in the Freeze method when
+                the character is frozen, using the "Unlit/Depth Cutout With Image - Frozen" shader
+                with ice-blue color values (0.094f, 0.388f, 0.718f). Applied to the character's
+                renderer to display the frozen visual effect.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim._oilyGunMaterial">
@@ -3222,8 +3229,8 @@
         <member name="P:TestVanDammeAnim.counter">
             <summary>
                 Gets or sets the animation frame timing counter. This counter accumulates delta time
-                and triggers the next animation frame when it exceeds the frameRate threshold
-                (0.0334 seconds).
+                and triggers the next animation frame when it exceeds the frameRate threshold, which
+                varies based on the current animation.
             </summary>
         </member>
         <member name="P:TestVanDammeAnim.impaledByTransform">
@@ -4409,9 +4416,9 @@
         </member>
         <member name="F:TestVanDammeAnim.canChimneyFlip">
             <summary>
-                Enables chimney flip ability - jumping between two close walls. When true, character
-                can perform wall jumps in narrow vertical spaces. Provides advanced movement option
-                for certain characters. Currently not actively used in the base implementation.
+                Indicates whether character can perform chimney flip maneuver. Set by wall detection
+                logic when appropriate conditions are met. Used in ConstrainToWalls to trigger
+                chimney flip animations.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.canLedgeGrapple">
@@ -4652,9 +4659,10 @@
         </member>
         <member name="M:TestVanDammeAnim.PlayChestBurstSound(System.Single)">
             <summary>
-                Plays alien chest burst sound effect at character position with specified pitch.
+                Plays alien chest burst sound effect at character position. Note: The pitch
+                parameter is currently unused - sound always plays at 1.0f pitch.
             </summary>
-            <param name="pitch">Pitch modifier for the sound effect</param>
+            <param name="pitch">Pitch modifier for the sound effect (currently unused)</param>
         </member>
         <member name="M:TestVanDammeAnim.PlayChimneyFlipSound(System.Single)">
             <summary>
@@ -4692,8 +4700,8 @@
         </member>
         <member name="M:TestVanDammeAnim.PlayDeathSound">
             <summary>
-                Plays death sound effects with volume adjusted based on sound availability. Reduces
-                volume to 50% if no hit sounds are available.
+                Plays death sound effects using hit sounds array. Volume is reduced to 50% when no
+                hit sounds are available (empty array).
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.PlayDecapitateSound">
@@ -5093,9 +5101,9 @@
                 the helicopter's attached list, parents the character to the ladder holder,
                 positions them relative to the helicopter, and adjusts facing direction.
             </summary>
-            <param name="ladderXPos">The ladder X position reference</param>
+            <param name="ladderXPos">The ladder X position reference (unused)</param>
             <param name="helicopter">The helicopter instance to attach to</param>
-            <returns>Updated ladder X position after attachment</returns>
+            <returns>The helicopter's X position plus 13 units</returns>
         </member>
         <member name="M:TestVanDammeAnim.DischargePilotingUnit(System.Single,System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
@@ -5117,7 +5125,7 @@
         <member name="M:TestVanDammeAnim.GrabHelicopterLadder">
             <summary>
                 Placeholder method for grabbing the helicopter ladder. Currently has no
-                implementation but serves as a virtual method hook for derived classes.
+                implementation.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.StartPilotingUnit(Unit)">
@@ -5269,7 +5277,8 @@
         <member name="M:TestVanDammeAnim.PackState(UnityStream)">
             <summary>
                 Serializes character state for network synchronization. Packs piloted unit, action
-                state, and health. For heroes, also includes player number and hero type.
+                state, and health. For heroes, also includes player number, hero type, and piloted
+                unit again (serialized twice for heroes).
             </summary>
             <param name="stream">The network stream to write data to</param>
             <returns>The stream with packed data</returns>
@@ -5350,9 +5359,10 @@
         </member>
         <member name="F:TestVanDammeAnim._spawnFailSafeTimer">
             <summary>
-                Network synchronization failsafe timer for spawn validation. Counts up for 2 seconds
-                after spawning to detect position mismatches in multiplayer. If position remains at
-                origin after timeout, triggers forced position sync to resolve spawn failures.
+                Network synchronization failsafe timer for spawn validation. Initialized with random
+                value 0-0.5 seconds, then counts up. When reaching 1 second, checks if hero is too
+                far from the rightmost hero (>1.3x camera width). If so, teleports to rightmost
+                hero's position to resolve spawn failures.
             </summary>
         </member>
         <!-- Character Setup & Configuration Methods -->
@@ -5498,16 +5508,14 @@
         <!-- Alien Infection System Fields -->
         <member name="F:TestVanDammeAnim.alienBursterPrefab">
             <summary>
-                Prefab reference for the alien creature that bursts from the unit's chest after
-                insemination. Spawned when inseminatedCounter reaches its threshold, creating the
-                dramatic chest-bursting death sequence. The spawned alien becomes an enemy unit.
+                Unit prefab spawned when alien burst occurs from inseminated character.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.inseminatedByLocalUnit">
             <summary>
-                Tracks whether the insemination was performed by a locally-controlled unit.
-                Currently not actively used in the codebase. May have been intended for network
-                synchronization or scoring purposes in the alien infection system.
+                Tracks whether alien insemination occurred from local player's unit. Used for
+                network synchronization to ensure consistent alien spawn behavior across clients.
+                Determines whether local machine spawns the alien burster in BurstChest method.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.inseminatedCounter">
@@ -5527,9 +5535,8 @@
         </member>
         <member name="F:TestVanDammeAnim.inseminationFrame">
             <summary>
-                Frame counter for insemination animation or timing. Currently not actively used in
-                the codebase. May have been intended for synchronizing insemination visual effects
-                or for network replication of the infection state.
+                Animation frame counter for alien face hugger attachment. Tracks animation
+                progression during insemination sequence.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.inseminatorUnit">
@@ -5702,8 +5709,9 @@
         </member>
         <member name="M:TestVanDammeAnim.CoverInAcidRPC">
             <summary>
-                RPC method that applies acid coverage effects. Changes materials, handles
-                alien-specific reactions, and initiates acid damage systems.
+                Network RPC method for acid coverage effects. Applies acid visual effects, excluding
+                Alien units entirely. Called remotely to synchronize acid state across network
+                players.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.ForceChangeFrame">
@@ -5842,8 +5850,9 @@
         <!-- High-Five System Methods -->
         <member name="M:TestVanDammeAnim.CheckHighFive">
             <summary>
-                Checks for nearby characters available for high-five interactions and manages
-                high-five initiation timing.
+                Checks conditions for high-five interactions with nearby players. Validates
+                proximity and state requirements, triggering high-five boost when conditions are
+                met.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.CreateHighFiveEffects">
@@ -5900,8 +5909,9 @@
         </member>
         <member name="F:TestVanDammeAnim.highFiveBoostM">
             <summary>
-                Speed multiplier applied during high-five boost. Default value of 1.4 provides a 40%
-                speed increase. Applied by dividing movement calculations by this value.
+                Movement speed multiplier during high-five boost state. Applied by multiplying delta
+                time calculations when boost is active, effectively increasing animation and
+                movement speed.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.highFiveBoostTime">
@@ -6035,8 +6045,9 @@
         </member>
         <member name="M:TestVanDammeAnim.ShowKickBubble">
             <summary>
-                Creates and displays the kick player bubble UI above the character. Sets up bubble
-                parenting and restarts bubble animation.
+                Creates kick player bubble UI if it doesn't exist, positions it above character,
+                parents it to transform, and refreshes Y start position. If bubble already exists
+                but is hidden, restarts the bubble animation.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.StopKickBubble">

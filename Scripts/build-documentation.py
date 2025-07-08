@@ -18,12 +18,6 @@ from pathlib import Path
 # Import from xml_utils
 from xml_utils import XMLFileReader, XMLFileWriter, XMLFormatter, XMLPatterns
 
-# Import format_xml_file with proper path handling
-import importlib.util
-spec = importlib.util.spec_from_file_location("format_xml", Path(__file__).parent / "format-xml.py")
-format_xml = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(format_xml)
-format_xml_file = format_xml.format_xml_file
 
 def find_class_xml_files(classes_dir=None):
     """Find all class documentation XML files."""
@@ -34,62 +28,14 @@ def find_class_xml_files(classes_dir=None):
     files.sort()  # Ensure consistent ordering
     return files
 
-def extract_members_lines_from_file(filepath):
-    """Extract member element lines from a class documentation file."""
+def extract_sections_from_file(filepath):
+    """Returns the sections dict from XMLFileReader.read_xml_file()"""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        lines = content.split('\n')
-        
-        # Find members section boundaries
-        members_start = -1
-        members_end = -1
-        
-        for i, line in enumerate(lines):
-            if '<members>' in line:
-                members_start = i
-            elif '</members>' in line:
-                members_end = i
-                break
-        
-        if members_start == -1 or members_end == -1:
-            print(f"Warning: No <members> section found in {filepath}")
-            return []
-        
-        # Extract member lines including comments
-        member_lines = []
-        i = members_start + 1
-        
-        while i < members_end:
-            line = lines[i]
-            
-            # Include comments
-            if '<!--' in line:
-                member_lines.append(line)
-            # Include member elements
-            elif '<member' in line:
-                # Start of member element
-                member_element_lines = [line]
-                i += 1
-                
-                # Collect all lines until </member>
-                while i < members_end and '</member>' not in lines[i - 1]:
-                    if i < len(lines):
-                        member_element_lines.append(lines[i])
-                    i += 1
-                
-                # Add all member lines
-                member_lines.extend(member_element_lines)
-                continue
-                
-            i += 1
-            
-        return member_lines
-        
+        xml_data = XMLFileReader.read_xml_file(filepath)
+        return xml_data['sections']
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
-        return []
+        raise  # Re-raise the exception to make it fatal
 
 def build_combined_xml(classes_dir=None, output_dir=None):
     """Main function to build the combined XML file."""
@@ -104,15 +50,19 @@ def build_combined_xml(classes_dir=None, output_dir=None):
     
     print(f"Found {len(class_files)} class documentation files:")
     
-    # Start building output
-    output_lines = [
-        '<?xml version="1.0" encoding="utf-8"?>',
-        '<doc>',
-        '    <assembly>',
-        '        <name>Assembly-CSharp</name>',
-        '    </assembly>',
-        '    <members>'
-    ]
+    # Build the proper data structure for XMLFileWriter
+    output_data = {
+        'header_lines': [
+            '<?xml version="1.0" encoding="utf-8"?>',
+            '<doc>',
+            '    <assembly>',
+            '        <name>Assembly-CSharp</name>',
+            '    </assembly>',
+            '    <members>'
+        ],
+        'footer_lines': ['    </members>', '</doc>'],
+        'sections': {}
+    }
     
     total_members = 0
     
@@ -120,27 +70,73 @@ def build_combined_xml(classes_dir=None, output_dir=None):
     for filepath in class_files:
         print(f"  Processing {filepath}...")
         
-        # Extract member lines from this file
-        member_lines = extract_members_lines_from_file(filepath)
+        # Extract sections from this file
+        file_sections = extract_sections_from_file(filepath)
         
-        if member_lines:
-            # Count actual members (not comments)
-            member_count = sum(1 for line in member_lines if '<member' in line)
-            
-            # Add member lines to output
-            output_lines.extend(member_lines)
+        if file_sections:
+            # Count members in this file
+            member_count = 0
+            for section_data in file_sections.values():
+                # Count from subsections if they exist, otherwise from main members list
+                if section_data.get('subsections'):
+                    for subsec_data in section_data['subsections'].values():
+                        member_count += len(subsec_data['members'])
+                else:
+                    member_count += len(section_data['members'])
             
             class_name = os.path.basename(filepath).replace('-Documentation.xml', '')
+            
+            # Add sections from this file with class name prefix to avoid merging
+            for section_name, section_data in file_sections.items():
+                # Create unique section name with class prefix
+                prefixed_section_name = f"{class_name} - {section_name}"
+                
+                # Create a copy of section_data to avoid modifying the original
+                prefixed_section_data = {
+                    'comments': [],
+                    'members': section_data['members'][:],  # Copy the members list
+                    'subsections': {}
+                }
+                
+                # Update comments to include class name
+                for comment in section_data['comments']:
+                    # Extract comment content and add class prefix
+                    if '<!--' in comment and '-->' in comment:
+                        # Find the comment content between <!-- and -->
+                        start = comment.find('<!--') + 4
+                        end = comment.find('-->')
+                        comment_content = comment[start:end].strip()
+                        # Reconstruct comment with class prefix
+                        prefixed_comment = f"<!-- {class_name} - {comment_content} -->"
+                        prefixed_section_data['comments'].append(prefixed_comment)
+                    else:
+                        prefixed_section_data['comments'].append(comment)
+                
+                # Handle subsections if they exist
+                if section_data.get('subsections'):
+                    for subsec_type, subsec_data in section_data['subsections'].items():
+                        # Update subsection comment to include class name
+                        subsec_comment = subsec_data['comment']
+                        if '<!--' in subsec_comment and '-->' in subsec_comment:
+                            start = subsec_comment.find('<!--') + 4
+                            end = subsec_comment.find('-->')
+                            comment_content = subsec_comment[start:end].strip()
+                            prefixed_comment = f"<!-- {class_name} - {comment_content} -->"
+                        else:
+                            prefixed_comment = subsec_comment
+                        
+                        prefixed_section_data['subsections'][subsec_type] = {
+                            'comment': prefixed_comment,
+                            'members': subsec_data['members'][:]  # Copy members list
+                        }
+                
+                # Add to output data
+                output_data['sections'][prefixed_section_name] = prefixed_section_data
+            
             total_members += member_count
             print(f"    Added {member_count} members from {class_name}")
         else:
-            print(f"    Warning: No members found in {filepath}")
-    
-    # Close XML structure
-    output_lines.extend([
-        '    </members>',
-        '</doc>'
-    ])
+            print(f"    Warning: No sections found in {filepath}")
     
     # Write the combined XML file
     if output_dir is None:
@@ -149,16 +145,8 @@ def build_combined_xml(classes_dir=None, output_dir=None):
         output_file = os.path.join(output_dir, "Assembly-CSharp.xml")
     
     try:
-        # Write to file
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(output_lines))
-        
-        # Format the XML file using format-xml.py
-        try:
-            format_xml_file(output_file)
-        except Exception as e:
-            print(f"❌ ERROR: Failed to format XML file: {e}")
-            return False
+        # Use XMLFileWriter to write the file with proper subsection handling
+        XMLFileWriter.write_xml_file(output_file, output_data)
         
         print(f"\nSuccessfully built {output_file}")
         print(f"Total members documented: {total_members}")

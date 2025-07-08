@@ -548,8 +548,17 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
     
         xml_content = ""
         if xml_file.exists():
-            with open(xml_file, 'r', encoding='utf-8') as f:
-                xml_content = f.read()
+            # Use XMLFileReader to read the XML file
+            xml_data = XMLFileReader.read_xml_file(str(xml_file))
+            # Reconstruct the content for section parsing
+            lines = []
+            lines.extend(xml_data['header_lines'])
+            for section_name, section_data in xml_data['sections'].items():
+                lines.extend(section_data['comments'])
+                for member_lines in section_data['members']:
+                    lines.extend(member_lines)
+            lines.extend(xml_data['footer_lines'])
+            xml_content = '\n'.join(lines)
     
     # Parse sections from XML comments
     sections = parse_xml_comments_sections(xml_content)
@@ -834,9 +843,17 @@ def process_single_xml_file(xml_file, output_dir, class_files):
         print(f"Error parsing XML: {e}")
         return
     
-    # Read XML content for section parsing
-    with open(xml_file, 'r', encoding='utf-8') as f:
-        xml_content = f.read()
+    # Read XML content for section parsing using XMLFileReader
+    xml_data = XMLFileReader.read_xml_file(str(xml_file))
+    # Reconstruct the content for section parsing
+    lines = []
+    lines.extend(xml_data['header_lines'])
+    for section_name, section_data in xml_data['sections'].items():
+        lines.extend(section_data['comments'])
+        for member_lines in section_data['members']:
+            lines.extend(member_lines)
+    lines.extend(xml_data['footer_lines'])
+    xml_content = '\n'.join(lines)
     
     # Group members by class
     classes = defaultdict(list)

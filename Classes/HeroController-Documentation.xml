@@ -2343,7 +2343,7 @@
                 corresponding HeroDefinition data for serialization and configuration management.
             </summary>
         </member>
-        <!-- Player Management Section -->
+        <!-- Player Management Section Methods -->
         <member name="M:HeroController.GetPlayerNums(PID)">
             <summary>
                 Gets all player numbers associated with a specific player ID. Iterates through all 4
@@ -2353,6 +2353,7 @@
             <param name="playerID">The player ID to search for.</param>
             <returns>List of player numbers (0-3) that match the given player ID.</returns>
         </member>
+        <!-- Player Management Section Fields -->
         <member name="F:HeroController.heroList">
             <summary>
                 Serializable list of hero setup data using the HeroSetupKeyPair inner class. This
@@ -2383,7 +2384,7 @@
                 collected. Earlier deaths get priority for revival. Synced across network.
             </summary>
         </member>
-        <!-- Player Status Section -->
+        <!-- Player Status Section Fields -->
         <member name="F:HeroController.heroAlreadyChosenTypes">
             <summary>
                 Static list tracking which hero types have already been selected during the current
@@ -2392,7 +2393,7 @@
                 players.
             </summary>
         </member>
-        <!-- Rescue System Section -->
+        <!-- Rescue System Section Fields -->
         <member name="F:HeroController.rescueBros">
             <summary>
                 List of all active rescue bros in the current level. Rescue bros register themselves
@@ -2407,7 +2408,7 @@
                 List is cleared on Awake and OnDestroy. Used for managing special explosive objects.
             </summary>
         </member>
-        <!-- Camera System Section -->
+        <!-- Camera System Section Fields -->
         <member name="F:HeroController.extraFollowPositions">
             <summary>
                 Static list of additional transform positions for the camera to follow beyond player
@@ -2415,7 +2416,7 @@
                 Camera system checks these positions when determining view bounds and focus area.
             </summary>
         </member>
-        <!-- Serialization Section -->
+        <!-- Serialization Section Methods -->
         <member name="M:HeroController.ConvertHeroArrayToIntArray(HeroType[])">
             <summary>
                 Converts an array of HeroType enums to an array of integers for serialization. Uses
