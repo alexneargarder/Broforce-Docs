@@ -20,8 +20,8 @@
         </member>
         <member name="M:BroBase.Start">
             <summary>
-                Completes BroBase initialization after all objects are created. Sets up network
-                syncing and jetpack state.
+                Completes BroBase initialization. First calls the base Start() method, then sets up
+                network syncing, hides jetpack sprite, and initializes flex air jumps.
             </summary>
         </member>
         <member name="M:BroBase.Update">
@@ -1230,8 +1230,8 @@
         <member name="M:BroBase.StartElbowSlam">
             <summary>
                 Initiates elbow slam attack sequence with physics modifications. Disables wall
-                climbing, sets animation timing (0.066f), adjusts downward velocity (minimum 210),
-                and plays flex sound. Prepares for ground pound attack.
+                climbing, sets animation timing (0.066f), adjusts downward velocity (halves if below
+                -50, then adds 75% of (210 - yI) if below 210), and plays flex sound.
             </summary>
         </member>
         <member name="M:BroBase.StartTeleportFlexing">

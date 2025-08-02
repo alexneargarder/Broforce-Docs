@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Unity Lifecycle & Setup Methods -->
+        <member name="M:Rambro.Awake">
+            <summary>
+                Initializes the Rambro instance by marking it as a hero character before calling the
+                base Awake method. This simple initialization reflects Rambro's nature as the
+                starter hero with minimal customizations.
+            </summary>
+        </member>
+        <!-- Combat & Damage Methods -->
+        <member name="M:Rambro.FireWeapon(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+                Fires Rambro's weapon with visual bullet shell ejection effect. When attached to a
+                zipline, adjusts gun sprite positioning. Rambro's simple firing behavior creates a
+                shell casing effect and delegates actual projectile spawning to the base method.
+            </summary>
+            <param name="x">X position for projectile spawn</param>
+            <param name="y">Y position for projectile spawn</param>
+            <param name="xSpeed">X velocity for projectile</param>
+            <param name="ySpeed">Y velocity for projectile</param>
+        </member>
+        <!-- Combat & Damage Fields -->
+        <member name="F:Rambro.bulletShell">
+            <summary>
+                Shrapnel prefab used to create bullet shell casing effects when firing. Ejected
+                shells fly backward relative to Rambro's facing direction with realistic physics.
+            </summary>
+        </member>
+    </members>
+</doc>

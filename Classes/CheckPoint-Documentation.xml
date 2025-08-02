@@ -161,7 +161,7 @@
             <summary>
                 Deserializes checkpoint state from network data, restoring activation status and
                 triggering visual updates. For activated final checkpoints, also restores the
-                helicopter/portal state.
+                helicopter state.
             </summary>
             <param name="stream">Stream containing the serialized state data</param>
             <returns>The stream after deserialization for method chaining</returns>

@@ -265,12 +265,6 @@
                 activates the world map/arcade selection menu.
             </summary>
         </member>
-        <member name="M:MainMenu.GoToCampaignMenu">
-            <summary>
-                Navigates to the campaign selection menu. For exhibition builds, directly starts
-                arcade mode. For regular builds, transitions to the world map or arcade menu.
-            </summary>
-        </member>
         <member name="M:MainMenu.LevelEditor">
             <summary>
                 Opens the level editor by setting up the game state for level editing mode, loading

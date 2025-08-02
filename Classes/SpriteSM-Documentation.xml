@@ -113,23 +113,6 @@
             <param name="x">The X pixel coordinate on the texture.</param>
             <param name="y">The Y pixel coordinate on the texture.</param>
         </member>
-        <member name="M:SpriteSM.SetLowerLeftPixel(UnityEngine.Vector2)">
-            <summary>
-                Sets the lower-left corner position of the sprite within the texture in pixel
-                coordinates. Recalculates UV coordinates, applies bleed compensation, and optionally
-                resizes the sprite based on autoResize or pixelPerfect settings.
-            </summary>
-            <param name="lowerLeft">The pixel coordinates of the lower-left corner in texture space.</param>
-        </member>
-        <member name="M:SpriteSM.SetLowerLeftPixel(System.Single,System.Single)">
-            <summary>
-                Sets the lower-left corner position of the sprite within the texture using
-                individual x and y pixel coordinates. Wrapper method that creates a Vector2 and
-                calls the main SetLowerLeftPixel method.
-            </summary>
-            <param name="x">The x pixel coordinate of the lower-left corner.</param>
-            <param name="y">The y pixel coordinate of the lower-left corner.</param>
-        </member>
         <member name="M:SpriteSM.SetPixelDimensions(UnityEngine.Vector2)">
             <summary>
                 Sets the pixel dimensions of the sprite on the texture and updates UV coordinates
@@ -148,24 +131,6 @@
             </summary>
             <param name="x">The width in pixels on the texture.</param>
             <param name="y">The height in pixels on the texture.</param>
-        </member>
-        <member name="M:SpriteSM.SetPixelDimensions(UnityEngine.Vector2)">
-            <summary>
-                Sets the pixel dimensions of the sprite region within the texture. Updates UV
-                coordinates to match the new dimensions, applies bleed compensation, and optionally
-                updates the sprite's world size based on lockWidthAndHeight, autoResize, or
-                pixelPerfect settings.
-            </summary>
-            <param name="size">The width and height in pixels of the sprite region.</param>
-        </member>
-        <member name="M:SpriteSM.SetPixelDimensions(System.Int32,System.Int32)">
-            <summary>
-                Sets the pixel dimensions of the sprite region within the texture using integer
-                width and height values. Wrapper method that creates a Vector2 and calls the main
-                SetPixelDimensions method.
-            </summary>
-            <param name="x">The width in pixels of the sprite region.</param>
-            <param name="y">The height in pixels of the sprite region.</param>
         </member>
         <!-- UV Coordinate System Fields -->
         <member name="F:SpriteSM.lowerLeftPixel">

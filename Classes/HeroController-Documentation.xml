@@ -7,10 +7,8 @@
         <!-- Unity Lifecycle & Setup Methods -->
         <member name="M:HeroController.Awake">
             <summary>
-                Unity Awake method that initializes the HeroController singleton. Sets up the
-                instance reference, registers network event handlers for player drops and
-                disconnections, and initializes hero tracking collections. Also sets the initial
-                spawn point if one exists in the scene.
+                Unity Awake method that registers network event handlers for player drops and
+                disconnections, and initializes hero tracking collections.
             </summary>
         </member>
         <member name="M:HeroController.OnDestroy">
@@ -61,9 +59,9 @@
         </member>
         <member name="F:HeroController.playerPrefabReference">
             <summary>
-                Reference to the Player prefab GameObject used for instantiating new players.
-                Contains the template for creating networked player instances when players join the
-                game session.
+                Reference to the Player prefab GameObjectReference used for instantiating new
+                players. Contains the template for creating networked player instances when players
+                join the game session.
             </summary>
         </member>
         <member name="F:HeroController.players">
@@ -77,8 +75,8 @@
         <member name="M:HeroController.AllBrosUseSteroids">
             <summary>
                 Activates steroid power-up for all living players simultaneously. Applies different
-                time boost behavior based on game mode (competitive vs cooperative). Includes global
-                time slow and color shift effects for dramatic impact.
+                time boost behavior based on game mode (deathmatch/BroDown vs other modes). Includes
+                global time slow and color shift effects.
             </summary>
         </member>
         <member name="M:HeroController.GetCorpseExplosionChance">
@@ -369,11 +367,11 @@
             <param name="playerNum">The player number to get color for (0-3).</param>
             <returns>The Color associated with the player number.</returns>
         </member>
-        <member name="M:HeroController.GetHeroColorName(System.String)">
+        <member name="M:HeroController.GetHeroColorName(System.Int32)">
             <summary>
                 Gets the localized color name for a specific player number. Returns translated
-                strings for "Blue", "Red", "Orange", and "Purple" based on player index. Falls back
-                to "WHITE" for invalid player numbers.
+                strings for 'Blue', 'Red', 'Orange', and 'Purple' based on player index. Falls back
+                to 'WHITE' for invalid player numbers.
             </summary>
             <param name="playerNum">The player number to get color name for.</param>
             <returns>The localized color name string.</returns>
@@ -486,13 +484,14 @@
         </member>
         <member name="M:HeroController.GetSpecialAmmo(System.Int32,System.Int32)">
             <summary>
-                Gets the appropriate special ammunition count for a player, choosing between the
-                current count and the last recorded count based on which is higher. Used to maintain
-                ammo across respawns.
+                Gets the appropriate special ammunition count for a player in DeathMatch mode.
+                Returns the preserved ammo count from the previous round if available (stored in
+                lastAmmoCounts), otherwise returns the currentSpecialAmmo parameter. Used to carry
+                over collected ammo between DeathMatch rounds.
             </summary>
             <param name="playerNum">The player number to get ammo for.</param>
-            <param name="currentSpecialAmmo">The current special ammo count.</param>
-            <returns>The maximum of current and last recorded ammo counts.</returns>
+            <param name="currentSpecialAmmo">The default ammo count to use if no preserved count exists.</param>
+            <returns>The preserved ammo count from lastAmmoCounts if >= 0, otherwise currentSpecialAmmo.</returns>
         </member>
         <member name="M:HeroController.GiveAllLifelessPlayersALife">
             <summary>
@@ -683,10 +682,9 @@
         <member name="M:HeroController.SetLives(System.Int32,System.Int32)">
             <summary>
                 Sets the number of lives for one or all players. Can target a specific player or set
-                lives for all players when playerNum is -1. Updates both the lives count and any
-                powerups that track lives.
+                lives for all players when playerNum is 5.
             </summary>
-            <param name="playerNum">The player to set lives for, or -1 for all players.</param>
+            <param name="playerNum">The player to set lives for, or 5 for all players.</param>
             <param name="livesCount">The number of lives to set.</param>
         </member>
         <member name="M:HeroController.SetOriginalSpecialAmmoCount(System.Int32,System.Int32)">
@@ -827,9 +825,8 @@
         </member>
         <member name="M:HeroController.AreAllOtherHerosDead(System.Int32)">
             <summary>
-                Checks if all heroes except the specified player are dead. Note: Current
-                implementation has a bug and always returns false due to misplaced return statement.
-                Intended to check if only one player remains alive.
+                Checks if all heroes except the specified player are dead. Always returns false in
+                the current implementation.
             </summary>
             <param name="playerNum">The player number to exclude from the death check.</param>
             <returns>Always returns false due to implementation bug.</returns>
@@ -927,7 +924,7 @@
             <summary>
                 Checks if all players who are supposed to be playing have joined the game. Considers
                 different game modes (BroDown, SuicideHorde) to determine expected player count.
-                Sets AllPlayersHaveJoined field when all expected players join.
+                Always sets AllPlayersHaveJoined to true when called.
             </summary>
             <returns>True if all expected players have joined; otherwise, false.</returns>
         </member>
@@ -999,7 +996,8 @@
             <summary>
                 RPC method that notifies all clients when a player dies. Updates death tracking,
                 manages lives, handles game over conditions, and coordinates the death state across
-                the network. Only processes on non-host clients.
+                the network. The host additionally broadcasts the updated death order to other
+                clients.
             </summary>
             <param name="playerNum">The player number who died.</param>
         </member>
@@ -1127,8 +1125,7 @@
         <member name="M:HeroController.GetNearestPlayer(System.Single,System.Single,System.Single,System.Single)">
             <summary>
                 Finds the nearest player within a specified rectangular range. Returns the player
-                index of the closest player within the range or -1 if no players are found. Uses
-                Manhattan distance for range checking.
+                index of the closest player within the range or -1 if no players are found.
             </summary>
             <param name="x">X coordinate to search from.</param>
             <param name="y">Y coordinate to search from.</param>
@@ -1224,11 +1221,10 @@
         </member>
         <member name="M:HeroController.GetRandomPlayerPos">
             <summary>
-                Gets the position of a random living player as a Vector3. Returns a far-away
-                position (1000, 1000, 0) if no players are alive. Used for AI targeting when any
-                player target is acceptable.
+                Gets the position of a random living player as a Vector3. Returns Vector3.zero if no
+                players are alive. Used for AI targeting when any player target is acceptable.
             </summary>
-            <returns>Vector3 position of a random living player or (1000, 1000, 0) if none.</returns>
+            <returns>Vector3 position of a random living player or Vector3.zero if none.</returns>
         </member>
         <member name="M:HeroController.IsAnotherPlayerNearby(System.Int32,System.Single,System.Single,System.Single,System.Single)">
             <summary>
@@ -1789,9 +1785,8 @@
         </member>
         <member name="M:HeroController.GoBackToMainMenu">
             <summary>
-                Returns the game to the main menu. Performs cleanup operations including stopping
-                Steam integration, clearing cutscene state, resetting time scale, and loading the
-                MainMenu scene.
+                Returns the game to the main menu by setting the scene to load and calling
+                GameModeController.LoadNextScene.
             </summary>
         </member>
         <member name="M:HeroController.HighFiveBoost(System.Single)">
@@ -1815,8 +1810,8 @@
         <member name="M:HeroController.OnDisconnect">
             <summary>
                 Handles network disconnection events. Drops out all local players, displays a
-                disconnection error notification to the user for 5 seconds, and prepares the game
-                state for returning to the menu or reconnecting.
+                disconnection error notification to the user, and prepares the game state for
+                returning to the menu or reconnecting.
             </summary>
         </member>
         <member name="M:HeroController.ReduceBroRespawnDelay(System.Single)">
@@ -1896,8 +1891,9 @@
         </member>
         <member name="F:HeroController.broRespawnDelay">
             <summary>
-                Minimum delay between automatic respawn attempts. Set to 0.4 seconds to prevent
-                respawn spam and ensure death animations complete before new spawn attempts begin.
+                Delay between automatic respawn attempts. Dynamically managed based on game state -
+                typically 1.8 seconds when heroes are alive, counting down when heroes are dead.
+                Prevents respawn spam and ensures death animations complete.
             </summary>
         </member>
         <member name="F:HeroController.inputDelay">
@@ -2320,13 +2316,15 @@
         <member name="F:HeroController.HeroDefinition.characterReference">
             <summary>
                 Reference to the hero character prefab in the HeroDefinition. Points to the
-                TestVanDammeAnim asset that will be instantiated when this hero type is spawned.
+                TestVanDammeAnimReference asset that will be instantiated when this hero type is
+                spawned.
             </summary>
         </member>
         <member name="F:HeroController.HeroDefinition.name">
             <summary>
-                Display name of the hero in the HeroDefinition data structure. Used for UI display,
-                announcements, and hero selection screens. Part of the hero configuration system.
+                Display name of the hero in the HeroDefinition data structure. This field is stored
+                but not actually used in the game - hero names are retrieved via the GetHeroName
+                method which uses a hardcoded switch statement instead.
             </summary>
         </member>
         <!-- Inner Class HeroSetupKeyPair Fields -->

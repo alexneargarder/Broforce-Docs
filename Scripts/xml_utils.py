@@ -7,7 +7,80 @@ Provides common functionality for parsing, formatting, and manipulating XML docu
 import re
 import html
 import os
+import sys
 from typing import List, Dict, Tuple, Optional, Union
+from functools import wraps
+
+
+def is_test_mode():
+    """Check if running in test mode"""
+    return os.environ.get('BROFORCE_TEST_MODE') == '1'
+
+
+# Global list to capture output during tests
+_test_output_buffer = []
+
+
+def get_test_output():
+    """Get captured test output and clear buffer"""
+    global _test_output_buffer
+    output = '\n'.join(_test_output_buffer)
+    _test_output_buffer = []
+    return output
+
+
+def clear_test_output():
+    """Clear the test output buffer"""
+    global _test_output_buffer
+    _test_output_buffer = []
+
+
+def quiet_print(*args, **kwargs):
+    """Print normally or capture to buffer in test mode"""
+    if is_test_mode():
+        # In test mode, check if we should output to stderr for subprocess tests
+        if os.environ.get('BROFORCE_TEST_CAPTURE_OUTPUT') == '1':
+            # Output to stderr so tests can capture it
+            print(*args, file=sys.stderr, **kwargs)
+        else:
+            # Capture output to buffer for in-process tests
+            import io
+            output = io.StringIO()
+            print(*args, file=output, **kwargs)
+            _test_output_buffer.append(output.getvalue().rstrip('\n'))
+    else:
+        print(*args, **kwargs)
+
+# Alias for convenience
+qprint = quiet_print
+
+
+def quiet_decorator(func):
+    """Decorator to capture all print output from a function during tests"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if is_test_mode():
+            # Capture stdout to buffer
+            import io
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            stdout_buffer = io.StringIO()
+            stderr_buffer = io.StringIO()
+            try:
+                sys.stdout = stdout_buffer
+                sys.stderr = stderr_buffer
+                result = func(*args, **kwargs)
+                # Add captured output to test buffer
+                stdout_content = stdout_buffer.getvalue()
+                if stdout_content:
+                    _test_output_buffer.extend(stdout_content.rstrip('\n').split('\n'))
+                return result
+            finally:
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
+        else:
+            return func(*args, **kwargs)
+    return wrapper
 
 
 class XMLPatterns:
@@ -182,6 +255,51 @@ class MemberParser:
         elif 'name="F:' in full_text:
             return 'field'
         return 'unknown'
+    
+    @staticmethod
+    def parse_member_from_lines(member_lines: List[str], class_name: str, nested_classes: Optional[set] = None) -> Optional[Dict]:
+        """
+        Parse member information from XML lines.
+        
+        Args:
+            member_lines: List of XML lines for a member element
+            class_name: Expected class name
+            nested_classes: Optional set of nested class names
+            
+        Returns:
+            Dictionary with parsed member info including:
+            - name: Member name
+            - type: 'method', 'property', or 'field'
+            - full_name: Full member name from XML
+            - xml_lines: Original XML lines
+            Or None if parsing fails
+        """
+        if not member_lines:
+            return None
+            
+        # Join lines and extract name attribute
+        member_text = '\n'.join(member_lines)
+        name_match = XMLPatterns.MEMBER_NAME.search(member_text)
+        if not name_match:
+            return None
+            
+        name_attr = name_match.group(1)
+        parsed = MemberParser.parse_member_name_from_xml(name_attr, class_name, nested_classes)
+        
+        if parsed:
+            # Add the full name attribute and original lines for convenience
+            parsed['full_name'] = name_attr
+            parsed['xml_lines'] = member_lines
+            
+            # Extract the class name from the name attribute
+            # Format is like "M:ClassName.MemberName" or "M:ClassName.NestedClass.MemberName"
+            if ':' in name_attr and '.' in name_attr:
+                name_part = name_attr.split(':', 1)[1]  # Remove prefix
+                class_parts = name_part.split('.')
+                if class_parts:
+                    parsed['class_name'] = class_parts[0]
+            
+        return parsed
     
     @staticmethod
     def parse_member_name_from_xml(name_attr: str, class_name: str, nested_classes: Optional[set] = None) -> Optional[Dict]:
@@ -425,7 +543,6 @@ class XMLFileReader:
                         if section_name not in sections:
                             sections[section_name] = {
                                 'comments': [],
-                                'members': [],
                                 'subsections': {}
                             }
                         
@@ -437,8 +554,7 @@ class XMLFileReader:
                         if subsection_type not in sections[section_name]['subsections']:
                             sections[section_name]['subsections'][subsection_type] = {
                                 'comment': line.rstrip('\n'),  # Keep indentation, just remove newline
-                                'members': [],
-                                'start_line': i + members_start + 1  # Adjust for actual file line
+                                'members': []
                             }
                     else:
                         # This is a regular section comment (no type suffix)
@@ -447,7 +563,6 @@ class XMLFileReader:
                         if section_name not in sections:
                             sections[section_name] = {
                                 'comments': [],
-                                'members': [],
                                 'subsections': {}
                             }
                         
@@ -467,88 +582,19 @@ class XMLFileReader:
                     j += 1
                 
                 if current_section:
-                    # Add to main members list (for backward compatibility)
-                    sections[current_section]['members'].append(member_lines)
-                    
-                    # Also add to appropriate subsection if we have one
+                    # Only add to subsection - members must be in subsections
                     if current_subsection_type and current_subsection_type in sections[current_section]['subsections']:
                         sections[current_section]['subsections'][current_subsection_type]['members'].append(member_lines)
+                    else:
+                        # Members outside of subsections are invalid
+                        raise ValueError(
+                            f"Invalid XML format: Found member outside of a subsection. All members must be within "
+                            f"Methods/Properties/Fields subsections. Member found after line {i + members_start + 1}"
+                        )
                 
                 i = j - 1
             
             i += 1
-        
-        # Phase 2: Calculate end lines for subsections and handle orphaned members
-        for section_name, section_data in sections.items():
-            if 'subsections' in section_data and section_data['subsections']:
-                # Sort subsections by start line
-                sorted_subsections = sorted(
-                    section_data['subsections'].items(),
-                    key=lambda x: x[1].get('start_line', 0)
-                )
-                
-                # Calculate end lines
-                for idx, (subsec_type, subsec_data) in enumerate(sorted_subsections):
-                    if idx < len(sorted_subsections) - 1:
-                        # End line is the start of next subsection minus 1
-                        next_start = sorted_subsections[idx + 1][1]['start_line']
-                        subsec_data['end_line'] = next_start - 1
-                    else:
-                        # For the last subsection, find the next section or end of members
-                        # This is approximate - would need more complex logic for exact line
-                        subsec_data['end_line'] = subsec_data['start_line'] + len(subsec_data['members']) * 5
-                
-                # Handle members that might not be in any subsection
-                # (members that exist in the section but not in any subsection)
-                subsection_members = set()
-                for subsec_data in section_data['subsections'].values():
-                    for member in subsec_data['members']:
-                        # Create a hashable representation
-                        member_text = ' '.join(member)
-                        subsection_members.add(member_text)
-                
-                # Check if all members are accounted for
-                orphaned_members = []
-                for member in section_data['members']:
-                    member_text = ' '.join(member)
-                    if member_text not in subsection_members:
-                        orphaned_members.append(member)
-                
-                # If there are orphaned members, determine their type and add to appropriate subsection
-                for member in orphaned_members:
-                    member_type = MemberParser.get_member_type(member)
-                    
-                    if member_type == 'method':
-                        subsec_type = 'Methods'
-                    elif member_type == 'property':
-                        subsec_type = 'Properties'
-                    elif member_type == 'field':
-                        subsec_type = 'Fields'
-                    else:
-                        continue  # Skip unknown types
-                    
-                    # Add to subsection (create if needed)
-                    if subsec_type not in section_data['subsections']:
-                        section_data['subsections'][subsec_type] = {
-                            'comment': f'<!-- {section_name} {subsec_type} -->',
-                            'members': [],
-                            'start_line': 0,  # Unknown
-                            'end_line': 0     # Unknown
-                        }
-                    
-                    section_data['subsections'][subsec_type]['members'].append(member)
-        
-        # Phase 3: Validate section format
-        for section_name, section_data in sections.items():
-            # If a section has members but no subsections, it's invalid
-            if section_data['members'] and not section_data.get('subsections'):
-                # Check if any comment looks like it should be a subsection
-                comment_text = section_data['comments'][0] if section_data['comments'] else section_name
-                raise ValueError(
-                    f"Invalid XML documentation format: Section '{comment_text}' has members but doesn't follow "
-                    f"the required subsection format. Section comments must end with 'Methods', 'Properties', or 'Fields'. "
-                    f"For example: '<!-- {section_name} Methods -->', '<!-- {section_name} Properties -->', etc."
-                )
         
         return {
             'header_lines': header_lines,
@@ -665,29 +711,27 @@ class XMLFileWriter:
         
         # Process sections with formatting
         for section_name, section_data in data['sections'].items():
-            if section_data.get('subsections'):
-                # Handle subsections in order: Methods, Properties, Fields
-                subsec_order = {'Methods': 0, 'Properties': 1, 'Fields': 2}
-                sorted_subsections = sorted(
-                    section_data['subsections'].items(),
-                    key=lambda x: subsec_order.get(x[0], 3)
+            if not section_data.get('subsections'):
+                # Sections without subsections are invalid
+                raise ValueError(
+                    f"Invalid XML format: Section '{section_name}' has no subsections. "
+                    f"All sections must have Methods/Properties/Fields subsections."
                 )
+            
+            # Handle subsections in order: Methods, Properties, Fields
+            subsec_order = {'Methods': 0, 'Properties': 1, 'Fields': 2}
+            sorted_subsections = sorted(
+                section_data['subsections'].items(),
+                key=lambda x: subsec_order.get(x[0], 3)
+            )
+            
+            for subsec_type, subsec_data in sorted_subsections:
+                # Add subsection comment with proper indentation
+                comment = subsec_data['comment']
+                lines.append(XMLFileWriter._apply_indentation(comment, 2))
                 
-                for subsec_type, subsec_data in sorted_subsections:
-                    # Add subsection comment with proper indentation
-                    comment = subsec_data['comment']
-                    lines.append(XMLFileWriter._apply_indentation(comment, 2))
-                    
-                    # Process and format members
-                    for member_lines in subsec_data['members']:
-                        formatted_lines = XMLFileWriter._format_member_lines(member_lines, format_content)
-                        lines.extend(formatted_lines)
-            else:
-                # Old-style section without subsections
-                for comment in section_data['comments']:
-                    lines.append(XMLFileWriter._apply_indentation(comment, 2))
-                
-                for member_lines in section_data['members']:
+                # Process and format members
+                for member_lines in subsec_data['members']:
                     formatted_lines = XMLFileWriter._format_member_lines(member_lines, format_content)
                     lines.extend(formatted_lines)
         
@@ -945,7 +989,6 @@ class XMLSectionExtractor:
                     # Extract only specific subsections
                     new_section = {
                         'comments': [],
-                        'members': [],
                         'subsections': {}
                     }
                     
@@ -956,8 +999,6 @@ class XMLSectionExtractor:
                             new_section['comments'].append(subsec_data['comment'])
                             new_section['subsections'][subsec_type] = subsec_data
                             
-                            # Add members to the main members list too
-                            new_section['members'].extend(subsec_data['members'])
                     
                     if new_section['subsections']:  # Only add if we found subsections
                         extracted_data['sections'][section_name] = new_section

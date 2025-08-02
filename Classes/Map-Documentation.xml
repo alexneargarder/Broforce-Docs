@@ -1211,19 +1211,6 @@
                 with the networking system using a deterministic ID for multiplayer synchronization.
             </remarks>
         </member>
-        <member name="M:Map.CreateExitPortal(UnityEngine.Vector2)">
-            <summary>
-                Creates a hero level exit portal at the specified position. The portal is positioned
-                with a vertical offset of 112 units and a horizontal offset of 16 units from the
-                provided coordinates.
-            </summary>
-            <param name="position">The base position where the portal should be created</param>
-            <remarks>
-                The portal is instantiated from the exitPortalPrefabReference asset and registered
-                with the game's networking system using a deterministic network ID. This ensures the
-                portal is properly synchronized across all clients in multiplayer sessions.
-            </remarks>
-        </member>
         <member name="M:Map.CreateRemoteControlCar(System.Single,System.Single)">
             <summary>
                 Creates and networks a remote control explosive car at the specified position.
@@ -1257,24 +1244,6 @@
                 decompilation artifact.
             </remarks>
         </member>
-        <member name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
-            <summary>
-                Damages background and foreground blocks within a circular radius. This method is
-                used for explosive damage that affects the destructible terrain behind the main play
-                area.
-            </summary>
-            <param name="damageSender">The MonoBehaviour that is causing the damage (used for damage attribution)</param>
-            <param name="damage">The amount of damage to apply to blocks</param>
-            <param name="radius">The radius of the damage effect in world units</param>
-            <param name="x">The X coordinate of the damage center</param>
-            <param name="y">The Y coordinate of the damage center</param>
-            <remarks>
-                Calculates which grid cells fall within the damage radius and applies damage to both
-                background and foreground blocks. Uses MapController.Damage_Networked to ensure
-                damage is synchronized across all clients. The damage type is specifically set to
-                DestroyBackground.
-            </remarks>
-        </member>
         <member name="M:Map.DamageDoodadByTag(System.String,System.Int32)">
             <summary>
                 Damages all doodads (environmental objects) with the specified tag. Handles both
@@ -1298,35 +1267,6 @@
                 Iterates through all persistent block arrays and destroys each block's GameObject
                 before clearing the arrays and destroying the persistent container. Also resets the
                 hasPersistedPastLevelLoad flag.
-            </remarks>
-        </member>
-        <member name="M:Map.Distance(UnityEngine.Vector2,UnityEngine.Vector2)">
-            <summary>
-                Calculates the Euclidean distance between two 2D points using manual calculation.
-                This method provides a basic distance calculation used internally for geometric
-                operations.
-            </summary>
-            <param name="pointA">The first point in 2D space</param>
-            <param name="pointB">The second point in 2D space</param>
-            <returns>The Euclidean distance between the two points</returns>
-            <remarks>
-                This method manually calculates distance using the formula: sqrt((x2-x1)² +
-                (y2-y1)²). It's primarily used by the LineToPointDistance2D method for calculating
-                perpendicular distances from points to line segments.
-            </remarks>
-        </member>
-        <member name="M:Map.Distance(UnityEngine.Vector2,UnityEngine.Vector2)">
-            <summary>
-                Calculates the Euclidean distance between two 2D points using the standard distance
-                formula.
-            </summary>
-            <param name="pointA">The first point in 2D space.</param>
-            <param name="pointB">The second point in 2D space.</param>
-            <returns>The distance between the two points as a float value.</returns>
-            <remarks>
-                This is a utility method used internally for various geometric calculations in the
-                map system, particularly for line-to-point distance calculations. It uses the
-                standard formula: sqrt((x2-x1)^2 + (y2-y1)^2).
             </remarks>
         </member>
         <member name="M:Map.Distance(UnityEngine.Vector2,UnityEngine.Vector2)">
@@ -1570,8 +1510,9 @@
         <member name="M:Map.GetGroundHeight(System.Single,System.Single)">
             <summary>
                 Finds the height of the ground directly below the specified position using
-                raycasting. Performs multiple raycasts to ensure accurate ground detection even near
-                edges.
+                raycasting. WARNING: This method has a bug where the layer mask is incorrectly used
+                as the max distance parameter, causing the raycast to use the wrong layers and
+                distance.
             </summary>
             <param name="x">The X coordinate from which to cast rays downward.</param>
             <param name="y">The Y coordinate from which to start the raycast.</param>
@@ -2000,22 +1941,6 @@
                 a confined space. Ladder and bridge tiles are not counted as solid blocks.
             </remarks>
         </member>
-        <member name="M:Map.IsMapOpenAboveCrate(System.Int32,System.Int32)">
-            <summary>
-                Determines if the map area above a crate position is sufficiently open for spawn
-                mechanics. Checks if there are fewer than 5 solid blocks in the upper portion of the
-                map above the specified position.
-            </summary>
-            <param name="collumn">The column index of the crate position</param>
-            <param name="row">The row index of the crate position</param>
-            <returns>True if the area above is considered open (less than 5 solid blocks), false if it's too enclosed</returns>
-            <remarks>
-                Used to determine suitable spawn locations for items or enemies from crates. Checks
-                from 9 rows below the map height to the top, counting non-empty, non-ladder, and
-                non-bridge ground types. Returns true if the position is out of bounds (considered
-                open).
-            </remarks>
-        </member>
         <member name="M:Map.IsNearActivatedCheckPoint(System.Single,System.Single,UnityEngine.Vector2@,System.Boolean@)">
             <summary>
                 Checks if a position is near the current active checkpoint. Returns checkpoint
@@ -2054,10 +1979,6 @@
             <param name="x">The X coordinate in world units (despite being used as Y in GetCollumn).</param>
             <param name="y">The Y coordinate in world units (despite being used as Y in second GetCollumn).</param>
             <returns>True if a background block exists at the calculated grid position; false otherwise.</returns>
-            <remarks>
-                WARNING: This method has a bug where both parameters are converted using GetCollumn,
-                when the second should use GetRow. This may cause incorrect results.
-            </remarks>
         </member>
         <member name="M:Map.IsOverGround(System.Single,System.Single,System.Single,System.Boolean)">
             <summary>
@@ -2093,38 +2014,6 @@
             <param name="collumn">The column index to check.</param>
             <param name="row">The row index to check.</param>
             <returns>True if the terrain at the position matches the source ground type; false if different or out of bounds.</returns>
-        </member>
-        <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
-            <summary>
-                Calculates the minimum distance from a point to a line or line segment in 2D space.
-                This method supports both infinite lines and finite line segments.
-            </summary>
-            <param name="pointA">The first point defining the line</param>
-            <param name="pointB">The second point defining the line</param>
-            <param name="pointC">The point to measure distance from</param>
-            <param name="isSegment">If true, treats the line as a finite segment; if false, treats it as an infinite line</param>
-            <returns>The minimum distance from pointC to the line/segment defined by pointA and pointB</returns>
-            <remarks>
-                For line segments, the method checks if the closest point on the line falls within
-                the segment bounds. If not, it returns the distance to the nearest endpoint. Uses
-                CrossProduct and DotProduct helper methods for calculations.
-            </remarks>
-        </member>
-        <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
-            <summary>
-                Calculates the shortest distance from a point to a line or line segment in 2D space.
-            </summary>
-            <param name="pointA">The starting point of the line or line segment.</param>
-            <param name="pointB">The ending point of the line or line segment.</param>
-            <param name="pointC">The point to calculate the distance from.</param>
-            <param name="isSegment">If true, treats the line as a finite segment; if false, treats it as an infinite line.</param>
-            <returns>The shortest distance from pointC to the line or line segment.</returns>
-            <remarks>
-                When isSegment is true, the method checks if the closest point on the line falls
-                outside the segment bounds and returns the distance to the nearest endpoint instead.
-                Uses cross product for perpendicular distance calculation and dot product for
-                segment boundary checks.
-            </remarks>
         </member>
         <member name="M:Map.LineToPointDistance2D(UnityEngine.Vector2,UnityEngine.Vector2,UnityEngine.Vector2,System.Boolean)">
             <summary>
@@ -2289,19 +2178,6 @@
                 values.
             </remarks>
         </member>
-        <member name="M:Map.SetStartFromHorizontalSuperCheckPoint(System.Int32)">
-            <summary>
-                Sets up a horizontal super checkpoint with a specific X-axis load offset. This is
-                used for horizontal level transitions where the map needs to load at a specific
-                horizontal position.
-            </summary>
-            <param name="xLoadOffset">The horizontal offset for loading the level, clamped to non-negative values</param>
-            <remarks>
-                If the offset differs from the last load offset, persistence is disabled for this
-                level to ensure a clean transition. The offset determines where in the level the
-                player spawns horizontally.
-            </remarks>
-        </member>
         <member name="M:Map.SetStartFromSuperCheckPoint">
             <summary>
                 Configures the map to start from a super checkpoint on the next level load.
@@ -2310,16 +2186,6 @@
                 Super checkpoints are special spawn points that persist across level transitions,
                 typically used for major progression points or after boss battles. This method
                 simply sets the flag without specifying offset values.
-            </remarks>
-        </member>
-        <member name="M:Map.SetStartFromSuperCheckPoint">
-            <summary>
-                Marks that the next level load should start from a super checkpoint. This affects
-                spawn positioning and level initialization.
-            </summary>
-            <remarks>
-                Sets the startFromSuperCheckPoint flag to true. Super checkpoints are special
-                checkpoint types that typically mark major progression points or area transitions.
             </remarks>
         </member>
         <member name="M:Map.SetStartFromVerticalSuperCheckPoint(System.Int32)">
@@ -2332,19 +2198,6 @@
                 Used for vertical level transitions where the player needs to spawn at a specific Y
                 coordinate. Similar to horizontal checkpoints, changing the offset resets persistent
                 blocks. The offset is clamped to a minimum of 0.
-            </remarks>
-        </member>
-        <member name="M:Map.SetStartFromVerticalSuperCheckPoint(System.Int32)">
-            <summary>
-                Sets up a vertical super checkpoint with a specific Y-axis load offset. This is used
-                for vertical level transitions where the map needs to load at a specific vertical
-                position.
-            </summary>
-            <param name="yLoadOffset">The vertical offset for loading the level, clamped to non-negative values</param>
-            <remarks>
-                If the offset differs from the last load offset, persistence is disabled for this
-                level to ensure a clean transition. The offset determines where in the level the
-                player spawns vertically.
             </remarks>
         </member>
         <member name="M:Map.SetTryReduceLoadingTimes(System.Boolean)">
@@ -2413,28 +2266,6 @@
                 half-tile calculations.
             </remarks>
         </member>
-        <member name="F:Map.TileSize">
-            <summary>
-                The standard tile size in pixels used throughout the map grid system.
-            </summary>
-            <remarks>
-                This constant defines the base unit of the map's grid system. All block positions,
-                collision checks, and grid calculations use this 16-pixel tile size as the
-                fundamental measurement unit.
-            </remarks>
-        </member>
-        <member name="F:Map.TileSize">
-            <summary>
-                The size of a single tile in the map grid system, measured in world units. This
-                constant defines the fundamental unit of measurement for the Map's grid-based
-                coordinate system.
-            </summary>
-            <remarks>
-                Set to 16 units, this value is used throughout the codebase for converting between
-                grid coordinates and world positions. Related constants include HalfTileSize (8) for
-                half-tile calculations.
-            </remarks>
-        </member>
         <member name="F:Map.barrierLayer">
             <summary>
                 LayerMask for the MobileBarriers layer. Used to detect movable barriers and
@@ -2453,8 +2284,8 @@
         <member name="F:Map.checkPoints">
             <summary>
                 Static list tracking all checkpoint objects in the current map. Checkpoints are
-                added via RegisterCheckPoint() and removed via DeregisterCheckPoint(). Used for
-                respawn mechanics and progress tracking.
+                added via RegisterCheckPoint() and removed via RemoveCheckPoint(). Used for respawn
+                mechanics and progress tracking.
             </summary>
         </member>
         <member name="F:Map.defaultLayer">
@@ -2688,38 +2519,6 @@
             <param name="x">The X coordinate of the blood effect center.</param>
             <param name="y">The Y coordinate of the blood effect center.</param>
             <param name="range">The radius within which doodads will be bloodied.</param>
-        </member>
-        <member name="M:Map.CallFakeHelicopter(UnityEngine.Vector2,System.Single)">
-            <summary>
-                Summons a fake helicopter to the specified position after a delay. The fake
-                helicopter is a visual-only helicopter used for cinematic sequences that doesn't
-                interact with gameplay.
-            </summary>
-            <param name="position">The target position for the helicopter</param>
-            <param name="delay">The delay in seconds before the helicopter appears</param>
-            <remarks>
-                Creates a single shared instance of HelicopterFake if one doesn't exist. The fake
-                helicopter is typically used for background effects or scripted sequences where a
-                full helicopter entity isn't needed.
-            </remarks>
-        </member>
-        <member name="M:Map.DamageBackground(UnityEngine.MonoBehaviour,System.Int32,System.Single,System.Single,System.Single)">
-            <summary>
-                Damages background and foreground blocks within a circular radius. This method is
-                used for explosive damage that affects the destructible terrain behind the main play
-                area.
-            </summary>
-            <param name="damageSender">The MonoBehaviour that is causing the damage (used for damage attribution)</param>
-            <param name="damage">The amount of damage to apply to blocks</param>
-            <param name="radius">The radius of the damage effect in world units</param>
-            <param name="x">The X coordinate of the damage center</param>
-            <param name="y">The Y coordinate of the damage center</param>
-            <remarks>
-                Calculates which grid cells fall within the damage radius and applies damage to both
-                background and foreground blocks. Uses MapController.Damage_Networked to ensure
-                damage is synchronized across all clients. The damage type is specifically set to
-                DestroyBackground.
-            </remarks>
         </member>
         <member name="M:Map.DamageDoodads(System.Int32,DamageType,System.Single,System.Single,System.Single,System.Single,System.Single,System.Int32,System.Boolean@,UnityEngine.MonoBehaviour)">
             <summary>
@@ -3353,49 +3152,6 @@
             </summary>
         </member>
         <!-- Unit Management Methods -->
-        <member name="M:Map.CallFakeHelicopter(UnityEngine.Vector2,System.Single)">
-            <summary>
-                Summons a fake helicopter to enter the scene at the specified position after a
-                delay.
-            </summary>
-            <param name="position">The target position where the helicopter should appear.</param>
-            <param name="delay">The delay in seconds before the helicopter enters.</param>
-            <remarks>
-                Creates a singleton fake helicopter instance if one doesn't exist. Fake helicopters
-                are typically used for scripted sequences or cutscenes where player interaction is
-                not required. The helicopter is reused across multiple calls.
-            </remarks>
-        </member>
-        <member name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
-            <summary>
-                Creates a 2x2 arrangement of ammunition and revival crates at the specified
-                position. The arrangement includes two ammo crates (top), one revive crate
-                (bottom-left), and one damage crate (bottom-right).
-            </summary>
-            <param name="pos">The position for the top-left crate</param>
-            <param name="collumn">The column index for block array placement</param>
-            <param name="row">The row index for block array placement</param>
-            <param name="setupBlocks">Whether to run block setup logic (connections to adjacent blocks)</param>
-            <remarks>
-                Sets the active theme to jungle theme for crate selection. Each crate is properly
-                registered in the blocks array, networked, and initialized. If setupBlocks is true,
-                establishes connections to adjacent blocks and runs FirstFrame initialization.
-            </remarks>
-        </member>
-        <member name="M:Map.Create4AmmoAndRevives(UnityEngine.Vector3,System.Int32,System.Int32,System.Boolean)">
-            <summary>
-                Creates a 2x2 arrangement of power-up crates at the specified position.
-            </summary>
-            <param name="pos">The base position for the crate arrangement.</param>
-            <param name="collumn">The column coordinate for block registration.</param>
-            <param name="row">The row coordinate for block registration.</param>
-            <param name="setupBlocks">Whether to perform block setup and initialization.</param>
-            <remarks>
-                Creates two ammo crates on top, one revival crate and one damage boost crate on
-                bottom. Each crate is properly registered in the block grid and with the networking
-                system. The jungle theme is temporarily set to ensure consistent crate types.
-            </remarks>
-        </member>
         <member name="M:Map.GetNearestEnemyUnit(System.Int32,System.Int32,System.Single,System.Single,System.Boolean)">
             <summary>
                 Finds the nearest enemy unit that can be damaged by the specified player. This is a
@@ -3596,38 +3352,6 @@
             <param name="includeDead">Whether to include dead units</param>
             <returns>New list containing all units within the rectangular range</returns>
         </member>
-        <member name="M:Map.IsCitizenNearby(System.Single,System.Single,System.Int32,System.Int32)">
-            <summary>
-                Checks if any citizen (civilian NPC) is within a rectangular range of the specified
-                position. Used for AI decisions and player actions that need to consider nearby
-                civilians.
-            </summary>
-            <param name="x">The X coordinate to check from</param>
-            <param name="y">The Y coordinate to check from</param>
-            <param name="xRange">The horizontal search range in world units</param>
-            <param name="yRange">The vertical search range in world units</param>
-            <returns>True if at least one citizen is within the specified range, false otherwise</returns>
-            <remarks>
-                Iterates through the citizens list backwards and checks each citizen's position
-                against the provided range. The rectangular check uses absolute distance comparisons
-                for efficiency.
-            </remarks>
-        </member>
-        <member name="M:Map.IsCitizenNearby(System.Single,System.Single,System.Int32,System.Int32)">
-            <summary>
-                Checks if any citizen (civilian NPC) is within the specified rectangular range.
-            </summary>
-            <param name="x">The X coordinate of the search center.</param>
-            <param name="y">The Y coordinate of the search center.</param>
-            <param name="xRange">The horizontal search range in world units.</param>
-            <param name="yRange">The vertical search range in world units.</param>
-            <returns>True if at least one citizen is found within range; false otherwise.</returns>
-            <remarks>
-                Iterates through all registered citizens and checks their distance from the center
-                point. Used for gameplay mechanics that need to detect civilian presence, such as
-                rescue missions or collateral damage prevention.
-            </remarks>
-        </member>
         <member name="M:Map.IsEnemyUnitNearby(System.Int32,System.Single,System.Single,System.Int32,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
                 Checks if any enemy unit exists within a directional range with optional line of
@@ -3655,22 +3379,6 @@
             <param name="yRange">The vertical search range</param>
             <param name="includeDeadUnits">Whether to include dead units in the search</param>
             <returns>True if at least one enemy unit is found within range, false otherwise</returns>
-        </member>
-        <member name="M:Map.IsMapOpenAboveCrate(System.Int32,System.Int32)">
-            <summary>
-                Determines if the map area above a crate position is sufficiently open for spawn
-                mechanics. Checks if there are fewer than 5 solid blocks in the upper portion of the
-                map above the specified position.
-            </summary>
-            <param name="collumn">The column index of the crate position</param>
-            <param name="row">The row index of the crate position</param>
-            <returns>True if the area above is considered open (less than 5 solid blocks), false if it's too enclosed</returns>
-            <remarks>
-                Used to determine suitable spawn locations for items or enemies from crates. Checks
-                from 9 rows below the map height to the top, counting non-empty, non-ladder, and
-                non-bridge ground types. Returns true if the position is out of bounds (considered
-                open).
-            </remarks>
         </member>
         <member name="M:Map.IsUnitInRange(Unit,System.Int32,System.Single,System.Single)">
             <summary>
@@ -3772,51 +3480,6 @@
                 purposes.
             </summary>
             <param name="wildLifeObject">The WildLife object to remove from tracking.</param>
-        </member>
-        <member name="M:Map.ReplaceCageWithAmmoAndRevives(Cage)">
-            <summary>
-                Replaces a single cage with ammunition and revival crates at the same position. This
-                helper method handles the transformation of individual cages.
-            </summary>
-            <param name="cage">The cage to replace with crates</param>
-            <remarks>
-                Preserves the cage's position and column information before destroying it, then
-                calls Create4AmmoAndRevives to spawn the replacement crates. The cage is properly
-                collapsed and destroyed before replacement.
-            </remarks>
-        </member>
-        <member name="M:Map.ReplaceCageWithAmmoAndRevives(Cage)">
-            <summary>
-                Replaces a single cage with a 2x2 arrangement of ammunition and revival crates.
-            </summary>
-            <param name="cage">The cage to replace with power-up crates.</param>
-            <remarks>
-                Called internally by ReplaceCagesWithAmmoAndRevives. Destroys the cage and creates
-                four crates in its place: two ammo crates on top and one revival crate plus one
-                damage boost crate on the bottom.
-            </remarks>
-        </member>
-        <member name="M:Map.ReplaceCagesWithAmmoAndRevives">
-            <summary>
-                Replaces all cages in the current map with ammunition and revival crates. This is
-                typically used in specific game modes or when transitioning to different gameplay
-                scenarios.
-            </summary>
-            <remarks>
-                Iterates through the cages list backwards and calls ReplaceCageWithAmmoAndRevives
-                for each valid cage. This transformation affects all cages in the level
-                simultaneously.
-            </remarks>
-        </member>
-        <member name="M:Map.ReplaceCagesWithAmmoAndRevives">
-            <summary>
-                Replaces all existing cages in the level with ammunition and revival crates.
-            </summary>
-            <remarks>
-                Iterates through all registered cages and replaces each one with a 2x2 arrangement
-                of power-up crates. This is typically used for game modes or difficulty settings
-                where prisoner rescue is replaced with resource collection.
-            </remarks>
         </member>
         <member name="M:Map.SpawnFaceBaneling(System.Single,System.Single,System.Single,System.Single)">
             <summary>
@@ -4396,14 +4059,14 @@
         </member>
         <member name="M:Map.GetProjectilesInRange(System.Int32,System.Single,System.Single,System.Single)">
             <summary>
-                Gets all projectiles within Manhattan distance that can damage the specified player.
-                Respects game mode damage rules for team damage and friendly fire.
+                Gets all projectiles in range that the specified player can damage. Respects game
+                mode damage rules for team damage and friendly fire.
             </summary>
             <param name="playerNum">The player number to check damage rules against</param>
             <param name="range">The Manhattan distance range</param>
             <param name="x">The X coordinate to search from</param>
             <param name="y">The Y coordinate to search from</param>
-            <returns>List of projectiles within range that can damage the player</returns>
+            <returns>List of projectiles within range that the player can damage</returns>
         </member>
         <member name="M:Map.HitGrenades(System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single@,System.Single@)">
             <summary>
@@ -4704,28 +4367,6 @@
             <param name="row">The row index in the grid</param>
             <returns>True if the block was successfully assigned, false if the position is invalid or already contains a solid block</returns>
         </member>
-        <member name="M:Map.CheckPersistBlocksPastLevelLoad">
-            <summary>
-                Checks whether blocks should be persisted after a level load and either maintains or
-                destroys them accordingly. This method is called after level transitions to handle
-                the persistence state.
-            </summary>
-            <remarks>
-                Only processes persistence if loading time optimizations are active. Sets
-                hasPersistedPastLevelLoad to true if persistence is enabled, otherwise calls
-                DestroyPersistantBlocks to clear any persisted blocks.
-            </remarks>
-        </member>
-        <member name="M:Map.CheckPersistBlocksPastLevelLoad">
-            <summary>
-                Checks and applies block persistence settings after a level load.
-            </summary>
-            <remarks>
-                Called after level loading to determine if persistent blocks should be maintained or
-                destroyed. Only applies when loading time reduction is active. Sets the
-                hasPersistedPastLevelLoad flag if persistence is enabled.
-            </remarks>
-        </member>
         <member name="M:Map.ClearBackgroundBlock(System.Int32,System.Int32)">
             <summary>
                 Destroys and removes the background block at the specified grid coordinates if it
@@ -4741,26 +4382,6 @@
             </summary>
             <param name="c">The column index in the grid</param>
             <param name="r">The row index in the grid</param>
-        </member>
-        <member name="M:Map.ClearPersistenBlocksInstant">
-            <summary>
-                Immediately clears all persisted blocks without waiting for a level transition. This
-                provides a way to force-clear persistence state during gameplay.
-            </summary>
-            <remarks>
-                Resets the hasPersistedPastLevelLoad flag and calls DestroyPersistantBlocks to
-                remove all persisted blocks immediately.
-            </remarks>
-        </member>
-        <member name="M:Map.ClearPersistenBlocksInstant">
-            <summary>
-                Immediately clears all persistent blocks without waiting for level transition.
-            </summary>
-            <remarks>
-                Resets the persistence flag and destroys all persistent blocks instantly. Used when
-                an immediate cleanup is required rather than waiting for the normal level transition
-                process. Note the typo in the method name.
-            </remarks>
         </member>
         <member name="M:Map.CollapseTop">
             <summary>
@@ -4790,19 +4411,6 @@
                 highestSolidBlockLadder.
             </remarks>
         </member>
-        <member name="M:Map.CreateExitPortal(UnityEngine.Vector2)">
-            <summary>
-                Creates a hero level exit portal at the specified position. The portal is positioned
-                with a vertical offset of 112 units and a horizontal offset of 16 units from the
-                provided coordinates.
-            </summary>
-            <param name="position">The base position where the portal should be created</param>
-            <remarks>
-                The portal is instantiated from the exitPortalPrefabReference asset and registered
-                with the game's networking system using a deterministic network ID. This ensures the
-                portal is properly synchronized across all clients in multiplayer sessions.
-            </remarks>
-        </member>
         <member name="M:Map.DeactivateHalfTheMap">
             <summary>
                 Deactivates the right half of the map by disabling all blocks beyond the midpoint.
@@ -4813,49 +4421,6 @@
                 right edge of the map. Only the block GameObjects are deactivated; the block data
                 remains intact. This is separate from the dynamic offscreen deactivation system and
                 provides a static way to reduce the active map size.
-            </remarks>
-        </member>
-        <member name="M:Map.DestroyPersistantBlocks">
-            <summary>
-                Destroys all persisted blocks and clears the persistence system. This removes both
-                foreground and background persistent blocks and their container GameObject.
-            </summary>
-            <remarks>
-                Iterates through all persistent block arrays and destroys each block's GameObject
-                before clearing the arrays and destroying the persistent container. Also resets the
-                hasPersistedPastLevelLoad flag.
-            </remarks>
-        </member>
-        <member name="M:Map.DestroyPersistantBlocks">
-            <summary>
-                Destroys all persistent blocks and cleans up persistence-related data structures.
-            </summary>
-            <remarks>
-                Iterates through all persistent block arrays and destroys the game objects, then
-                nullifies the arrays and destroys the persistent container object. This ensures a
-                complete cleanup of the persistence system. Note the typo in the method name
-                (Persistant vs Persistent) is from the original code.
-            </remarks>
-        </member>
-        <member name="M:Map.DontPersistBlocks">
-            <summary>
-                Disables block persistence for the next level load. This prevents blocks from being
-                maintained between level transitions, ensuring a fresh map state.
-            </summary>
-            <remarks>
-                Sets the persistPastLevelLoad flag to false. This method should be called when you
-                want to ensure all blocks are cleared and recreated on the next level load,
-                typically when transitioning to a completely different area.
-            </remarks>
-        </member>
-        <member name="M:Map.DontPersistBlocks">
-            <summary>
-                Disables block persistence for the current level transition.
-            </summary>
-            <remarks>
-                Prevents blocks from being carried over to the next level load. This is typically
-                used when transitioning between completely different level sections or when a clean
-                slate is required.
             </remarks>
         </member>
         <member name="M:Map.ExtendDisableToUnitPosition(System.Single,System.Single,System.Single)">
@@ -4902,9 +4467,7 @@
         </member>
         <member name="M:Map.GetBlock(UnityEngine.Vector2)">
             <summary>
-                Retrieves the foreground block at the specified world coordinates. Note: This method
-                incorrectly uses the y component of the Vector2 for row calculation instead of
-                column.
+                Retrieves the foreground block at the specified world coordinates.
             </summary>
             <param name="worldXY">The world coordinates to check</param>
             <returns>The block at the specified world position, or null if the position is out of bounds or empty</returns>
@@ -4937,8 +4500,7 @@
         <member name="M:Map.GetBlockExcludingDestroyed(UnityEngine.Vector2)">
             <summary>
                 Retrieves the foreground block at the specified world coordinates, excluding blocks
-                that are marked as destroyed. Note: This method incorrectly uses the y component of
-                the Vector2 for row calculation instead of column.
+                that are marked as destroyed.
             </summary>
             <param name="worldXY">The world coordinates to check</param>
             <returns>The block at the specified world position if it exists and is not destroyed, or null if the position is out of bounds, empty, or contains a destroyed block</returns>
@@ -5027,52 +4589,6 @@
             <param name="row">The row index in the grid</param>
             <returns>A Vector3 representing the bottom-left corner position of the block (z is always 0)</returns>
         </member>
-        <member name="M:Map.HasSandStormTrigger">
-            <summary>
-                Checks whether the current map contains any sandstorm or sandworm trigger actions.
-                This is used to determine if desert-specific environmental effects should be
-                prepared.
-            </summary>
-            <returns>True if the map contains sandstorm or sandworm triggers, false otherwise</returns>
-            <remarks>
-                Iterates through all triggers in the MapData and checks their actions for Sandstorm
-                or CallSandworm types. These triggers create environmental hazards specific to
-                desert-themed levels.
-            </remarks>
-        </member>
-        <member name="M:Map.HasSandStormTrigger">
-            <summary>
-                Checks if the current map contains any sandstorm or sandworm trigger actions.
-            </summary>
-            <returns>True if sandstorm or sandworm triggers exist; false otherwise.</returns>
-            <remarks>
-                Iterates through all trigger actions in the map data looking for Sandstorm or
-                CallSandworm action types. Used to determine if desert-specific weather effects or
-                enemies will appear in the level.
-            </remarks>
-        </member>
-        <member name="M:Map.HasThisMapGotAliens">
-            <summary>
-                Checks whether the current map contains alien enemies. This is used to determine if
-                alien-specific gameplay mechanics should be enabled.
-            </summary>
-            <returns>True if the map contains aliens, false otherwise</returns>
-            <remarks>
-                Returns the value of the hasAliens static field, which is set during map loading
-                based on the presence of alien spawn points or alien-themed elements.
-            </remarks>
-        </member>
-        <member name="M:Map.HasThisMapGotAliens">
-            <summary>
-                Checks if the current map contains alien enemies.
-            </summary>
-            <returns>True if aliens are present in the map; false otherwise.</returns>
-            <remarks>
-                Returns the value of the hasAliens flag, which is set during map loading based on
-                the enemy types placed in the level. Used for gameplay logic that differs when
-                aliens are present.
-            </remarks>
-        </member>
         <member name="M:Map.InitializeDeactivationOffscreen">
             <summary>
                 Initializes the offscreen deactivation system to its default state covering the
@@ -5135,73 +4651,6 @@
             <param name="r">The row index to check</param>
             <returns>True if the coordinates are within the map's width and height bounds, false otherwise</returns>
         </member>
-        <member name="M:Map.MakeBlockPersist(Block)">
-            <summary>
-                Marks a specific block for persistence by transferring it to the persistent blocks
-                container. This is a helper method used by PersistBlocks to process individual
-                blocks.
-            </summary>
-            <param name="block">The block to make persistent</param>
-            <remarks>
-                Simply calls the Persist method to reparent the block's GameObject to the persistent
-                container.
-            </remarks>
-        </member>
-        <member name="M:Map.MakeBlockPersist(Block)">
-            <summary>
-                Marks a single block to persist across level transitions.
-            </summary>
-            <param name="block">The block to make persistent.</param>
-            <remarks>
-                Simple wrapper that calls the Persist method with the block's game object. Part of
-                the internal persistence system workflow.
-            </remarks>
-        </member>
-        <member name="M:Map.Persist(UnityEngine.GameObject)">
-            <summary>
-                Transfers a GameObject to the persistent blocks container by changing its parent.
-                This ensures the object survives scene transitions when persistence is enabled.
-            </summary>
-            <param name="go">The GameObject to make persistent</param>
-            <remarks>
-                Reparents the GameObject to the PersistentBlocks.Instance transform, which is marked
-                as DontDestroyOnLoad to survive scene changes.
-            </remarks>
-        </member>
-        <member name="M:Map.Persist(UnityEngine.GameObject)">
-            <summary>
-                Moves a game object to the persistent blocks container to survive level transitions.
-            </summary>
-            <param name="go">The game object to make persistent.</param>
-            <remarks>
-                Reparents the object to the PersistentBlocks singleton instance, which is configured
-                to not be destroyed on level load. This is the core mechanism for block persistence.
-            </remarks>
-        </member>
-        <member name="M:Map.PersistBlocks">
-            <summary>
-                Enables block persistence and transfers all current foreground and background blocks
-                to the persistent storage system. This allows blocks to survive level transitions
-                when loading time optimizations are active.
-            </summary>
-            <remarks>
-                Creates a persistent GameObject container if needed and iterates through all map
-                blocks, marking matching persistent blocks for retention. Respects the
-                dontPersistedPastLevelLoadThisLevel flag to handle special cases where persistence
-                should be skipped.
-            </remarks>
-        </member>
-        <member name="M:Map.PersistBlocks">
-            <summary>
-                Enables block persistence and prepares blocks to survive the next level transition.
-            </summary>
-            <remarks>
-                Creates a persistent game object container if needed and marks matching blocks in
-                both foreground and background layers for persistence. Blocks are only persisted if
-                they exist in both the current map and the persistent block arrays. Respects the
-                dontPersistedPastLevelLoadThisLevel flag to allow temporary overrides.
-            </remarks>
-        </member>
         <member name="M:Map.RotateBlock(System.Int32,System.Int32,System.Int32)">
             <summary>
                 Rotates the foreground block at the specified grid coordinates if it exists.
@@ -5246,89 +4695,6 @@
             <param name="collumn">The column index in the grid</param>
             <param name="row">The row index in the grid</param>
             <returns>True if the block was removed or position was already empty, false if a different block exists at that position</returns>
-        </member>
-        <member name="M:Map.SetStartFromHorizontalSuperCheckPoint(System.Int32)">
-            <summary>
-                Sets up a horizontal super checkpoint with a specific X-axis load offset. This is
-                used for horizontal level transitions where the map needs to load at a specific
-                horizontal position.
-            </summary>
-            <param name="xLoadOffset">The horizontal offset for loading the level, clamped to non-negative values</param>
-            <remarks>
-                If the offset differs from the last load offset, persistence is disabled for this
-                level to ensure a clean transition. The offset determines where in the level the
-                player spawns horizontally.
-            </remarks>
-        </member>
-        <member name="M:Map.SetStartFromSuperCheckPoint">
-            <summary>
-                Marks that the next level load should start from a super checkpoint. This affects
-                spawn positioning and level initialization.
-            </summary>
-            <remarks>
-                Sets the startFromSuperCheckPoint flag to true. Super checkpoints are special
-                checkpoint types that typically mark major progression points or area transitions.
-            </remarks>
-        </member>
-        <member name="M:Map.SetStartFromVerticalSuperCheckPoint(System.Int32)">
-            <summary>
-                Sets up a vertical super checkpoint with a specific Y-axis load offset. This is used
-                for vertical level transitions where the map needs to load at a specific vertical
-                position.
-            </summary>
-            <param name="yLoadOffset">The vertical offset for loading the level, clamped to non-negative values</param>
-            <remarks>
-                If the offset differs from the last load offset, persistence is disabled for this
-                level to ensure a clean transition. The offset determines where in the level the
-                player spawns vertically.
-            </remarks>
-        </member>
-        <member name="M:Map.SetTryReduceLoadingTimes(System.Boolean)">
-            <summary>
-                Enables or disables the loading time optimization system. When enabled, the map will
-                attempt to persist certain blocks between level loads to reduce loading times.
-            </summary>
-            <param name="actuallyTry">True to enable loading time optimizations, false to disable them</param>
-            <remarks>
-                This optimization system works in conjunction with the block persistence methods
-                (PersistBlocks, DontPersistBlocks) to maintain certain map elements across level
-                transitions.
-            </remarks>
-        </member>
-        <member name="M:Map.SetTryReduceLoadingTimes(System.Boolean)">
-            <summary>
-                Enables or disables the loading time reduction optimization system.
-            </summary>
-            <param name="actuallyTry">True to enable optimization; false to disable.</param>
-            <remarks>
-                This optimization system affects block persistence and asset pooling to reduce level
-                loading times. The setting is checked in conjunction with level editor status and
-                debug configuration.
-            </remarks>
-        </member>
-        <member name="M:Map.TryingToReduceLoadingTimes">
-            <summary>
-                Checks whether the loading time optimization system is currently active. Returns
-                true only if optimizations are enabled, the level editor is not active, and the
-                asset pool is not disabled.
-            </summary>
-            <returns>True if loading time optimizations are active and available, false otherwise</returns>
-            <remarks>
-                This method verifies multiple conditions to ensure optimizations are appropriate for
-                the current game state. It's used by various persistence-related methods to
-                determine whether to maintain blocks between level loads.
-            </remarks>
-        </member>
-        <member name="M:Map.TryingToReduceLoadingTimes">
-            <summary>
-                Checks if the loading time reduction optimization is currently active.
-            </summary>
-            <returns>True if optimization is enabled and conditions are met; false otherwise.</returns>
-            <remarks>
-                Returns true only if optimization is enabled, level editor is not active, and asset
-                pooling is not disabled in debug config. This ensures optimizations don't interfere
-                with editing or debugging workflows.
-            </remarks>
         </member>
         <!-- Map Data & State Properties -->
         <member name="P:Map.HasBeenSetup">

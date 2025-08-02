@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <!-- Campaign Properties -->
+        <member name="P:Campaign.Length">
+            <summary>
+                Gets the number of levels in the campaign by returning the length of the levels
+                array.
+            </summary>
+        </member>
+        <!-- Campaign Information Fields -->
+        <member name="F:Campaign.header">
+            <summary>
+                Contains additional campaign metadata. Marked with [XmlIgnore] attribute, indicating
+                it's not included in XML serialization. The header.name is preferred over the name
+                field for display purposes when available.
+            </summary>
+        </member>
+        <member name="F:Campaign.name">
+            <summary>
+                The name of the campaign. This field is used during serialization/deserialization to
+                persist the campaign name, and as a fallback display name in ToString() when the
+                header.name is not available.
+            </summary>
+        </member>
+        <!-- Level Data Fields -->
+        <member name="F:Campaign.brodownLevel">
+            <summary>
+                Specifies which level index to use for Brodown game mode within this campaign. A
+                value of -1 indicates the default Brodown level should be used. When set to a valid
+                level index (0 to Length-1), that specific level will be loaded when entering
+                Brodown mode.
+            </summary>
+        </member>
+        <member name="F:Campaign.levels">
+            <summary>
+                Array containing all the level data (MapData objects) that make up this campaign.
+                Each MapData represents a single level with its terrain, enemies, and objectives.
+                Initialized to an empty array by default.
+            </summary>
+        </member>
+        <!-- Serialization Methods -->
+        <member name="M:Campaign.Deserialize(System.IO.BinaryReader)">
+            <summary>
+                Deserializes campaign data from a binary stream when loading. Reads the campaign
+                name (handling null values), brodownLevel index, level count, then creates and
+                deserializes each level's MapData.
+            </summary>
+            <param name="br">The BinaryReader to read the serialized data from</param>
+        </member>
+        <member name="M:Campaign.Serialize(System.IO.BinaryWriter)">
+            <summary>
+                Serializes the campaign data to a binary stream for saving. Writes the campaign name
+                (handling null values), brodownLevel index, level count, and then serializes each
+                level's MapData.
+            </summary>
+            <param name="bw">The BinaryWriter to write the serialized data to</param>
+        </member>
+        <!-- Helper & Utility Methods -->
+        <member name="M:Campaign.ToString">
+            <summary>
+                Returns a string representation of the campaign. If a header exists, uses
+                header.name; otherwise uses the name field. Includes the total number of levels in
+                the format "Campaign: [name]. levels: [count]".
+            </summary>
+            <returns>A formatted string describing the campaign name and level count</returns>
+        </member>
+    </members>
+</doc>

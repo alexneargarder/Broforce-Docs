@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 # Import from xml_utils
-from xml_utils import XMLFileReader, XMLFileWriter, XMLFormatter, XMLPatterns
+from xml_utils import XMLFileReader, XMLFileWriter, XMLFormatter, XMLPatterns, quiet_print as qprint
 
 
 def find_class_xml_files(classes_dir=None):
@@ -34,21 +34,21 @@ def extract_sections_from_file(filepath):
         xml_data = XMLFileReader.read_xml_file(filepath)
         return xml_data['sections']
     except Exception as e:
-        print(f"Error reading {filepath}: {e}")
+        qprint(f"Error reading {filepath}: {e}")
         raise  # Re-raise the exception to make it fatal
 
 def build_combined_xml(classes_dir=None, output_dir=None):
     """Main function to build the combined XML file."""
-    print("Building Assembly-CSharp.xml from individual class documentation files...")
+    qprint("Building Assembly-CSharp.xml from individual class documentation files...")
     
     # Find all class documentation files
     class_files = find_class_xml_files(classes_dir)
     
     if not class_files:
-        print(f"No class documentation files found ({os.path.join(classes_dir or '../Classes', '*-Documentation.xml')})")
+        qprint(f"No class documentation files found ({os.path.join(classes_dir or '../Classes', '*-Documentation.xml')})")
         return False
     
-    print(f"Found {len(class_files)} class documentation files:")
+    qprint(f"Found {len(class_files)} class documentation files:")
     
     # Build the proper data structure for XMLFileWriter
     output_data = {
@@ -68,7 +68,7 @@ def build_combined_xml(classes_dir=None, output_dir=None):
     
     # Process each class file
     for filepath in class_files:
-        print(f"  Processing {filepath}...")
+        qprint(f"  Processing {filepath}...")
         
         # Extract sections from this file
         file_sections = extract_sections_from_file(filepath)
@@ -77,12 +77,10 @@ def build_combined_xml(classes_dir=None, output_dir=None):
             # Count members in this file
             member_count = 0
             for section_data in file_sections.values():
-                # Count from subsections if they exist, otherwise from main members list
+                # Count from subsections only - direct members no longer supported
                 if section_data.get('subsections'):
                     for subsec_data in section_data['subsections'].values():
                         member_count += len(subsec_data['members'])
-                else:
-                    member_count += len(section_data['members'])
             
             class_name = os.path.basename(filepath).replace('-Documentation.xml', '')
             
@@ -94,7 +92,6 @@ def build_combined_xml(classes_dir=None, output_dir=None):
                 # Create a copy of section_data to avoid modifying the original
                 prefixed_section_data = {
                     'comments': [],
-                    'members': section_data['members'][:],  # Copy the members list
                     'subsections': {}
                 }
                 
@@ -134,9 +131,9 @@ def build_combined_xml(classes_dir=None, output_dir=None):
                 output_data['sections'][prefixed_section_name] = prefixed_section_data
             
             total_members += member_count
-            print(f"    Added {member_count} members from {class_name}")
+            qprint(f"    Added {member_count} members from {class_name}")
         else:
-            print(f"    Warning: No sections found in {filepath}")
+            qprint(f"    Warning: No sections found in {filepath}")
     
     # Write the combined XML file
     if output_dir is None:
@@ -148,20 +145,20 @@ def build_combined_xml(classes_dir=None, output_dir=None):
         # Use XMLFileWriter to write the file with proper subsection handling
         XMLFileWriter.write_xml_file(output_file, output_data)
         
-        print(f"\nSuccessfully built {output_file}")
-        print(f"Total members documented: {total_members}")
-        print(f"Classes processed: {len(class_files)}")
+        qprint(f"\nSuccessfully built {output_file}")
+        qprint(f"Total members documented: {total_members}")
+        qprint(f"Classes processed: {len(class_files)}")
         
         return True
         
     except Exception as e:
-        print(f"Error writing {output_file}: {e}")
+        qprint(f"Error writing {output_file}: {e}")
         return False
 
 def main():
     """Main entry point."""
-    print("Broforce Documentation Build Script")
-    print("=" * 40)
+    qprint("Broforce Documentation Build Script")
+    qprint("=" * 40)
     
     # Parse command line arguments
     classes_dir = None
@@ -185,10 +182,10 @@ def main():
     success = build_combined_xml(classes_dir, output_dir)
     
     if success:
-        print("\nBuild completed successfully!")
+        qprint("\nBuild completed successfully!")
         sys.exit(0)
     else:
-        print("\nBuild failed!")
+        qprint("\nBuild failed!")
         sys.exit(1)
 
 if __name__ == "__main__":

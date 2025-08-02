@@ -66,9 +66,8 @@
         <member name="M:Player.Start">
             <summary>
                 Performs initial player setup after instantiation. Verifies network connection, sets
-                initial lives based on game mode, requests player data from server if not host, and
-                sets up perks. Handles special cases for hardcore mode, deathmatch, and procedural
-                generation modes.
+                lives for specific game modes (ProcGen, DeathMatch, BroDown) and dropped out
+                scenarios, and requests player data from server if not host.
             </summary>
         </member>
         <!-- Player Management Properties -->
@@ -113,9 +112,8 @@
             <summary>
                 Removes a life from the player based on the current game mode rules. In hardcore
                 mode, moves the hero from available to dead list and may force level restart. In
-                ProcGen mode, decrements global lives and may trigger level failure. In campaign
-                mode, also clears any active flex powers. Updates lives differently for each game
-                mode.
+                campaign mode, decrements Lives by 1 and clears any active flex powers if the player
+                has one. In all other game modes, simply decrements Lives by 1.
             </summary>
         </member>
         <member name="M:Player.SetLivesRPC(System.Int32)">
@@ -476,10 +474,10 @@
         <member name="M:Player.GetCharacterPosition">
             <summary>
                 Gets the current position of the player's character. Returns the character's
-                transform position if alive, otherwise returns the last known player follow
-                position.
+                transform position if it exists, otherwise returns Vector3.zero. Special handling
+                for Snake Broskin's active grenade hologram and piloted units.
             </summary>
-            <returns>The character's current position or last known position if dead.</returns>
+            <returns>The character's current position or Vector3.zero if no character exists.</returns>
         </member>
         <member name="M:Player.GetFollowPosition">
             <summary>
@@ -876,8 +874,7 @@
             <summary>
                 Private field storing a flex power type to be automatically granted when the player
                 spawns a new hero. Set by ForceRespawnWithFlexPower and checked during
-                InstantiateHero to apply the power immediately after spawning. Reset to
-                PickupType.None after use.
+                InstantiateHero to apply the power immediately after spawning.
             </summary>
         </member>
         <member name="F:Player.heroType">

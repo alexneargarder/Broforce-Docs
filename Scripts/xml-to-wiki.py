@@ -11,11 +11,69 @@ from collections import defaultdict, OrderedDict
 import html
 import sys
 sys.path.append(str(Path(__file__).parent))
-from csharp_parser import parse_csharp_file
-from xml_utils import XMLPatterns, SectionManager, MemberParser, XMLFormatter, XMLFileReader
+from csharp_parser import parse_csharp_file, parse_method_parameters
+from xml_utils import XMLPatterns, SectionManager, MemberParser, XMLFormatter, XMLFileReader, quiet_print as qprint
 
 # Global cache for source signatures
 SOURCE_SIGNATURES_CACHE = {}
+
+def find_matching_source_signature(source_signatures, member_name, member_type):
+    """
+    Find a matching source signature for a given XML member name.
+    Handles method overloads by matching parameter types.
+    """
+    if member_type == 'M':
+        # For methods, we need to match including parameters
+        _, method_name, param_types = parse_method_signature(member_name)
+        
+        # First try exact match only if there are no parameters
+        if not param_types and method_name in source_signatures:
+            return source_signatures[method_name]
+        
+        # For overloaded methods, try to match with parameter types
+        # Build a key similar to what we store: MethodName(Type1,Type2)
+        if param_types:
+            # Normalize the parameter types from XML
+            normalized_params = []
+            for param_type in param_types:
+                # First normalize using our type map (System.Single -> float, etc.)
+                normalized = normalize_type_name(param_type)
+                # If it wasn't in the type map and has a namespace, remove it
+                if normalized == param_type and '.' in param_type:
+                    # Keep only the last part (e.g., UnityEngine.Transform -> Transform)
+                    normalized = param_type.split('.')[-1]
+                normalized_params.append(normalized)
+            
+            # Try different key variations
+            key_variations = [
+                f"{method_name}({','.join(normalized_params)})",
+                f"{method_name}({','.join(param_types)})",  # Try with full type names
+            ]
+            
+            for key in key_variations:
+                if key in source_signatures:
+                    return source_signatures[key]
+            
+            # If still not found, try to find any method with matching name and param count
+            # But be careful - we need exact parameter count match to avoid mixing overloads
+            param_count = len(param_types)
+            for key, sig_info in source_signatures.items():
+                if key.startswith(f"{method_name}(") and sig_info['type'] == 'method':
+                    # Count parameters in the key
+                    key_params = key[len(method_name)+1:-1]  # Extract params from "MethodName(params)"
+                    if key_params:
+                        key_param_count = len(key_params.split(','))
+                        if key_param_count == param_count:
+                            return sig_info
+                    elif param_count == 0:
+                        # Empty params case - "MethodName()"
+                        return sig_info
+        
+        return None
+    else:
+        # For non-methods (properties, fields), use simple name lookup
+        _, simple_name = format_member_name(member_name)
+        return source_signatures.get(simple_name)
 
 def load_source_signatures(class_name):
     """
@@ -29,7 +87,7 @@ def load_source_signatures(class_name):
     members, nested_classes, error = parse_csharp_file(class_name)
     
     if error:
-        print(f"Warning: Could not parse source for {class_name}: {error}")
+        qprint(f"Warning: Could not parse source for {class_name}: {error}")
         return signatures
     
     if members:
@@ -46,7 +104,25 @@ def load_source_signatures(class_name):
             # Build the full declaration with all modifiers
             full_signature = signature
             
-            signatures[member['name']] = {
+            # For methods, create a unique key that includes parameter types to handle overloads
+            key = member['name']
+            if member['type'] == 'method':
+                # Extract parameter types from the signature
+                params_match = re.search(r'\((.*?)\)', signature)
+                if params_match:
+                    params_str = params_match.group(1).strip()
+                    if params_str:
+                        # Parse parameters to get just the types
+                        param_types = []
+                        params = parse_method_parameters(signature)
+                        if params:
+                            for param in params:
+                                if param['type'] is not None:
+                                    param_types.append(param['type'])
+                        if param_types:
+                            key = f"{member['name']}({','.join(param_types)})"
+            
+            signatures[key] = {
                 'type': member['type'],
                 'signature': full_signature,
                 'access': member['access'],
@@ -78,12 +154,67 @@ def extract_member_type(member_name):
     match = re.match(r'^([MPTF]):', member_name)
     return match.group(1) if match else None
 
-def get_method_parameter_types(member_name, param_names):
+def get_method_parameter_types_from_source(source_signature, param_names):
+    """Extract parameter types from source signature if available."""
+    if not source_signature or not source_signature.get('signature'):
+        return None
+    
+    signature = source_signature['signature']
+    
+    # Use the csharp_parser to parse parameters
+    parsed_params = parse_method_parameters(signature)
+    if parsed_params is None:
+        return None
+    
+    param_info = OrderedDict()
+    param_name_list = list(param_names.keys()) if isinstance(param_names, dict) else param_names
+    
+    for i, param in enumerate(parsed_params):
+        if param['type'] is None:
+            # If we can't determine the type, return None to trigger fallback
+            return None
+            
+        # Build the full type string including modifier
+        param_type = param['type']
+        if param['modifier']:
+            param_type = f"{param['modifier']} {param_type}"
+        
+        # Use the name from XML if available (in case source has different names)
+        if i < len(param_name_list):
+            xml_param_name = param_name_list[i]
+            # Include default value in the type info if available
+            if param.get('default'):
+                param_info[xml_param_name] = {'type': param_type, 'default': param['default']}
+            else:
+                param_info[xml_param_name] = param_type
+        else:
+            if param.get('default'):
+                param_info[param['name']] = {'type': param_type, 'default': param['default']}
+            else:
+                param_info[param['name']] = param_type
+    
+    return param_info
+
+def get_method_parameter_types(member_name, param_names, source_signature=None):
     """Extract parameter types from method signature and match with parameter names."""
+    # Try to get from source signature first
+    if source_signature:
+        source_params = get_method_parameter_types_from_source(source_signature, param_names)
+        if source_params is not None:
+            return source_params
+    
+    # Fallback to XML-based parsing
     _, _, param_types = parse_method_signature(member_name)
     
     param_info = OrderedDict()
     param_name_list = list(param_names.keys()) if isinstance(param_names, dict) else param_names
+    
+    # If we have parameter names but no types, something went wrong
+    if param_name_list and not param_types:
+        # Return object for all params as a fallback
+        for param_name in param_name_list:
+            param_info[param_name] = 'object'
+        return param_info
     
     for i, param_type in enumerate(param_types):
         normalized_type = normalize_type_name(param_type)
@@ -253,13 +384,14 @@ def normalize_type_name(type_name):
         'Decimal': 'decimal'
     }
     
-    # Handle out parameters
+    # Handle ref/out parameters - in XML documentation, @ suffix can indicate either ref or out
+    # We can't distinguish between them from XML alone, so we assume ref (more common)
     if type_name.endswith('@'):
         base_type = type_name[:-1]
         normalized_base = normalize_type_name(base_type)
-        return f"out {normalized_base}"
+        return f"ref {normalized_base}"
     
-    # Handle ref parameters  
+    # Handle ref parameters with & suffix (older format, rarely used)
     if type_name.endswith('&'):
         base_type = type_name[:-1]
         normalized_base = normalize_type_name(base_type)
@@ -555,8 +687,13 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
             lines.extend(xml_data['header_lines'])
             for section_name, section_data in xml_data['sections'].items():
                 lines.extend(section_data['comments'])
-                for member_lines in section_data['members']:
-                    lines.extend(member_lines)
+                # Handle subsections if they exist
+                if 'subsections' in section_data:
+                    for subsec_type, subsec_data in section_data['subsections'].items():
+                        if 'comment' in subsec_data:
+                            lines.append(subsec_data['comment'])
+                        for member_lines in subsec_data['members']:
+                            lines.extend(member_lines)
             lines.extend(xml_data['footer_lines'])
             xml_content = '\n'.join(lines)
     
@@ -653,11 +790,26 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
                     lines.append(f'<a id="{member_anchor}"></a>')
                     
                     # Get source signature if available
-                    source_sig = source_signatures.get(member_simple)
+                    member_type = extract_member_type(member['name'])
+                    source_sig = find_matching_source_signature(source_signatures, member['name'], member_type)
+                    
                     
                     # Format the declaration based on member type
                     if category == 'Methods':
                         declaration = format_method_declaration(member['name'], member['params'], member['returns'], source_sig)
+                        
+                        # Check if source signature has the right number of parameters
+                        if source_sig and source_sig.get('signature'):
+                            # Parse parameters from source signature
+                            source_params = parse_method_parameters(source_sig['signature'])
+                            xml_param_count = len(member['params']) if member['params'] else 0
+                            source_param_count = len(source_params) if source_params else 0
+                            
+                            if source_param_count != xml_param_count:
+                                # Wrong overload - don't use this source signature
+                                source_sig = None
+                                declaration = format_method_declaration(member['name'], member['params'], member['returns'], None)
+                        
                         lines.append(f"#### `{declaration}`")
                     elif category == 'Properties':
                         declaration = format_property_declaration(member['name'], member['value'], source_sig)
@@ -677,11 +829,20 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
                     
                     # Add parameters for methods (with better formatting)
                     if category == 'Methods' and member['params']:
-                        param_types = get_method_parameter_types(member['name'], member['params'])
+                        param_types = get_method_parameter_types(member['name'], member['params'], source_sig)
                         lines.append("**Parameters:**")
                         for param_name, param_desc in member['params'].items():
-                            param_type = param_types.get(param_name, 'object')
-                            lines.append(f"- **{param_type} {param_name}**: {param_desc}")
+                            param_type_info = param_types.get(param_name, 'object')
+                            # Handle case where param_type_info is a dict with type and default
+                            if isinstance(param_type_info, dict):
+                                param_type = param_type_info['type']
+                                default_val = param_type_info.get('default')
+                                if default_val:
+                                    lines.append(f"- **{param_type} {param_name} = {default_val}**: {param_desc}")
+                                else:
+                                    lines.append(f"- **{param_type} {param_name}**: {param_desc}")
+                            else:
+                                lines.append(f"- **{param_type_info} {param_name}**: {param_desc}")
                         lines.append("")
                     
                     # Add return value
@@ -743,11 +904,25 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
                 _, member_simple = format_member_name(member['name'])
                 
                 # Get source signature if available
-                source_sig = source_signatures.get(member_simple)
+                member_type = extract_member_type(member['name'])
+                source_sig = find_matching_source_signature(source_signatures, member['name'], member_type)
                 
                 # Format the declaration based on member type
                 if category == 'Methods':
                     declaration = format_method_declaration(member['name'], member['params'], member['returns'], source_sig)
+                    
+                    # Check if source signature has the right number of parameters
+                    if source_sig and source_sig.get('signature'):
+                        # Parse parameters from source signature
+                        source_params = parse_method_parameters(source_sig['signature'])
+                        xml_param_count = len(member['params']) if member['params'] else 0
+                        source_param_count = len(source_params) if source_params else 0
+                        
+                        if source_param_count != xml_param_count:
+                            # Wrong overload - don't use this source signature
+                            source_sig = None
+                            declaration = format_method_declaration(member['name'], member['params'], member['returns'], None)
+                    
                     lines.append(f"### `{declaration}`")
                 elif category == 'Properties':
                     declaration = format_property_declaration(member['name'], member['value'], source_sig)
@@ -767,11 +942,20 @@ def create_class_wiki_page(class_name, members, output_dir, xml_content=None):
                 
                 # Add parameters for methods
                 if category == 'Methods' and member['params']:
-                    param_types = get_method_parameter_types(member['name'], member['params'])
+                    param_types = get_method_parameter_types(member['name'], member['params'], source_sig)
                     lines.append("**Parameters:**")
                     for param_name, param_desc in member['params'].items():
-                        param_type = param_types.get(param_name, 'object')
-                        lines.append(f"- **{param_type} {param_name}**: {param_desc}")
+                        param_type_info = param_types.get(param_name, 'object')
+                        # Handle case where param_type_info is a dict with type and default
+                        if isinstance(param_type_info, dict):
+                            param_type = param_type_info['type']
+                            default_val = param_type_info.get('default')
+                            if default_val:
+                                lines.append(f"- **{param_type} {param_name} = {default_val}**: {param_desc}")
+                            else:
+                                lines.append(f"- **{param_type} {param_name}**: {param_desc}")
+                        else:
+                            lines.append(f"- **{param_type_info} {param_name}**: {param_desc}")
                     lines.append("")
                 
                 # Add return value
@@ -834,13 +1018,13 @@ def create_index_page(class_files, output_dir):
 
 def process_single_xml_file(xml_file, output_dir, class_files):
     """Process a single XML file and generate wiki pages."""
-    print(f"Parsing {xml_file}...")
+    qprint(f"Parsing {xml_file}...")
     
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
     except ET.ParseError as e:
-        print(f"Error parsing XML: {e}")
+        qprint(f"Error parsing XML: {e}")
         return
     
     # Read XML content for section parsing using XMLFileReader
@@ -850,8 +1034,13 @@ def process_single_xml_file(xml_file, output_dir, class_files):
     lines.extend(xml_data['header_lines'])
     for section_name, section_data in xml_data['sections'].items():
         lines.extend(section_data['comments'])
-        for member_lines in section_data['members']:
-            lines.extend(member_lines)
+        # Handle subsections if they exist
+        if 'subsections' in section_data:
+            for subsec_type, subsec_data in section_data['subsections'].items():
+                if 'comment' in subsec_data:
+                    lines.append(subsec_data['comment'])
+                for member_lines in subsec_data['members']:
+                    lines.extend(member_lines)
     lines.extend(xml_data['footer_lines'])
     xml_content = '\n'.join(lines)
     
@@ -861,7 +1050,7 @@ def process_single_xml_file(xml_file, output_dir, class_files):
     # Process each member
     members_node = root.find('members')
     if members_node is None:
-        print(f"No members found in {xml_file}!")
+        qprint(f"No members found in {xml_file}!")
         return
     
     for member_node in members_node.findall('member'):
@@ -910,7 +1099,7 @@ def process_single_xml_file(xml_file, output_dir, class_files):
         if not members:  # Skip empty classes
             continue
             
-        print(f"Generating page for {class_name} ({len(members)} members)...")
+        qprint(f"Generating page for {class_name} ({len(members)} members)...")
         filename = create_class_wiki_page(class_name, members, output_dir, xml_content)
         class_files[class_name] = filename
 
@@ -927,7 +1116,7 @@ def main():
     classes_dir = Path("Classes")
     if classes_dir.exists():
         xml_files = list(classes_dir.glob("*-Documentation.xml"))
-        print(f"Found {len(xml_files)} XML documentation files in Classes directory")
+        qprint(f"Found {len(xml_files)} XML documentation files in Classes directory")
         
         for xml_file in xml_files:
             process_single_xml_file(xml_file, output_dir, class_files)
@@ -937,24 +1126,24 @@ def main():
         if xml_file.exists():
             process_single_xml_file(xml_file, output_dir, class_files)
         else:
-            print("Error: No XML documentation files found!")
+            qprint("Error: No XML documentation files found!")
             return
     
-    print(f"\nTotal: Found {len(class_files)} classes with documentation")
+    qprint(f"\nTotal: Found {len(class_files)} classes with documentation")
     
     # Create index page
-    print("Creating index page...")
+    qprint("Creating index page...")
     create_index_page(class_files, output_dir)
     
-    print(f"\nGenerated {len(class_files)} wiki pages in {output_dir}/")
-    print("Files created:")
-    print(f"- Home.md (index page)")
+    qprint(f"\nGenerated {len(class_files)} wiki pages in {output_dir}/")
+    qprint("Files created:")
+    qprint(f"- Home.md (index page)")
     for class_name, filename in sorted(class_files.items()):
-        print(f"- {filename}")
+        qprint(f"- {filename}")
     
-    print(f"\nTo use with GitHub wiki:")
-    print(f"1. Copy all .md files from {output_dir}/ to your GitHub wiki repository")
-    print(f"2. The Home.md file will serve as your wiki's main page")
+    qprint(f"\nTo use with GitHub wiki:")
+    qprint(f"1. Copy all .md files from {output_dir}/ to your GitHub wiki repository")
+    qprint(f"2. The Home.md file will serve as your wiki's main page")
 
 if __name__ == "__main__":
     main()

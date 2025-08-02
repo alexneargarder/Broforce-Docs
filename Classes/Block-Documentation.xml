@@ -1278,13 +1278,6 @@
             <param name="x">The horizontal rustling position</param>
             <param name="xI">The horizontal rustling impulse/intensity</param>
         </member>
-        <member name="M:Block.SetCollapsedVisuals">
-            <summary>
-                Hides all visual components of the block when it has collapsed. Disables the
-                renderer, hides all edge pieces, shows the broken background mesh, and deactivates
-                any added objects like decorations.
-            </summary>
-        </member>
         <member name="M:Block.ShowBackgroundMesh">
             <summary>
                 Shows the background mesh visual component of this block by activating its
@@ -1909,23 +1902,10 @@
                 Disturb implementation to trigger any physics or visual reactions.
             </summary>
         </member>
-        <member name="M:Block.Disturb">
-            <summary>
-                Handles the disturbance of this block, typically from explosions or other
-                environmental effects. Marked with [AllowedRPC] attribute for network
-                synchronization. Calls the base class Disturb implementation.
-            </summary>
-        </member>
         <member name="M:Block.DisturbNetworked">
             <summary>
                 Sends an RPC call to all players to disturb this block. Calls the Disturb method on
                 all connected clients for synchronized physics reactions.
-            </summary>
-        </member>
-        <member name="M:Block.DisturbNetworked">
-            <summary>
-                Sends a network RPC call to disturb this block on all connected clients. Uses
-                Networking.RPC to call the Disturb method across the network with PID.TargetAll.
             </summary>
         </member>
         <member name="M:Block.PackState(UnityStream)">

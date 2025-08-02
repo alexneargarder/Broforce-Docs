@@ -645,8 +645,8 @@
         </member>
         <member name="F:TestVanDammeAnim.skinnedMookOnMyBack">
             <summary>
-                Tracks whether character has a skinned mook attached. When true, reduces horizontal
-                movement speed by 5% (multiplies by 0.95).
+                Reference to a skinned mook attached to the character's back. When set (not null),
+                reduces horizontal movement speed by 5% (multiplies by 0.95).
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.specialCounter">
@@ -1408,11 +1408,11 @@
         </member>
         <member name="M:TestVanDammeAnim.SetActionStateToJumping(System.Boolean)">
             <summary>
-                Changes the character's action state to jumping with health validation. Normal mode
-                requires positive health and not already jumping. Updates animation frame unless
-                using special ability.
+                Changes the character's action state to jumping. Requires health &gt; 0 and not
+                already jumping, OR forced parameter is true. Updates animation frame unless using
+                special ability.
             </summary>
-            <param name="forced">If true, bypasses the check for already being in jump state (but still requires health &gt; 0).</param>
+            <param name="forced">If true, bypasses the check for already being in jump state.</param>
         </member>
         <member name="M:TestVanDammeAnim.SetActionstateToIdle">
             <summary>
@@ -1839,9 +1839,9 @@
         </member>
         <member name="F:TestVanDammeAnim.lastCollumn">
             <summary>
-                Previous grid column position. Field exists but usage not found in current
-                implementation. Note: Field name contains spelling error ("Collumn" instead of
-                "Column").
+                Previous grid column position. Updated when grid position changes and compared with
+                current collumn to detect movement between grid cells. Note: Field name contains
+                spelling error ("Collumn" instead of "Column").
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.lastDashSpeedM">
@@ -2476,9 +2476,8 @@
         </member>
         <member name="F:TestVanDammeAnim.gunFrame">
             <summary>
-                Tracks the current animation frame for weapon-related animations. Acts as a cooldown
-                timer that prevents certain actions when greater than 0. Decremented during gun
-                animation updates and initialized to 3 at start.
+                Tracks the current animation frame for weapon-related animations. Decremented during
+                gun animation updates. Set to 3 when firing weapon.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.gunMaterial">
@@ -3167,12 +3166,6 @@
             <param name="xI">The horizontal velocity to apply after unimpaling.</param>
             <param name="yI">The vertical velocity to apply after unimpaling.</param>
             <param name="firedBy">The source that caused the unimpaling.</param>
-        </member>
-        <member name="M:TestVanDammeAnim.Unrevive">
-            <summary>
-                Forces the character to die after being revived. Deals crush damage equal to
-                health+1 with knockback based on facing direction.
-            </summary>
         </member>
         <member name="M:TestVanDammeAnim.Unrevive">
             <summary>
@@ -3916,8 +3909,10 @@
         </member>
         <member name="F:TestVanDammeAnim.holdStillTime">
             <summary>
-                Timer that prevents or limits movement when active. Checked in multiple movement
-                conditions and prevents certain actions. Decrements each frame when greater than 0.
+                Timer that prevents acceleration and facing direction changes when active. Checked
+                in AddSpeedLeft(), AddSpeedRight(), and CheckFacingDirection(). Does not stop
+                existing movement, only prevents adding new speed. Decrements each frame when
+                greater than 0.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.holdUpTime">
@@ -3989,9 +3984,8 @@
         </member>
         <member name="F:TestVanDammeAnim.wasButtonHighFive">
             <summary>
-                Previous frame's high-five button state. Enables edge detection for high-five
-                activation, ensuring actions trigger on button press rather than hold. Prevents
-                continuous high-five attempts.
+                Field that is only set to false in ClearAllInput(). Never read or used elsewhere in
+                the codebase and has no functional purpose.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.wasButtonJump">
@@ -4088,6 +4082,13 @@
                 when the character begins pushing a moveable block.
             </summary>
         </member>
+        <member name="M:TestVanDammeAnim.CanBeImpaledByGroundSpikes">
+            <summary>
+                Determines whether the character can be impaled by ground spike traps. Characters
+                cannot be impaled while invulnerable or while wall-dragging.
+            </summary>
+            <returns>True if the character can be impaled by ground spikes, false if protected by invulnerability or wall-dragging state</returns>
+        </member>
         <member name="M:TestVanDammeAnim.CanCheckClimbAlongCeiling">
             <summary>
                 Checks if ceiling climbing mechanics should be evaluated by detecting nearby hanging
@@ -4131,8 +4132,8 @@
         <member name="M:TestVanDammeAnim.CheckForQuicksandDeath">
             <summary>
                 Monitors for lethal quicksand submersion and applies crush damage after 2-second
-                delay. Checks if character is deep in quicksand (16 units below surface) and deals
-                fatal damage if choke counter exceeds threshold.
+                delay. Checks if character is in quicksand at 16 units above their Y position and
+                deals fatal damage if choke counter exceeds 2 seconds threshold.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.CheckForTraps(System.Single)">
@@ -4873,8 +4874,8 @@
         </member>
         <member name="M:TestVanDammeAnim.PlayRollLandSound">
             <summary>
-                Plays the appropriate landing sound effect when completing a roll, with volume based
-                on impact velocity.
+                Virtual method for playing roll landing sound. Empty implementation that can be
+                overridden by derived classes.
             </summary>
         </member>
         <member name="M:TestVanDammeAnim.PlaySpecial2Sound(System.Single)">
@@ -5943,8 +5944,8 @@
         <member name="F:TestVanDammeAnim.holdingHighFive">
             <summary>
                 Indicates that the character is currently initiating a high-five gesture. Set to
-                true when starting a high-five and prevents air dashing while active. Automatically
-                cleared after frame 2 of the high-five animation.
+                true when starting a high-five. Cleared when the high-five is released through
+                ReleaseHighFive() either manually or when connecting with another player.
             </summary>
         </member>
         <member name="F:TestVanDammeAnim.ignoreHighFivePressTime">
